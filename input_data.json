@@ -1,0 +1,8 @@
+{
+    "front_elements":"AAACTAT",
+    "back_elements":"TCCTCAGT",
+    "spaces":27,
+    "alignment_name":"PTENP1_POU5F1B_alignment",
+    "input_file_path":"./input_folder",
+    "output_file_path":"./output_folder"
+}
