@@ -6,3 +6,5 @@ You can confirm for Bioinformatics Tips at Wiki.
 (Broadly, you can find the speific sequences of front and back while ignoring the middle sequences)
 
 (Language: Python3.9)
+SEARCH_SEQUENCE_IMAGE
+![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
