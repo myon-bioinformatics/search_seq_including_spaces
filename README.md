@@ -15,6 +15,5 @@ You can confirm for Bioinformatics Tips at Wiki.
 ![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
 
 ## References
-・About Nucleotides:https://www.ncbi.nlm.nih.gov/nuccore/
-
-・About amino-acid: https://www.ncbi.nlm.nih.gov/protein/
+- About Nucleotides:https://www.ncbi.nlm.nih.gov/nuccore/
+- About amino-acid: https://www.ncbi.nlm.nih.gov/protein/
