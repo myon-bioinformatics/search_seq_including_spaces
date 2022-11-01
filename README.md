@@ -11,7 +11,7 @@ You can confirm for Bioinformatics Tips at Wiki.
 (Language: Python3.9)
 
 
-## SEARCH_SEQUENCE_IMAGE: 
+## SEARCH_SEQUENCE_IMAGE
 ![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
 
 ## References
