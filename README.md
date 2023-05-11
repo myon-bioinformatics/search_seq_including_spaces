@@ -7,7 +7,7 @@
 - Language: Python(3.9)
 >__Note__ You can confirm for Bioinformatics Tips at Wiki.
 
-![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/psearch_seq_including_spaces)
+![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/search_seq_including_spaces)
 ![GitHub last commit](https://img.shields.io/github/last-commit/myon-bioinformatics/search_seq_including_spaces)
 [![CodeQL](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/codeql.yml/badge.svg)](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/codeql.yml)
 
