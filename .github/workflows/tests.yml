@@ -67,8 +67,10 @@ jobs:
 
       - name: Run unit tests without site-packages (python -S)
         run: |
+          pyver="$(python -S -c 'import platform; print(platform.python_version())')"
+          where="Python ${pyver}, commit ${GITHUB_SHA:0:12}"
           if [ ! -d tests ]; then
-            echo "::notice title=No tests::No tests/ directory on this ref; nothing to run."
+            echo "::notice title=No tests::No tests/ directory on this ref; nothing to run (${where})."
             echo "none" > "${RUNNER_TEMP}/tests-ran"
             exit 0
           fi
@@ -78,13 +80,14 @@ jobs:
           count="$(sed -n 's/^Ran \([0-9][0-9]*\) tests\{0,1\} in .*/\1/p' "${RUNNER_TEMP}/unittest.log")"
           echo "${count:-0}" > "${RUNNER_TEMP}/tests-ran"
           if [ "${count:-0}" -eq 0 ]; then
-            echo "::error title=No tests ran::tests/ exists but unittest ran 0 tests."
+            echo "::error title=No tests ran::tests/ exists but unittest ran 0 tests (${where})."
             exit 1
           fi
           if [ "${status}" -ne 0 ]; then
-            echo "::error title=Unit tests failed::unittest exited with status ${status}; see the log above."
+            echo "::error title=Unit tests failed::unittest exited with status ${status} after ${count} tests (${where}); see the log above."
             exit "${status}"
           fi
+          echo "::notice title=Tests passed::${count} tests passed (${where})."
 
       - name: Write job summary
         if: always()
