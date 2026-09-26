@@ -4,7 +4,7 @@
 
 - Narrowly, Find sequences including nucleotide(or amino acid) spaces and Output the results to every csv file.
 - Broadly, you can find the speific sequences of front and back while ignoring the middle sequences)
-- Language: Python(3.9)
+- Language: Python (3.11+)
 >__Note__ You can confirm for Bioinformatics Tips at Wiki.
 
 ![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/search_seq_including_spaces)
