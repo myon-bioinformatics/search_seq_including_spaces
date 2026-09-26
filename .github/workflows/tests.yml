@@ -41,6 +41,9 @@ jobs:
         python-version: ["3.11", "3.x"]
     env:
       PYTHONDONTWRITEBYTECODE: "1"
+      # On pull_request events GITHUB_SHA is the test merge commit; also
+      # report the branch head so results map to the pushed commit.
+      HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Check out repository
         uses: actions/checkout@v6
@@ -53,7 +56,8 @@ jobs:
       - name: Show Python version and commit
         run: |
           python -S -c 'import platform, sys; print(f"python {platform.python_version()} ({sys.executable})")'
-          echo "commit ${GITHUB_SHA}"
+          echo "head commit ${HEAD_SHA}"
+          echo "tested commit ${GITHUB_SHA}"
 
       - name: Check that no bytecode files are tracked
         run: |
@@ -68,7 +72,7 @@ jobs:
       - name: Run unit tests without site-packages (python -S)
         run: |
           pyver="$(python -S -c 'import platform; print(platform.python_version())')"
-          where="Python ${pyver}, commit ${GITHUB_SHA:0:12}"
+          where="Python ${pyver}, head ${HEAD_SHA:0:12}, tested ${GITHUB_SHA:0:12}"
           if [ ! -d tests ]; then
             echo "::notice title=No tests::No tests/ directory on this ref; nothing to run (${where})."
             echo "none" > "${RUNNER_TEMP}/tests-ran"
@@ -99,7 +103,8 @@ jobs:
             echo "| item | value |"
             echo "| --- | --- |"
             echo "| Python | $(python -S -c 'import platform; print(platform.python_version())') |"
-            echo "| Commit | \`${GITHUB_SHA}\` |"
+            echo "| Head commit | \`${HEAD_SHA}\` |"
+            echo "| Tested commit | \`${GITHUB_SHA}\` |"
             echo "| Tests ran | ${ran} |"
             echo "| Command | \`python -S -m unittest discover -s tests\` |"
           } >> "${GITHUB_STEP_SUMMARY}"
