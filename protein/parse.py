@@ -58,16 +58,18 @@ def read_fasta(text: str) -> list[tuple[str, str]]:
     """Split FASTA text into (header, raw_sequence) pairs.
 
     Header lines start with '>'; the header is the rest of the line,
-    stripped. Blank lines and ';' comment lines are ignored. Text without
-    any header is read as a single record with an empty header. Sequence
-    text before the first header, when headers exist, is an error.
+    stripped. Blank lines and ';' comment lines are ignored. A leading
+    UTF-8 byte order mark (U+FEFF) is removed. Text without any header is
+    read as a single record with an empty header. Sequence text before the
+    first header, when headers exist, is an error that names its line.
     Raw sequences are returned unvalidated; pass them to prepare().
     """
     records: list[tuple[str, str]] = []
     header: str | None = None
     chunks: list[str] = []
     preamble: list[str] = []
-    for line in text.splitlines():
+    preamble_line = 0
+    for line_number, line in enumerate(text.removeprefix("﻿").splitlines(), start=1):
         stripped = line.strip()
         if not stripped or stripped.startswith(";"):
             continue
@@ -75,10 +77,12 @@ def read_fasta(text: str) -> list[tuple[str, str]]:
             if header is not None:
                 records.append((header, "".join(chunks)))
             elif preamble:
-                raise SequenceError("sequence data before the first '>' header")
+                raise SequenceError(
+                    f"sequence data before the first '>' header (line {preamble_line})")
             header = stripped[1:].strip()
             chunks = []
         elif header is None:
+            preamble_line = preamble_line or line_number
             preamble.append(stripped)
         else:
             chunks.append(stripped)

@@ -24,8 +24,19 @@ class TestReadFasta(unittest.TestCase):
         self.assertEqual(read_fasta("ACDE\nFG\n"), [("", "ACDEFG")])
 
     def test_data_before_first_header_is_an_error(self):
-        with self.assertRaises(SequenceError):
-            read_fasta("ACDE\n>one\nFG\n")
+        with self.assertRaises(SequenceError) as ctx:
+            read_fasta("\n; comment\nACDE\n>one\nFG\n")
+        self.assertIn("line 3", str(ctx.exception))
+
+    def test_leading_bom_is_removed(self):
+        self.assertEqual(read_fasta("﻿>one\nACDE\n"), [("one", "ACDE")])
+        self.assertEqual(read_fasta("﻿ACDE\n"), [("", "ACDE")])
+
+    def test_bom_inside_a_sequence_is_still_invalid(self):
+        header, raw = read_fasta(">one\nAC﻿D\n")[0]
+        with self.assertRaises(SequenceError) as ctx:
+            prepare(header, raw)
+        self.assertEqual(ctx.exception.position, 3)
 
     def test_empty_text(self):
         self.assertEqual(read_fasta(""), [])
@@ -80,6 +91,13 @@ class TestPrepare(unittest.TestCase):
             self.assertEqual(ctx.exception.header, "rec")
             self.assertIn("rec", str(ctx.exception))
 
+    def test_non_ascii_letters_are_not_converted_to_residues(self):
+        # Regression: 'ı'.upper() == 'I' and 'ſ'.upper() == 'S'.
+        for raw, pos, sym in (("ACıD", 3, "ı"), ("ſAC", 1, "ſ")):
+            with self.assertRaises(SequenceError) as ctx:
+                prepare("h", raw)
+            self.assertEqual((ctx.exception.position, ctx.exception.symbol), (pos, sym))
+
     def test_empty_inputs_are_errors(self):
         for raw in ("", "   \n", "*"):
             with self.assertRaises(SequenceError):
@@ -117,7 +135,13 @@ class TestFixtures(unittest.TestCase):
         for name, (sha, _) in FIXTURE_SHA256.items():
             self.assertIn(name, source)
             self.assertIn(sha, source)
+        self.assertIn("P37840_bom.fasta", source)
 
-
-if __name__ == "__main__":
-    unittest.main()
+    def test_bom_fixture_parses_like_the_plain_fixture(self):
+        raw_bytes = (FIXTURES / "P37840_bom.fasta").read_bytes()
+        self.assertTrue(raw_bytes.startswith(b"\xef\xbb\xbf"))
+        # Decoded as plain UTF-8 (not utf-8-sig), so the BOM reaches read_fasta.
+        with_bom = read_fasta(raw_bytes.decode("utf-8"))
+        plain = read_fasta((FIXTURES / "P37840.fasta").read_text(encoding="utf-8"))
+        self.assertEqual(with_bom, plain)
+        self.assertEqual(prepare(*with_bom[0]), prepare(*plain[0]))

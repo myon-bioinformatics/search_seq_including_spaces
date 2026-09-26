@@ -19,13 +19,15 @@ Sources (see SOURCES for the machine-readable form):
                   D, E = -1; K, R = +1; every other canonical residue = 0
                   (His is treated as neutral). Not defined for U/O, whose
                   charge state is outside the simplified model.
+* WATER_AVG       Average mass of H2O derived from the atomic weights
+                  H = 1.00794 and O = 15.9994 (2 x 1.00794 + 15.9994).
 
 Values that a cited source does not define are None, never a guess.
 """
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from types import MappingProxyType
-from typing import Mapping
 
 TABLE_VERSION = "aa-props/1"
 
@@ -37,11 +39,12 @@ SOURCES: Mapping[str, str] = MappingProxyType({
              "IMGT hydrogen donor/acceptor classes "
              "(https://www.imgt.org/IMGTeducation/Aide-memoire/_UK/aminoacids/IMGTclasses.html)",
     "charge_simplified": "tool convention: D,E=-1; K,R=+1; others 0; U/O undefined",
-    "water_avg": "Expasy average mass of H2O",
+    "water_avg": "derived from atomic weights H = 1.00794, O = 15.9994 "
+                 "(2 x 1.00794 + 15.9994 = 18.01528)",
 })
 
 # Average mass of water, added once per chain when computing a molecular
-# weight from residue masses (used from PR B on).
+# weight from residue masses (used from PR B on). Derived value, see SOURCES.
 WATER_AVG = 18.01528
 
 STOP = "*"
@@ -121,13 +124,17 @@ AMBIGUOUS: Mapping[str, frozenset[str]] = MappingProxyType({
 
 
 def symbol_class(ch: str) -> str:
-    """Classify one sequence symbol (case-insensitive).
+    """Classify one sequence symbol (case-insensitive, ASCII only).
 
-    Returns one of SYMBOL_CLASSES. Raises ValueError unless ``ch`` is a
-    single character.
+    Returns one of SYMBOL_CLASSES. Non-ASCII characters are always
+    'invalid': Unicode case mapping would otherwise turn e.g. dotless i
+    (U+0131) into 'I' or long s (U+017F) into 'S'. Raises ValueError unless
+    ``ch`` is a single character.
     """
     if not isinstance(ch, str) or len(ch) != 1:
         raise ValueError(f"expected a single character, got {ch!r}")
+    if not ch.isascii():
+        return "invalid"
     up = ch.upper()
     if up in CANONICAL:
         return "canonical"

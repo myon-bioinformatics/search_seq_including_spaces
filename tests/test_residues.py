@@ -96,6 +96,10 @@ class TestValues(unittest.TestCase):
         mass = sum(R.RESIDUES[c].mw_residue_avg for c in asyn) + R.WATER_AVG
         self.assertEqual(round(mass), 14460)
 
+    def test_water_is_the_documented_derived_value(self):
+        self.assertAlmostEqual(R.WATER_AVG, 2 * 1.00794 + 15.9994, places=5)
+        self.assertIn("1.00794", R.SOURCES["water_avg"])
+
 
 class TestAmbiguity(unittest.TestCase):
     def test_candidate_sets(self):
@@ -129,6 +133,14 @@ class TestSymbolClass(unittest.TestCase):
             with self.assertRaises(ValueError):
                 R.symbol_class(bad)  # type: ignore[arg-type]
 
+    def test_non_ascii_is_invalid_even_if_it_upper_cases_to_a_residue(self):
+        # Regression: str.upper() maps these onto canonical letters.
+        self.assertEqual("ı".upper(), "I")   # dotless i
+        self.assertEqual("ſ".upper(), "S")   # long s
+        for ch in ("ı", "ſ", "K", "Ａ", "é"):
+            self.assertEqual(R.symbol_class(ch), "invalid", repr(ch))
 
-if __name__ == "__main__":
-    unittest.main()
+    def test_ascii_canonical_residues_unchanged(self):
+        for code in R.CANONICAL:
+            self.assertEqual(R.symbol_class(code), "canonical")
+            self.assertEqual(R.symbol_class(code.lower()), "canonical")
