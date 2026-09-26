@@ -1,0 +1,102 @@
+name: Tests
+
+# Unit tests for the stdlib-only core. Nothing is installed: tests run with
+# `python -S`, which disables site-packages, so any third-party import fails.
+
+on:
+  pull_request:
+    paths:
+      - "**.py"
+      - "tests/**"
+      - ".github/workflows/tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**.py"
+      - "tests/**"
+      - ".github/workflows/tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    # Explicit bash runs steps with `-eo pipefail`; the implicit default does not.
+    shell: bash
+
+concurrency:
+  group: tests-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  unittest:
+    name: unittest (Python ${{ matrix.python-version }}, stdlib only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        # Minimum supported version and the current stable release.
+        python-version: ["3.11", "3.x"]
+    env:
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Show Python version and commit
+        run: |
+          python -S -c 'import platform, sys; print(f"python {platform.python_version()} ({sys.executable})")'
+          echo "commit ${GITHUB_SHA}"
+
+      - name: Check that no bytecode files are tracked
+        run: |
+          tracked="$(git ls-files -- '*.pyc' '*.pyo' '__pycache__/*' '*/__pycache__/*')"
+          if [ -n "${tracked}" ]; then
+            echo "::error title=Tracked bytecode::Compiled Python files are committed:"
+            echo "${tracked}"
+            exit 1
+          fi
+          echo "No compiled Python files are tracked."
+
+      - name: Run unit tests without site-packages (python -S)
+        run: |
+          if [ ! -d tests ]; then
+            echo "::notice title=No tests::No tests/ directory on this ref; nothing to run."
+            echo "none" > "${RUNNER_TEMP}/tests-ran"
+            exit 0
+          fi
+          set -o pipefail
+          status=0
+          python -S -m unittest discover -s tests -v 2>&1 | tee "${RUNNER_TEMP}/unittest.log" || status=$?
+          count="$(sed -n 's/^Ran \([0-9][0-9]*\) tests\{0,1\} in .*/\1/p' "${RUNNER_TEMP}/unittest.log")"
+          echo "${count:-0}" > "${RUNNER_TEMP}/tests-ran"
+          if [ "${count:-0}" -eq 0 ]; then
+            echo "::error title=No tests ran::tests/ exists but unittest ran 0 tests."
+            exit 1
+          fi
+          if [ "${status}" -ne 0 ]; then
+            echo "::error title=Unit tests failed::unittest exited with status ${status}; see the log above."
+            exit "${status}"
+          fi
+
+      - name: Write job summary
+        if: always()
+        run: |
+          ran="$(cat "${RUNNER_TEMP}/tests-ran" 2>/dev/null || echo "not reached")"
+          {
+            echo "### unittest (Python ${{ matrix.python-version }})"
+            echo ""
+            echo "| item | value |"
+            echo "| --- | --- |"
+            echo "| Python | $(python -S -c 'import platform; print(platform.python_version())') |"
+            echo "| Commit | \`${GITHUB_SHA}\` |"
+            echo "| Tests ran | ${ran} |"
+            echo "| Command | \`python -S -m unittest discover -s tests\` |"
+          } >> "${GITHUB_STEP_SUMMARY}"
