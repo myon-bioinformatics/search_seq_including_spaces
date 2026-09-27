@@ -150,6 +150,13 @@ The marker line is evidence-oriented rather than a similarity score:
    excluded gap/gap or excluded gap column
 ```
 
+CLI ASCII output includes the two FASTA record IDs plus alphabet, gap policy,
+and ambiguity policy before the legend, so copied output remains
+self-describing.
+
+S2 JSON provenance includes SHA-256 of both normalized aligned sequences,
+matching S1's input-traceability contract.
+
 The ASCII view does not perform alignment and does not imply homology,
 functional equivalence, or evolutionary similarity.
 
