@@ -113,3 +113,51 @@ presented as high whole-sequence similarity.
 S2 may add sliding-window identity, local divergence, and ASCII diff.
 
 S3 may add conservation/divergence regions and bounded multi-record summaries.
+
+
+## S2: sliding windows and ASCII diff
+
+S2 keeps S1's already-aligned contract and adds local views without changing
+the S1 identity/coverage semantics.
+
+### Sliding-window identity
+
+```bash
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
+```
+
+Only complete windows are emitted. Coordinates remain 1-based inclusive
+aligned columns. Each window reports the same match/mismatch/gap/ambiguity
+counts as S1, plus:
+
+- `percent_identity`
+- `divergence_percent = 100 - percent_identity`
+- `coverage_percent`
+- `percent_compatible` when `--ambiguity-policy compatible` is requested
+
+If a window has zero comparable positions, both identity and divergence are
+JSON `null`. A window larger than the selected region is an input error
+rather than a partial-window fallback.
+
+### ASCII diff
+
+```bash
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
+```
+
+The marker line is evidence-oriented rather than a similarity score:
+
+```text
+|  exact compared match
+~  compatible but non-identical (compatible ambiguity policy only)
+.  compared mismatch
+^  one-sided gap counted as mismatch
+?  excluded ambiguity
+   excluded gap/gap or excluded gap column
+```
+
+The ASCII view does not perform alignment and does not imply homology,
+functional equivalence, or evolutionary similarity.
+
+S3 remains reserved for conservation/divergence regions and bounded
+multi-record summaries.
