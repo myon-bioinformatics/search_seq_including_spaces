@@ -190,7 +190,7 @@ class TestCommandLineEntryPoint(unittest.TestCase):
             elif isinstance(node, ast.ImportFrom):
                 self.assertEqual(node.level, 0, "sequence_tool.py uses a relative import")
                 imported.add(node.module.split(".")[0])
-        project_modules = {"protein", "comparison"}
+        project_modules = {"protein", "comparison", "comparison_s2"}
         third_party = {m for m in imported
                        if m not in project_modules and m not in sys.stdlib_module_names}
         self.assertEqual(third_party, set())
