@@ -177,6 +177,30 @@ class TestLayers(unittest.TestCase):
                              f"{calls & FORBIDDEN_TOP_LEVEL_CALLS} at import")
 
 
+class TestCommandLineEntryPoint(unittest.TestCase):
+    """sequence_tool.py is the only place that combines package modules with I/O."""
+
+    def test_imports_only_stdlib_and_protein(self):
+        path = ROOT / "sequence_tool.py"
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        imported = set()
+        for node in ast.walk(tree):
+            if isinstance(node, ast.Import):
+                imported.update(alias.name.split(".")[0] for alias in node.names)
+            elif isinstance(node, ast.ImportFrom):
+                self.assertEqual(node.level, 0, "sequence_tool.py uses a relative import")
+                imported.add(node.module.split(".")[0])
+        third_party = {m for m in imported
+                       if m != "protein" and m not in sys.stdlib_module_names}
+        self.assertEqual(third_party, set())
+        self.assertIn("protein", imported)
+
+    def test_package_does_not_import_the_entry_point(self):
+        for name in package_modules():
+            external, _ = collect_imports(parse_module(name), name)
+            self.assertNotIn("sequence_tool", external, f"protein module {name!r}")
+
+
 class TestRuntimeWithoutSitePackages(unittest.TestCase):
     def test_imports_cleanly_with_site_disabled(self):
         modules = ", ".join(f"protein.{m}" for m in package_modules() if m != ROOT_INIT)

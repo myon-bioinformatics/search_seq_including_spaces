@@ -1,0 +1,217 @@
+#!/usr/bin/env python3
+"""Command-line entry point for the sequence tools (stdlib only).
+
+    python sequence_tool.py fasta validate FILE [--strip-gaps] [--allow-internal-stop] [--json]
+    python sequence_tool.py protein features FILE [--ambiguity POLICY] [--json | --jsonl]
+    python sequence_tool.py protein profile FILE [--window 9] [--entropy-window 12]
+                                            [--ambiguity POLICY] [--tsv | --json | --jsonl]
+
+FILE may be "-" for standard input. Each subcommand only parses arguments,
+calls one function of the protein package and writes the result; the
+analysis itself lives in the package. Exit codes: 0 = ok, 2 = input error
+(unreadable file, invalid sequence, bad option).
+
+JSON output is UTF-8 with sorted keys, so the same input gives the same
+bytes. --json writes one document and needs exactly one FASTA record;
+--jsonl writes one compact document per record.
+"""
+
+import argparse
+import json
+import sys
+
+from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
+from protein.parse import SequenceError, prepare, read_fasta
+
+EXIT_OK = 0
+EXIT_INPUT_ERROR = 2
+PROFILE_COLUMNS = ("position", "input_position", "residue", "class", "hydropathy", "charge",
+                   "hydropathy_window", "charge_window", "entropy_window")
+
+
+class InputError(Exception):
+    """A problem with the user's input, reported on stderr with exit code 2."""
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = _build_parser()
+    args = parser.parse_args(argv)
+    try:
+        output, status = args.handler(args)
+    except (InputError, SequenceError) as error:
+        print(f"{parser.prog}: error: {error}", file=sys.stderr)
+        return EXIT_INPUT_ERROR
+    sys.stdout.buffer.write(output.encode("utf-8"))
+    sys.stdout.flush()
+    return status
+
+
+# ---------------------------------------------------------------- subcommands
+
+def _fasta_validate(args) -> tuple[str, int]:
+    """Report every record; exit 2 if any is invalid (errors go to stderr)."""
+    rows, reports, failed = [], [], False
+    for header, raw in _read_records(args.file):
+        record_id = header.split()[0] if header.split() else ""
+        try:
+            p = prepare(header, raw, strip_gaps=args.strip_gaps,
+                        allow_internal_stop=args.allow_internal_stop)
+        except SequenceError as error:
+            failed = True
+            print(error, file=sys.stderr)
+            reports.append({"id": record_id, "valid": False,
+                            "error": {"reason": error.reason, "position": error.position,
+                                      "symbol": error.symbol}})
+            continue
+        counts = {cls: p.classes.count(cls)
+                  for cls in ("canonical", "rare-but-defined", "ambiguous", "stop")}
+        length = len(p.residues) - counts["stop"]
+        rows.append([record_id, length, *counts.values(),
+                     str(p.stripped_terminal_stop).lower(), p.stripped_gaps])
+        reports.append({"id": record_id, "valid": True, "length": length,
+                        "residue_classes": counts,
+                        "modifications": {"stripped_terminal_stop": p.stripped_terminal_stop,
+                                          "stripped_gaps": p.stripped_gaps}})
+    if args.json:
+        output = _dump({"valid": not failed, "records": reports}, indent=2)
+    else:
+        header = ["id", "length", "canonical", "rare_but_defined", "ambiguous", "stop",
+                  "stripped_terminal_stop", "stripped_gaps"]
+        output = "".join("\t".join(map(str, row)) + "\n" for row in [header, *rows])
+    return output, EXIT_INPUT_ERROR if failed else EXIT_OK
+
+
+def _protein_features(args) -> tuple[str, int]:
+    docs = [protein_features(p, ambiguity=args.ambiguity) for p in _prepared(args)]
+    return _write_documents(docs, args.format), EXIT_OK
+
+
+def _protein_profile(args) -> tuple[str, int]:
+    docs = [protein_profiles(p, window=args.window, entropy_window=args.entropy_window,
+                             ambiguity=args.ambiguity) for p in _prepared(args)]
+    if args.format != "tsv":
+        return _write_documents(docs, args.format), EXIT_OK
+    lines = ["\t".join(("id",) + PROFILE_COLUMNS)]
+    for doc in docs:
+        for row in doc["residues"]:
+            lines.append("\t".join([doc["record"]["id"]]
+                                   + [_tsv_cell(row[c]) for c in PROFILE_COLUMNS]))
+    return "\n".join(lines) + "\n", EXIT_OK
+
+
+# ---------------------------------------------------------------- helpers
+
+def _read_records(path: str) -> list[tuple[str, str]]:
+    try:
+        if path == "-":
+            text = sys.stdin.buffer.read().decode("utf-8")
+        else:
+            with open(path, encoding="utf-8") as handle:
+                text = handle.read()
+    except OSError as error:
+        raise InputError(f"cannot read {path}: {error.strerror or error}") from None
+    except UnicodeDecodeError as error:
+        raise InputError(f"{path} is not UTF-8 text ({error.reason} at byte {error.start})") from None
+    records = read_fasta(text)
+    if not records:
+        raise InputError(f"no FASTA records in {path}")
+    return records
+
+
+def _prepared(args) -> list:
+    return [prepare(header, raw, strip_gaps=args.strip_gaps,
+                    allow_internal_stop=args.allow_internal_stop)
+            for header, raw in _read_records(args.file)]
+
+
+def _write_documents(docs: list[dict], fmt: str) -> str:
+    if fmt == "jsonl":
+        return "".join(_dump(doc) + "\n" for doc in docs)
+    if len(docs) != 1:
+        raise InputError(f"--json writes one document but the input has {len(docs)} "
+                         "records; use --jsonl")
+    return _dump(docs[0], indent=2) + "\n"
+
+
+def _dump(obj, indent: int | None = None) -> str:
+    separators = None if indent else (",", ":")
+    return json.dumps(obj, sort_keys=True, ensure_ascii=False, indent=indent,
+                      separators=separators, allow_nan=False)
+
+
+def _tsv_cell(value) -> str:
+    return "NA" if value is None else str(value)
+
+
+def _odd_positive_int(text: str) -> int:
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not an integer: {text!r}") from None
+    if value < 1 or value % 2 == 0:
+        raise argparse.ArgumentTypeError(f"must be a positive odd integer: {value}")
+    return value
+
+
+def _positive_int(text: str) -> int:
+    try:
+        value = int(text)
+    except ValueError:
+        raise argparse.ArgumentTypeError(f"not an integer: {text!r}") from None
+    if value < 1:
+        raise argparse.ArgumentTypeError(f"must be a positive integer: {value}")
+    return value
+
+
+def _build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(prog="sequence_tool.py",
+                                     description="Sequence tools (stdlib only).")
+    groups = parser.add_subparsers(dest="group", required=True, metavar="{fasta,protein}")
+
+    input_options = argparse.ArgumentParser(add_help=False)
+    input_options.add_argument("file", help='FASTA file, or "-" for standard input')
+    input_options.add_argument("--strip-gaps", action="store_true",
+                               help="remove '-' gap symbols instead of rejecting them")
+    input_options.add_argument("--allow-internal-stop", action="store_true",
+                               help="keep internal '*' as a stop marker instead of rejecting it")
+
+    fasta = groups.add_parser("fasta", help="FASTA checks")
+    fasta_commands = fasta.add_subparsers(dest="command", required=True)
+    validate = fasta_commands.add_parser("validate", parents=[input_options],
+                                         help="validate protein FASTA records")
+    validate.add_argument("--json", action="store_true", help="JSON report instead of TSV")
+    validate.set_defaults(handler=_fasta_validate)
+
+    protein = groups.add_parser("protein", help="protein sequence analysis")
+    protein_commands = protein.add_subparsers(dest="command", required=True)
+    analysis_options = argparse.ArgumentParser(add_help=False, parents=[input_options])
+    analysis_options.add_argument("--ambiguity", choices=AMBIGUITY_POLICIES, default="exclude",
+                                  help="how B, Z, J, X are treated (default: exclude)")
+
+    features = protein_commands.add_parser("features", parents=[analysis_options],
+                                           help="whole-sequence features (JSON)")
+    _format_options(features, ("json", "jsonl"), default="json")
+    features.set_defaults(handler=_protein_features)
+
+    profile = protein_commands.add_parser("profile", parents=[analysis_options],
+                                          help="per-residue window profiles")
+    profile.add_argument("--window", type=_odd_positive_int, default=9,
+                         help="hydropathy and charge window, odd (default: 9)")
+    profile.add_argument("--entropy-window", type=_positive_int, default=12,
+                         help="entropy window (default: 12)")
+    _format_options(profile, ("tsv", "json", "jsonl"), default="tsv")
+    profile.set_defaults(handler=_protein_profile)
+    return parser
+
+
+def _format_options(parser: argparse.ArgumentParser, formats: tuple[str, ...],
+                    default: str) -> None:
+    group = parser.add_mutually_exclusive_group()
+    for fmt in formats:
+        group.add_argument(f"--{fmt}", dest="format", action="store_const", const=fmt,
+                           help=f"{fmt.upper()} output" + (" (default)" if fmt == default else ""))
+    parser.set_defaults(format=default)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

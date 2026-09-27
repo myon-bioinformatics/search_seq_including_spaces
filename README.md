@@ -17,6 +17,17 @@
 
 
 
+## Protein sequence tools (in development)
+Standard library only (Python 3.11+). Values are sequence-derived hints, not structure.
+
+```sh
+python sequence_tool.py fasta validate in.fasta
+python sequence_tool.py protein features in.fasta            # JSON (protein-hints/1)
+python sequence_tool.py protein profile in.fasta --window 9  # per-residue TSV (or --json / --jsonl)
+```
+
+Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error.
+
 ## SEARCH_SEQUENCE_IMAGE
 ![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
 

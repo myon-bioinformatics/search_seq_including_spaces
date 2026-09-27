@@ -1,0 +1,203 @@
+{
+  "features": [
+    {
+      "assumption": "",
+      "evidence_class": "sequence-derived",
+      "method": "count of residues (stop markers excluded)",
+      "name": "length",
+      "value": 129
+    },
+    {
+      "assumption": "every canonical, rare-but-defined and ambiguous symbol is listed",
+      "evidence_class": "sequence-derived",
+      "method": "count of each symbol",
+      "name": "composition",
+      "value": {
+        "A": 12,
+        "B": 0,
+        "C": 8,
+        "D": 7,
+        "E": 2,
+        "F": 3,
+        "G": 12,
+        "H": 1,
+        "I": 6,
+        "J": 0,
+        "K": 6,
+        "L": 8,
+        "M": 2,
+        "N": 14,
+        "O": 0,
+        "P": 2,
+        "Q": 3,
+        "R": 11,
+        "S": 10,
+        "T": 7,
+        "U": 0,
+        "V": 6,
+        "W": 6,
+        "X": 0,
+        "Y": 3,
+        "Z": 0
+      }
+    },
+    {
+      "assumption": "ambiguous residues are left out of numerator and denominator",
+      "evidence_class": "sequence-derived",
+      "method": "(F + W + Y) / residues",
+      "name": "fraction_aromatic",
+      "value": 0.093
+    },
+    {
+      "assumption": "ambiguous residues are left out of numerator and denominator",
+      "evidence_class": "sequence-derived",
+      "method": "(C + M) / residues",
+      "name": "fraction_sulfur",
+      "value": 0.0775
+    },
+    {
+      "assumption": "ambiguous residues are left out of numerator and denominator",
+      "evidence_class": "sequence-derived",
+      "method": "(P + G) / residues",
+      "name": "fraction_pro_gly",
+      "value": 0.1085
+    },
+    {
+      "assumption": "unmodified residues; no disulfides",
+      "evidence_class": "sequence-derived",
+      "method": "sum of average residue masses + one water (Expasy average masses)",
+      "name": "molecular_weight_avg",
+      "unit": "Da",
+      "value": 14313.1393
+    },
+    {
+      "assumption": "D,E = -1; K,R = +1; H and termini = 0 (about pH 7); ambiguous residues add the [min, max] of their candidates (value is null when the range is wider than one number); U and O are not modeled and not counted",
+      "evidence_class": "sequence-derived",
+      "method": "simplified",
+      "name": "net_charge_simplified",
+      "range": [
+        8,
+        8
+      ],
+      "unmodeled_positions": [],
+      "value": 8
+    },
+    {
+      "assumption": "ambiguous residues are not included",
+      "evidence_class": "sequence-derived",
+      "method": "input positions of C",
+      "name": "cys_positions",
+      "value": [
+        6,
+        30,
+        64,
+        76,
+        80,
+        94,
+        115,
+        127
+      ]
+    },
+    {
+      "assumption": "ambiguous residues are not included",
+      "evidence_class": "sequence-derived",
+      "method": "input positions of P",
+      "name": "pro_positions",
+      "value": [
+        70,
+        79
+      ]
+    },
+    {
+      "assumption": "ambiguous residues are not included",
+      "evidence_class": "sequence-derived",
+      "method": "input positions of G",
+      "name": "gly_positions",
+      "value": [
+        4,
+        16,
+        22,
+        26,
+        49,
+        54,
+        67,
+        71,
+        102,
+        104,
+        117,
+        126
+      ]
+    },
+    {
+      "assumption": "ambiguous residues are not included",
+      "evidence_class": "sequence-derived",
+      "method": "input positions of F, W, Y",
+      "name": "aromatic_positions",
+      "value": [
+        3,
+        20,
+        23,
+        28,
+        34,
+        38,
+        53,
+        62,
+        63,
+        108,
+        111,
+        123
+      ]
+    }
+  ],
+  "field_classes": {
+    "aromatic_positions": "sequence-derived",
+    "composition": "sequence-derived",
+    "cys_positions": "sequence-derived",
+    "fraction_aromatic": "sequence-derived",
+    "fraction_pro_gly": "sequence-derived",
+    "fraction_sulfur": "sequence-derived",
+    "gly_positions": "sequence-derived",
+    "length": "sequence-derived",
+    "molecular_weight_avg": "sequence-derived",
+    "net_charge_simplified": "sequence-derived",
+    "pro_positions": "sequence-derived"
+  },
+  "limitations": [
+    "simplified charge ignores His, the termini and pH; it is not a pKa-based charge",
+    "hydropathy is a residue-scale average; it does not show burial or surface exposure",
+    "values describe the sequence only; they are not structure, interaction or function"
+  ],
+  "provenance": {
+    "extras": {},
+    "params": {
+      "ambiguity": "exclude",
+      "charge_model": "simplified",
+      "pH": null
+    },
+    "python": "<python>",
+    "table_version": "aa-props/1",
+    "tool_version": "0.1.0"
+  },
+  "record": {
+    "ambiguity": {
+      "ambiguity_policy": "exclude",
+      "ambiguous_count": 0,
+      "excluded_positions": []
+    },
+    "header": "sp|P00698|LYSC_CHICK Lysozyme C, mature chain (precursor residues 19-147)",
+    "id": "sp|P00698|LYSC_CHICK",
+    "length": 129,
+    "modifications": {
+      "stripped_gaps": 0,
+      "stripped_terminal_stop": false
+    },
+    "residue_classes": {
+      "ambiguous": 0,
+      "canonical": 129,
+      "rare-but-defined": 0,
+      "stop": 0
+    },
+    "sequence_sha256": "eaf1f8d7f5bf78bbefe1100d912a09893361c57dda057f634adb5c5af6dfe79c"
+  },
+  "schema": "protein-hints/1"
+}
