@@ -21,6 +21,8 @@ class TestSlidingIdentity(unittest.TestCase):
             [w["divergence_percent"] for w in doc["windows"]],
             [25.0, 50.0, 25.0],
         )
+        self.assertEqual(len(doc["provenance"]["sequence_a_sha256"]), 64)
+        self.assertEqual(len(doc["provenance"]["sequence_b_sha256"]), 64)
 
     def test_coverage_respects_excluded_ambiguity(self):
         doc = sliding_identity(
