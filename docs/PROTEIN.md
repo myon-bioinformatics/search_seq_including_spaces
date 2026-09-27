@@ -92,18 +92,22 @@ score is given.
 | `charge_transition` | net charge of 5 residues left and 5 right: opposite signs, difference >= 4 | tool default |
 | `hydropathy_peak` | mean KD, w=9 >= 1.5 | tool default (Kyte-Doolittle's 1.6 is for window 19, not reused) |
 | `hydropathy_gradient` | \|mean KD 5 right - 5 left\| >= 3.0 | tool default |
-| `cys_cluster` | Cys in w=9 >= 2 | tool default |
-| `aromatic_cluster` | F/W/Y in w=9 >= 3 | tool default |
-| `pro_gly_cluster` | P+G in w=9 >= 4 | tool default |
+| `cys_cluster` | literal known-residue Cys count in w=9 >= 2 | tool default |
+| `aromatic_cluster` | literal known-residue F/W/Y count in w=9 >= 3 | tool default |
+| `pro_gly_cluster` | literal known-residue P+G count in w=9 >= 4 | tool default |
 | `low_complexity` | entropy, w=12 <= 2.2 bits | SEG-like defaults (window 12, 2.2); not SEG itself |
+
+For the three count triggers, ambiguous residues are excluded and the known
+matching residues are counted literally; missing/ambiguous positions are not
+extrapolated to a full window.
 
 Triggered positions are joined across gaps of at most `--merge-gap` (2)
 residues, runs shorter than `--min-len` (5) are dropped, and a stop marker
 ends a run. Each region reports its triggers with residue counts, the rule
 and threshold source, the sequence context (6 residues each side), the
 simplified net charge inside it, `boundary_uncertainty` (half a window) and
-`edge_truncated` when it touches the part of the sequence that can be
-evaluated. Coverage above 50% adds a warning. Override thresholds with
+`edge_truncated` when a trigger that actually fired in that region touches
+that trigger's own evaluable sequence boundary. Coverage above 50% adds a warning. Override thresholds with
 `--threshold NAME=VALUE`; the provenance then marks them as `user`.
 
 `--ascii` prints tracks per block (`--width`, default 60, minimum 20; every
