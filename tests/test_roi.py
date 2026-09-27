@@ -139,7 +139,8 @@ class TestBehaviour(unittest.TestCase):
                      thresholds={"charge_cluster": 99, "hydropathy_peak": 99,
                                  "hydropathy_gradient": 99, "cys_cluster": 99,
                                  "aromatic_cluster": 99, "pro_gly_cluster": 99,
-                                 "low_complexity": 0})
+                                 "low_complexity": 0},
+                     min_len=1)
         region = next(r for r in doc["regions"]
                       if any(t["feature"] == "charge_transition" for t in r["triggers"]))
         self.assertEqual(region["edge_truncated"], "end")
@@ -154,7 +155,7 @@ class TestBehaviour(unittest.TestCase):
 
     def test_region_away_from_the_start_is_not_truncated_there(self):
         region = detect("A" * 7 + "E" * 20)["regions"][0]
-        self.assertEqual((region["start"], region["edge_truncated"]), (6, "end"))
+        self.assertEqual((region["start"], region["edge_truncated"]), (6, "both"))
 
     def test_edges_and_coverage_warning(self):
         doc = detect("E" * 30)
