@@ -169,7 +169,9 @@ class TestCompareS2(unittest.TestCase):
                 "compare", a, b, "--alphabet", "dna", "--gap-policy", "mismatch", "--ascii"
             )
         self.assertEqual((code, err), (0, ""))
-        self.assertIn("||^||", out.decode("utf-8"))
+        text = out.decode("utf-8")
+        self.assertIn("records: a=a b=b  alphabet=dna  gap=mismatch  ambiguity=exclude", text)
+        self.assertIn("||^||", text)
 
         code, out, err = run("compare", "-", "-", "--alphabet", "dna", stdin=b"ACGT\n")
         self.assertEqual((code, out), (2, b""))
