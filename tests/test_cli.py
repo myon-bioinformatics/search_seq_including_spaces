@@ -175,6 +175,24 @@ class TestCompareS2(unittest.TestCase):
         self.assertEqual((code, out), (2, b""))
         self.assertIn("cannot read both inputs from stdin", err)
 
+    def test_compare_rejects_incompatible_s2_options(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = pathlib.Path(tmp) / "a.fa"
+            b = pathlib.Path(tmp) / "b.fa"
+            a.write_text(">a\nACGT\n", encoding="utf-8")
+            b.write_text(">b\nACGT\n", encoding="utf-8")
+            cases = (
+                (("--ascii", "--window", "3"), "--ascii and --window"),
+                (("--ascii", "--step", "2"), "--step is only meaningful with --window"),
+                (("--width", "20"), "--width is only meaningful with --ascii"),
+                (("--step", "2"), "--step is only meaningful with --window"),
+            )
+            for extra, message in cases:
+                code, out, err = run("compare", a, b, "--alphabet", "dna", *extra)
+                self.assertEqual((code, out), (2, b""), extra)
+                self.assertIn(message, err)
+                self.assertNotIn("Traceback", err)
+
 
 class TestRoi(unittest.TestCase):
     def test_json_regions_and_threshold_override(self):
