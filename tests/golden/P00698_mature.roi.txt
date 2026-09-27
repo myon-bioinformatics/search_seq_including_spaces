@@ -1,0 +1,50 @@
+# ROI: heuristic, sequence-only; not a functional/binding site
+# method=simple-threshold/1 window=9 half=5 entropy_w=12 merge_gap=2
+#   min_len=5 ambiguity=exclude
+# thresholds=defaults (all values and sources in JSON provenance)
+# sp|P00698|LYSC_CHICK len=129 ROIs=2 coverage=10%
+# CHG9  + net >= +3   - net <= -3   . otherwise   ? n/a
+# HYD9  # >= 1.5   + 0 to 1.5   . < 0   ? n/a
+
+        1         11        21        31        41        51
+        |         |         |         |         |         |
+SEQ     KVFGRCELAAAMKRHGLDNYRGYSLGNWVCAAKFESNFNTQATNRNTDGSTDYGILQINS
+CHG9    ????........................................................
+HYD9    ????++++++...............+++++++++...................+......
+ROI
+
+        61        71        81        91        101       111
+        |         |         |         |         |         |
+SEQ     RWWCNDGRTPGSRNLCNIPCSALLSSDITASVNCAKKIVSDGNGMNAWVAWRNRCKGTDV
+CHG9    ...................................................+++......
+HYD9    .................+++++++++++++++.+++.+.......++.............
+ROI                   [====]                              [=====]
+                      ROI-01                              ROI-02
+
+        121
+        |
+SEQ     QAWIRGCRL
+CHG9    .....????
+HYD9    ..+..????
+ROI
+
+ROI-01  75-80  len=6  class=heuristic  mode=simple
+  context  ...TPGSRN[LCNIPC]SALLSS...
+  reason   cys_cluster  #########   5/6 residues
+           rule Cys in w=9 >= 2 (tool-default)
+           hydropathy_gradient  ##          1/6 residues
+           rule |mean KD 5 right - 5 left| >= 3.0 (tool-default)
+  detail   net charge 0 (simplified): D/E=0, K/R=0
+  edges    +/-4 (window 9)
+
+ROI-02  111-117  len=7  class=heuristic  mode=simple
+  context  ...MNAWVA[WRNRCKG]TDVQAW...
+  reason   charge_cluster  #####       3/7 residues
+           rule |net charge, w=9| >= 3 (tool-default)
+           hydropathy_gradient  ###         2/7 residues
+           rule |mean KD 5 right - 5 left| >= 3.0 (tool-default)
+           charge_transition  ##          1/7 residues
+           rule net charge of 5 left vs 5 right: opposite signs,
+           difference >= 4 (tool-default)
+  detail   net charge +3 (simplified): D/E=0, K/R=3
+  edges    +/-4 (window 9)

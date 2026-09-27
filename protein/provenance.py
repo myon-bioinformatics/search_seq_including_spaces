@@ -41,6 +41,9 @@ FIELD_CLASSES = MappingProxyType({
     "hydropathy_window": "sequence-derived",
     "charge_window": "sequence-derived",
     "entropy_window": "sequence-derived",
+    # Regions of interest (regions_of_interest).
+    "regions": "heuristic",
+    "summary": "heuristic",
 })
 
 # Per-residue keys that locate or label a residue rather than describe it.

@@ -1,0 +1,67 @@
+# ROI: heuristic, sequence-only; not a functional/binding site
+# method=simple-threshold/1 window=9 half=5 entropy_w=12 merge_gap=2
+#   min_len=5 ambiguity=exclude
+# thresholds=defaults (all values and sources in JSON provenance)
+# sp|P37840|SYUA_HUMAN len=140 ROIs=4 coverage=40%
+# CHG9  + net >= +3   - net <= -3   . otherwise   ? n/a
+# HYD9  # >= 1.5   + 0 to 1.5   . < 0   ? n/a
+
+        1         11        21        31        41        51
+        |         |         |         |         |         |
+SEQ     MDVFMKGLSKAKEGVVAAAEKTKQGVAEAAGKTKEGVLYVGSKTKEGVVHGVATVAEKTK
+CHG9    ????...+....................................................
+HYD9    ????+++....+.++++++.........+.......+++++......+++##+++.....
+ROI                  [=====]                          [====]
+                     ROI-01                           ROI-02
+
+        61        71        81        91        101       111
+        |         |         |         |         |         |
+SEQ     EQVTNVGGAVVTGVTAVAQKTVEGAGSIAAATGFVKKDQLGKNEEGAPQEGILEDMPVDP
+CHG9    ..............................................--..----------
+HYD9    .....+#++#+###++++.++..+++++++#++....................+++....
+ROI      [===========]                                [=============
+         ROI-03                                       ROI-04 ->
+
+        121       131
+        |         |
+SEQ     DNEAYEMPSEEGYQDYEPEA
+CHG9    ----------------????
+HYD9    ................????
+ROI     ===============]
+        <- ROI-04
+
+ROI-01  14-20  len=7  class=heuristic  mode=simple
+  context  ...LSKAKE[GVVAAAE]KTKQGV...
+  reason   hydropathy_gradient  ########    5/7 residues
+           rule |mean KD 5 right - 5 left| >= 3.0 (tool-default)
+           low_complexity  ##          1/7 residues
+           rule entropy, w=12 <= 2.2 bits (seg-like-default)
+  detail   net charge -1 (simplified): D/E=1, K/R=0
+  edges    +/-4 (window 9)
+
+ROI-02  47-52  len=6  class=heuristic  mode=simple
+  context  ...GSKTKE[GVVHGV]ATVAEK...
+  reason   hydropathy_peak  ####        2/6 residues
+           rule mean KD, w=9 >= 1.5 (tool-default)
+           hydropathy_gradient  ####        2/6 residues
+           rule |mean KD 5 right - 5 left| >= 3.0 (tool-default)
+  detail   net charge 0 (simplified): D/E=0, K/R=0
+  edges    +/-4 (window 9)
+
+ROI-03  62-74  len=13  class=heuristic  mode=simple
+  context  ...AEKTKE[QVTNVGGAVVTGV]TAVAQK...
+  reason   low_complexity  #####       6/13 residues
+           rule entropy, w=12 <= 2.2 bits (seg-like-default)
+           hydropathy_peak  ####        5/13 residues
+           rule mean KD, w=9 >= 1.5 (tool-default)
+           hydropathy_gradient  ###         3/13 residues
+           rule |mean KD 5 right - 5 left| >= 3.0 (tool-default)
+  detail   net charge 0 (simplified): D/E=0, K/R=0
+  edges    +/-4 (window 9)
+
+ROI-04  107-136  len=30  class=heuristic  mode=simple
+  context  ...GKNEEG[APQEGILEDMPVDPDNEAYEMPSEEGYQDY]EPEA
+  reason   charge_cluster  ##########  28/30 residues
+           rule |net charge, w=9| >= 3 (tool-default)
+  detail   net charge -10 (simplified): D/E=10, K/R=0
+  edges    +/-4 (window 9); right edge truncated at 136

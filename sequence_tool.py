@@ -5,6 +5,9 @@
     python sequence_tool.py protein features FILE [--ambiguity POLICY] [--json | --jsonl]
     python sequence_tool.py protein profile FILE [--window 9] [--entropy-window 12]
                                             [--ambiguity POLICY] [--tsv | --json | --jsonl]
+    python sequence_tool.py protein roi FILE [--window 9] [--merge-gap 2] [--min-len 5]
+                                        [--threshold NAME=VALUE ...] [--json | --jsonl | --ascii]
+                                        [--width 60]
 
 FILE may be "-" for standard input. Each subcommand only parses arguments,
 calls one function of the protein package and writes the result; the
@@ -18,10 +21,13 @@ bytes. --json writes one document and needs exactly one FASTA record;
 
 import argparse
 import json
+import math
 import sys
 
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
+from protein.render import MIN_WIDTH, render_ascii
+from protein.roi import DEFAULT_THRESHOLDS, regions_of_interest
 
 EXIT_OK = 0
 EXIT_INPUT_ERROR = 2
@@ -99,6 +105,19 @@ def _protein_profile(args) -> tuple[str, int]:
     return "\n".join(lines) + "\n", EXIT_OK
 
 
+def _protein_roi(args) -> tuple[str, int]:
+    results = [
+        regions_of_interest(
+            protein_profiles(p, window=args.window, entropy_window=args.entropy_window,
+                             ambiguity=args.ambiguity),
+            thresholds=dict(args.threshold), merge_gap=args.merge_gap, min_len=args.min_len)
+        for p in _prepared(args)
+    ]
+    if args.format == "ascii":
+        return "\n".join(render_ascii(r, width=args.width) for r in results), EXIT_OK
+    return _write_documents(results, args.format), EXIT_OK
+
+
 # ---------------------------------------------------------------- helpers
 
 def _read_records(path: str) -> list[tuple[str, str]]:
@@ -153,14 +172,33 @@ def _odd_positive_int(text: str) -> int:
     return value
 
 
-def _positive_int(text: str) -> int:
+def _int_at_least(lowest: int):
+    def parse(text: str) -> int:
+        try:
+            value = int(text)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"not an integer: {text!r}") from None
+        if value < lowest:
+            raise argparse.ArgumentTypeError(f"must be an integer >= {lowest}: {value}")
+        return value
+    return parse
+
+
+def _threshold(text: str) -> tuple[str, int | float]:
+    name, sep, raw = text.partition("=")
+    if not sep or name not in DEFAULT_THRESHOLDS:
+        raise argparse.ArgumentTypeError(
+            f"expected NAME=VALUE with NAME one of {', '.join(DEFAULT_THRESHOLDS)}: {text!r}")
     try:
-        value = int(text)
+        value = int(raw)
     except ValueError:
-        raise argparse.ArgumentTypeError(f"not an integer: {text!r}") from None
-    if value < 1:
-        raise argparse.ArgumentTypeError(f"must be a positive integer: {value}")
-    return value
+        try:
+            value = float(raw)
+        except ValueError:
+            raise argparse.ArgumentTypeError(f"not a number: {raw!r}") from None
+    if not math.isfinite(value):
+        raise argparse.ArgumentTypeError(f"not a finite number: {raw!r}")
+    return name, value
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -193,14 +231,31 @@ def _build_parser() -> argparse.ArgumentParser:
     _format_options(features, ("json", "jsonl"), default="json")
     features.set_defaults(handler=_protein_features)
 
-    profile = protein_commands.add_parser("profile", parents=[analysis_options],
+    window_options = argparse.ArgumentParser(add_help=False, parents=[analysis_options])
+    window_options.add_argument("--window", type=_odd_positive_int, default=9,
+                                help="hydropathy and charge window, odd (default: 9)")
+    window_options.add_argument("--entropy-window", type=_int_at_least(1), default=12,
+                                help="entropy window (default: 12)")
+
+    profile = protein_commands.add_parser("profile", parents=[window_options],
                                           help="per-residue window profiles")
-    profile.add_argument("--window", type=_odd_positive_int, default=9,
-                         help="hydropathy and charge window, odd (default: 9)")
-    profile.add_argument("--entropy-window", type=_positive_int, default=12,
-                         help="entropy window (default: 12)")
     _format_options(profile, ("tsv", "json", "jsonl"), default="tsv")
     profile.set_defaults(handler=_protein_profile)
+
+    roi = protein_commands.add_parser(
+        "roi", parents=[window_options],
+        help="regions of interest (heuristic; not functional or binding sites)")
+    roi.add_argument("--merge-gap", type=_int_at_least(0), default=2,
+                     help="join regions separated by at most this many residues (default: 2)")
+    roi.add_argument("--min-len", type=_int_at_least(1), default=5,
+                     help="drop regions shorter than this (default: 5)")
+    roi.add_argument("--threshold", type=_threshold, action="append", default=[],
+                     metavar="NAME=VALUE",
+                     help="override a trigger threshold, e.g. charge_cluster=4 (repeatable)")
+    roi.add_argument("--width", type=_int_at_least(MIN_WIDTH), default=60,
+                     help=f"residues per line for --ascii (default: 60, minimum {MIN_WIDTH})")
+    _format_options(roi, ("json", "jsonl", "ascii"), default="json")
+    roi.set_defaults(handler=_protein_roi)
     return parser
 
 

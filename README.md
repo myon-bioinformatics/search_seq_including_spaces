@@ -24,9 +24,10 @@ Standard library only (Python 3.11+). Values are sequence-derived hints, not str
 python sequence_tool.py fasta validate in.fasta
 python sequence_tool.py protein features in.fasta            # JSON (protein-hints/1)
 python sequence_tool.py protein profile in.fasta --window 9  # per-residue TSV (or --json / --jsonl)
+python sequence_tool.py protein roi in.fasta --ascii         # regions of interest (heuristic)
 ```
 
-Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error.
+Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error. Details, thresholds and limitations: [docs/PROTEIN.md](docs/PROTEIN.md).
 
 ## SEARCH_SEQUENCE_IMAGE
 ![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
