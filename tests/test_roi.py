@@ -117,6 +117,23 @@ class TestBehaviour(unittest.TestCase):
         middle = 25  # centre of the X run
         self.assertFalse(any(r["start"] <= middle <= r["end"] for r in doc["regions"]))
 
+    def test_count_triggers_use_literal_known_residue_counts(self):
+        # Two real aromatics with three excluded X residues must not be
+        # extrapolated to an apparent count of three in a 9-residue window.
+        doc = detect("A" * 20 + "AFXXXWAAA" + "A" * 20)
+        features = {t["feature"] for r in doc["regions"] for t in r["triggers"]}
+        self.assertNotIn("aromatic_cluster", features)
+
+    def test_low_complexity_only_region_marks_start_truncation(self):
+        doc = detect("Q" * 20 + "ACDEFGHIKLMNPQRSTVWY",
+                     thresholds={"charge_cluster": 99, "charge_transition": 99,
+                                 "hydropathy_peak": 99, "hydropathy_gradient": 99,
+                                 "cys_cluster": 99, "aromatic_cluster": 99,
+                                 "pro_gly_cluster": 99})
+        region = doc["regions"][0]
+        self.assertEqual(region["triggers"][0]["feature"], "low_complexity")
+        self.assertIn(region["edge_truncated"], ("start", "both"))
+
     def test_charge_transition_needs_opposite_signs(self):
         def features(seq):
             return {t["feature"] for r in detect(seq)["regions"] for t in r["triggers"]}
@@ -202,6 +219,8 @@ class TestArguments(unittest.TestCase):
                        {"thresholds": {"charge_cluster": "3"}},
                        {"thresholds": {"charge_cluster": float("nan")}},
                        {"thresholds": {"charge_cluster": True}},
+                       {"thresholds": {"charge_cluster": -1}},
+                       {"thresholds": {"low_complexity": -0.1}},
                        {"merge_gap": -1}, {"min_len": 0}, {"min_len": True},
                        {"half_window": 0}):
             with self.assertRaises(ValueError, msg=kwargs):
