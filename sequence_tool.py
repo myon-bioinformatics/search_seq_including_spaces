@@ -72,11 +72,18 @@ def _compare(args) -> tuple[str, int]:
     header_a, raw_a = _one_raw_record(args.file_a)
     header_b, raw_b = _one_raw_record(args.file_b)
     if args.ascii:
-        return render_ascii_diff(
+        body = render_ascii_diff(
             raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
             ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end,
             width=args.width
-        ), EXIT_OK
+        )
+        record_a = header_a.split()[0] if header_a.split() else ""
+        record_b = header_b.split()[0] if header_b.split() else ""
+        context = (
+            f"records: a={record_a} b={record_b}  alphabet={args.alphabet}  "
+            f"gap={args.gap_policy}  ambiguity={args.ambiguity_policy}\n"
+        )
+        return context + body, EXIT_OK
     if args.window is not None:
         doc = sliding_identity(
             raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
