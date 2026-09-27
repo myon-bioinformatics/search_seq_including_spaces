@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Command-line entry point for the sequence tools (stdlib only).
 
+    python sequence_tool.py compare FILE_A FILE_B --alphabet {dna,rna,protein} [--json]
     python sequence_tool.py fasta validate FILE [--strip-gaps] [--allow-internal-stop] [--json]
     python sequence_tool.py protein features FILE [--ambiguity POLICY] [--json | --jsonl]
     python sequence_tool.py protein profile FILE [--window 9] [--entropy-window 12]
@@ -24,6 +25,8 @@ import json
 import math
 import sys
 
+from comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
+                        GAP_POLICIES, ComparisonError, compare_aligned)
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
 from protein.render import MIN_WIDTH, render_ascii
@@ -44,7 +47,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         output, status = args.handler(args)
-    except (InputError, SequenceError) as error:
+    except (InputError, SequenceError, ComparisonError) as error:
         print(f"{parser.prog}: error: {error}", file=sys.stderr)
         return EXIT_INPUT_ERROR
     sys.stdout.buffer.write(output.encode("utf-8"))
@@ -53,6 +56,20 @@ def main(argv: list[str] | None = None) -> int:
 
 
 # ---------------------------------------------------------------- subcommands
+
+def _compare(args) -> tuple[str, int]:
+    header_a, raw_a = _one_raw_record(args.file_a)
+    header_b, raw_b = _one_raw_record(args.file_b)
+    doc = compare_aligned(
+        raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
+        ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end
+    )
+    doc["records"] = {
+        "a": {"id": header_a.split()[0] if header_a.split() else ""},
+        "b": {"id": header_b.split()[0] if header_b.split() else ""},
+    }
+    return _dump(doc, indent=2) + "\n", EXIT_OK
+
 
 def _fasta_validate(args) -> tuple[str, int]:
     """Report every record; exit 2 if any is invalid (errors go to stderr)."""
@@ -137,6 +154,13 @@ def _read_records(path: str) -> list[tuple[str, str]]:
     return records
 
 
+def _one_raw_record(path: str) -> tuple[str, str]:
+    records = _read_records(path)
+    if len(records) != 1:
+        raise InputError(f"compare expects exactly one record in {path}; found {len(records)}")
+    return records[0]
+
+
 def _prepared(args) -> list:
     return [prepare(header, raw, strip_gaps=args.strip_gaps,
                     allow_internal_stop=args.allow_internal_stop)
@@ -204,7 +228,27 @@ def _threshold(text: str) -> tuple[str, int | float]:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sequence_tool.py",
                                      description="Sequence tools (stdlib only).")
-    groups = parser.add_subparsers(dest="group", required=True, metavar="{fasta,protein}")
+    groups = parser.add_subparsers(dest="group", required=True,
+                                   metavar="{compare,fasta,protein}")
+
+    compare = groups.add_parser(
+        "compare", help="aligned pairwise identity/coverage (does not align sequences)")
+    compare.add_argument("file_a", help='first aligned FASTA/plain sequence, or "-"')
+    compare.add_argument("file_b", help="second aligned FASTA/plain sequence")
+    compare.add_argument("--alphabet", choices=ALPHABETS, required=True,
+                         help="sequence alphabet; no auto-detection")
+    compare.add_argument("--gap-policy", choices=GAP_POLICIES, default="exclude",
+                         help="exclude any gap column or count one-sided gaps as mismatch")
+    compare.add_argument("--ambiguity-policy", choices=COMPARE_AMBIGUITY_POLICIES,
+                         default="exclude",
+                         help="exclude, literal strict, or compatible candidate-set handling")
+    compare.add_argument("--start", type=_int_at_least(1), default=1,
+                         help="1-based inclusive aligned start (default: 1)")
+    compare.add_argument("--end", type=_int_at_least(1),
+                         help="1-based inclusive aligned end (default: final column)")
+    compare.add_argument("--json", action="store_true",
+                         help="JSON output (currently the only output format)")
+    compare.set_defaults(handler=_compare)
 
     input_options = argparse.ArgumentParser(add_help=False)
     input_options.add_argument("file", help='FASTA file, or "-" for standard input')
