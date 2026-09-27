@@ -7,6 +7,8 @@ same gap/ambiguity policies as compare_aligned().
 
 from __future__ import annotations
 
+import hashlib
+
 from comparison import (
     ALPHABETS,
     AMBIGUITY_POLICIES,
@@ -124,6 +126,8 @@ def sliding_identity(
         "provenance": {
             "gap_policy": gap_policy,
             "ambiguity_policy": ambiguity_policy,
+            "sequence_a_sha256": hashlib.sha256(a.encode("ascii")).hexdigest(),
+            "sequence_b_sha256": hashlib.sha256(b.encode("ascii")).hexdigest(),
         },
     }
 
