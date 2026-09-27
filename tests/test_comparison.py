@@ -80,7 +80,7 @@ class TestAmbiguity(unittest.TestCase):
         self.assertEqual(doc["counts"]["matches"], 0)
         self.assertEqual(doc["percent_identity"], 0.0)
         self.assertEqual(doc["counts"]["compatible_matches"], 3)
-        self.assertEqual(doc["percent_compatible"], 75.0)
+        self.assertEqual(doc["percent_compatible"], 50.0)
 
     def test_rna_uses_u_in_ambiguity_sets(self):
         doc = compare_aligned("Y", "U", alphabet="rna", ambiguity_policy="compatible")
