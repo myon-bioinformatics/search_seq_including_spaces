@@ -99,9 +99,8 @@ def regions_of_interest(profiles: dict, *, thresholds: dict | None = None,
     mask = [any(values[i] for values in hits.values()) for i in range(len(rows))]
     runs = _runs(mask, stops, merge_gap, min_len)
 
-    first, last = _evaluable_range(len(rows), sizes)
     digits = max(2, len(str(len(runs))))
-    regions = [_region(f"ROI-{k:0{digits}d}", start, end, rows, hits, active, sizes, first, last)
+    regions = [_region(f"ROI-{k:0{digits}d}", start, end, rows, hits, active, sizes)
                for k, (start, end) in enumerate(runs, start=1)]
 
     residue_count = len(rows) - sum(stops)
@@ -170,7 +169,9 @@ def _trigger_masks(rows: list[dict], active: dict, sizes: dict) -> dict[str, lis
                 return half * abs(a * d - c * b), b * d
             return abs(c * b - a * d), b * d
         ratio = counts[name].ratio(i - r, i + r + 1)
-        return None if ratio is None else (ratio[0] * window, ratio[1])
+        # Count triggers compare the literal number of matching known residues.
+        # Ambiguous residues remain excluded; do not extrapolate their missing count.
+        return None if ratio is None else (ratio[0], counts[name].denominator)
 
     masks = {}
     for name, t in active.items():
@@ -246,7 +247,7 @@ def _runs(mask: list[bool], breaks: list[bool], merge_gap: int,
 # ---------------------------------------------------------------- regions
 
 def _region(region_id: str, start: int, end: int, rows: list[dict], hits: dict,
-            active: dict, sizes: dict, first: int, last: int) -> dict:
+            active: dict, sizes: dict) -> dict:
     triggers = []
     for order, (name, mask) in enumerate(hits.items()):
         count = sum(mask[start:end + 1])
@@ -264,7 +265,14 @@ def _region(region_id: str, start: int, end: int, rows: list[dict], hits: dict,
     inside = rows[start:end + 1]
     negative = sum(row["charge"] == -1 for row in inside)
     positive = sum(row["charge"] == 1 for row in inside)
-    at_start, at_end = start <= first, end >= last
+    at_start = at_end = False
+    for name, mask in hits.items():
+        positions = [i for i in range(start, end + 1) if mask[i]]
+        if not positions:
+            continue
+        first, last = _evaluable_range(name, len(rows), sizes)
+        at_start = at_start or positions[0] <= first
+        at_end = at_end or positions[-1] >= last
     return {
         "region_id": region_id,
         "start": start + 1,
@@ -290,12 +298,17 @@ def _region(region_id: str, start: int, end: int, rows: list[dict], hits: dict,
     }
 
 
-def _evaluable_range(n: int, sizes: dict) -> tuple[int, int]:
-    """0-based first and last positions where any trigger can be evaluated."""
+def _evaluable_range(name: str, n: int, sizes: dict) -> tuple[int, int]:
+    """0-based first/last positions where one trigger can be evaluated."""
     window, half, ew = sizes["window"], sizes["half_window"], sizes["entropy_window"]
-    first = min(window // 2, half, ew // 2)
-    last = max(n - 1 - window // 2, n - 1 - half, n - ew + ew // 2)
-    return first, last
+    if name in ("charge_transition", "hydropathy_gradient"):
+        left = right = half
+    elif name == "low_complexity":
+        left = ew // 2
+        right = ew - ew // 2 - 1
+    else:
+        left = right = window // 2
+    return left, n - 1 - right
 
 
 # ---------------------------------------------------------------- checks
@@ -322,6 +335,8 @@ def _thresholds(overrides: dict) -> dict[str, Threshold]:
         if isinstance(value, bool) or not isinstance(value, (int, float)) \
                 or not math.isfinite(value):
             raise ValueError(f"threshold for {name} must be a finite number, got {value!r}")
+        if value < 0:
+            raise ValueError(f"threshold for {name} must be >= 0, got {value!r}")
         active[name] = Threshold(value, default.op, "user", default.rule)
     return active
 
