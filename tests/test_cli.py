@@ -99,6 +99,49 @@ class TestFormats(unittest.TestCase):
         self.assertIn(b"sp|P37840|SYUA_HUMAN\t140\t140\t0\t0\t0\tfalse\t0", out)
 
 
+class TestCompare(unittest.TestCase):
+    def test_aligned_identity_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = pathlib.Path(tmp) / "a.fa"
+            b = pathlib.Path(tmp) / "b.fa"
+            a.write_text(">a\nACGTACGT\n", encoding="utf-8")
+            b.write_text(">b\nACGTTCGT\n", encoding="utf-8")
+            code, out, err = run("compare", a, b, "--alphabet", "dna")
+        self.assertEqual((code, err), (0, ""))
+        doc = json.loads(out)
+        self.assertEqual(doc["percent_identity"], 87.5)
+        self.assertEqual(doc["coverage_percent"], 100.0)
+        self.assertEqual(doc["records"], {"a": {"id": "a"}, "b": {"id": "b"}})
+
+    def test_compare_region_and_gap_policy(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = pathlib.Path(tmp) / "a.fa"
+            b = pathlib.Path(tmp) / "b.fa"
+            a.write_text(">a\nAC-GTA\n", encoding="utf-8")
+            b.write_text(">b\nACTGCA\n", encoding="utf-8")
+            code, out, _ = run("compare", a, b, "--alphabet", "dna",
+                               "--gap-policy", "mismatch", "--start", "2", "--end", "5")
+        self.assertEqual(code, 0)
+        doc = json.loads(out)
+        self.assertEqual(doc["region"], {"start": 2, "end": 5, "columns": 4})
+        self.assertEqual(doc["counts"]["gap_mismatches"], 1)
+        self.assertEqual(doc["counts"]["compared_positions"], 4)
+
+    def test_compare_rejects_multiple_records_and_unequal_alignment(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = pathlib.Path(tmp) / "a.fa"
+            b = pathlib.Path(tmp) / "b.fa"
+            a.write_text(">a\nACGT\n>a2\nACGT\n", encoding="utf-8")
+            b.write_text(">b\nACGT\n", encoding="utf-8")
+            code, out, err = run("compare", a, b, "--alphabet", "dna")
+            self.assertEqual((code, out), (2, b""))
+            self.assertIn("exactly one record", err)
+            a.write_text(">a\nACG\n", encoding="utf-8")
+            code, out, err = run("compare", a, b, "--alphabet", "dna")
+        self.assertEqual((code, out), (2, b""))
+        self.assertIn("equal length", err)
+
+
 class TestRoi(unittest.TestCase):
     def test_json_regions_and_threshold_override(self):
         code, out, _ = run("protein", "roi", FIXTURES / "P37840.fasta")
