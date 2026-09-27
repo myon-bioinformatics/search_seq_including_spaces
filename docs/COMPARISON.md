@@ -1,11 +1,12 @@
-# Sequence comparison S1
+# Sequence comparison
 
 S1 provides deterministic, stdlib-only comparison of **already aligned**
 DNA, RNA, or protein sequences.
 
 It does **not** align sequences and does not compute evolutionary similarity.
-Needleman-Wunsch / Smith-Waterman, BLOSUM/PAM, MSA, sliding-window identity,
-ASCII diff, and conservation/divergence ROI are deferred.
+Needleman-Wunsch / Smith-Waterman, BLOSUM/PAM, MSA, and
+conservation/divergence ROI remain deferred. S2 adds sliding-window identity,
+local divergence, and an ASCII diff for already-aligned inputs.
 
 ## CLI
 
@@ -108,13 +109,6 @@ It does not infer homology, evolutionary distance, functional equivalence,
 or structural similarity. A high identity over low coverage must not be
 presented as high whole-sequence similarity.
 
-## Next
-
-S2 may add sliding-window identity, local divergence, and ASCII diff.
-
-S3 may add conservation/divergence regions and bounded multi-record summaries.
-
-
 ## S2: sliding windows and ASCII diff
 
 S2 keeps S1's already-aligned contract and adds local views without changing
@@ -159,5 +153,9 @@ The marker line is evidence-oriented rather than a similarity score:
 The ASCII view does not perform alignment and does not imply homology,
 functional equivalence, or evolutionary similarity.
 
+## Next
+
 S3 remains reserved for conservation/divergence regions and bounded
-multi-record summaries.
+multi-record summaries. Dynamic alignment (Needleman-Wunsch /
+Smith-Waterman), substitution-matrix similarity (BLOSUM/PAM), and MSA remain
+outside S1/S2.
