@@ -130,13 +130,15 @@ def _label_rows(labels: list[tuple[int, str]], size: int) -> list[str]:
     rows: list[list[str]] = []
     ends: list[int] = []
     for col, text in labels:
+        if len(text) > size:
+            text = text[:max(0, size - 1)] + "~"
         col = max(0, min(col, size - len(text)))
         k = next((k for k, end in enumerate(ends) if col > end), None)
         if k is None:
             rows.append([" "] * size)
             ends.append(-1)
             k = len(rows) - 1
-        rows[k][col:col + len(text)] = text[:size]
+        rows[k][col:col + len(text)] = text
         ends[k] = col + len(text)
     return ["".join(row) for row in rows]
 
