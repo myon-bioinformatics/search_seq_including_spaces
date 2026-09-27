@@ -142,6 +142,40 @@ class TestCompare(unittest.TestCase):
         self.assertIn("equal length", err)
 
 
+class TestCompareS2(unittest.TestCase):
+    def test_compare_sliding_windows_json(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = pathlib.Path(tmp) / "a.fa"
+            b = pathlib.Path(tmp) / "b.fa"
+            a.write_text(">a\nAAAACCCC\n", encoding="utf-8")
+            b.write_text(">b\nAATACACC\n", encoding="utf-8")
+            code, out, err = run(
+                "compare", a, b, "--alphabet", "dna", "--window", "4", "--step", "2"
+            )
+        self.assertEqual((code, err), (0, ""))
+        doc = json.loads(out)
+        self.assertEqual(
+            [(w["start"], w["end"], w["percent_identity"]) for w in doc["windows"]],
+            [(1, 4, 75.0), (3, 6, 50.0), (5, 8, 75.0)],
+        )
+
+    def test_compare_ascii_and_double_stdin_guard(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            a = pathlib.Path(tmp) / "a.fa"
+            b = pathlib.Path(tmp) / "b.fa"
+            a.write_text(">a\nAC-GT\n", encoding="utf-8")
+            b.write_text(">b\nACTGT\n", encoding="utf-8")
+            code, out, err = run(
+                "compare", a, b, "--alphabet", "dna", "--gap-policy", "mismatch", "--ascii"
+            )
+        self.assertEqual((code, err), (0, ""))
+        self.assertIn("||^||", out.decode("utf-8"))
+
+        code, out, err = run("compare", "-", "-", "--alphabet", "dna", stdin="ACGT\n")
+        self.assertEqual((code, out), (2, b""))
+        self.assertIn("cannot read both inputs from stdin", err)
+
+
 class TestRoi(unittest.TestCase):
     def test_json_regions_and_threshold_override(self):
         code, out, _ = run("protein", "roi", FIXTURES / "P37840.fasta")
