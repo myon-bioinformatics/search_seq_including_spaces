@@ -144,6 +144,10 @@ class TestContent(unittest.TestCase):
                                 "   ROI-02      ",
                                 "      ROI-04 ->"])  # moved left to stay in the block
 
+    def test_truncated_region_label_is_marked(self):
+        from protein.render import _label_rows
+        self.assertEqual(_label_rows([(0, "<- ROI-04")], 7), ["<- ROI~"])
+
 
 class TestArguments(unittest.TestCase):
     def test_bad_width_and_charset(self):
