@@ -171,7 +171,7 @@ class TestCompareS2(unittest.TestCase):
         self.assertEqual((code, err), (0, ""))
         self.assertIn("||^||", out.decode("utf-8"))
 
-        code, out, err = run("compare", "-", "-", "--alphabet", "dna", stdin="ACGT\n")
+        code, out, err = run("compare", "-", "-", "--alphabet", "dna", stdin=b"ACGT\n")
         self.assertEqual((code, out), (2, b""))
         self.assertIn("cannot read both inputs from stdin", err)
 
