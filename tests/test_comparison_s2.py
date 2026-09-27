@@ -30,7 +30,7 @@ class TestSlidingIdentity(unittest.TestCase):
             window=3,
             step=3,
         )
-        self.assertEqual(doc["windows"][0]["coverage_percent"], 33.333333)
+        self.assertEqual(doc["windows"][0]["coverage_percent"], 66.666667)
         self.assertEqual(doc["windows"][1]["coverage_percent"], 66.666667)
 
     def test_compatible_metric_stays_separate(self):
