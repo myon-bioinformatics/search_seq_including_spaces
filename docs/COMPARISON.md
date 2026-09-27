@@ -112,7 +112,9 @@ presented as high whole-sequence similarity.
 ## S2: sliding windows and ASCII diff
 
 S2 keeps S1's already-aligned contract and adds local views without changing
-the S1 identity/coverage semantics.
+the S1 identity/coverage semantics. S1 and S2 use the same internal
+normalization, alphabet/policy validation, equal-length check, and aligned
+region validation, so the two modes cannot silently drift on input handling.
 
 ### Sliding-window identity
 
@@ -166,3 +168,10 @@ S3 remains reserved for conservation/divergence regions and bounded
 multi-record summaries. Dynamic alignment (Needleman-Wunsch /
 Smith-Waterman), substitution-matrix similarity (BLOSUM/PAM), and MSA remain
 outside S1/S2.
+
+## Implementation contract
+
+The comparison modules remain standard-library only. Shared aligned-input
+preparation lives in `comparison.py`; S2 reuses that contract rather than
+duplicating normalization or validation. S2-specific window aggregation and
+ASCII rendering stay isolated in `comparison_s2.py`.
