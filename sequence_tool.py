@@ -61,6 +61,14 @@ def main(argv: list[str] | None = None) -> int:
 def _compare(args) -> tuple[str, int]:
     if args.file_a == "-" and args.file_b == "-":
         raise InputError("compare cannot read both inputs from stdin")
+    if args.ascii and args.window is not None:
+        raise InputError("--ascii and --window cannot be used together")
+    if args.ascii and args.step != 1:
+        raise InputError("--step is only meaningful with --window")
+    if not args.ascii and args.width != 60:
+        raise InputError("--width is only meaningful with --ascii")
+    if args.window is None and args.step != 1:
+        raise InputError("--step is only meaningful with --window")
     header_a, raw_a = _one_raw_record(args.file_a)
     header_b, raw_b = _one_raw_record(args.file_b)
     if args.ascii:
