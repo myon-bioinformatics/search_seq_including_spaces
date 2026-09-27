@@ -8,6 +8,7 @@ is stored as `<python>` and substituted before the comparison.
 | --- | --- |
 | `<name>.features.json` | `python -S sequence_tool.py protein features tests/fixtures/<name>.fasta` |
 | `<name>.profile.tsv` | `python -S sequence_tool.py protein profile tests/fixtures/<name>.fasta` |
+| `<name>.roi.txt` | `python -S sequence_tool.py protein roi --ascii tests/fixtures/<name>.fasta` |
 
 Checked against independent values when the files were created (2026-09-27):
 
@@ -21,6 +22,11 @@ Checked against independent values when the files were created (2026-09-27):
 - `hydropathy_window`, `charge_window` and `entropy_window` agree at every
   position with the separate prototype used for the ROI threshold
   measurements (window 9, entropy window 12).
+
+- ROIs: lysozyme 75-80 and 111-117 (coverage 10%), alpha-synuclein 14-20,
+  47-52, 62-74 and 107-136 (coverage 40%), the [measured] defaults of the
+  design document. `tests/test_roi.py` also reproduces its whole
+  one-at-a-time sweep table.
 
 The outputs are identical on Python 3.11 to 3.14. Regenerate a file only
 when a change is meant to alter the output, and say why in the pull request.

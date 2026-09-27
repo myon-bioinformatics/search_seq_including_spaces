@@ -35,6 +35,13 @@ class TestGoldenOutputs(unittest.TestCase):
             self.assertEqual((code, err), (0, ""), name)
             self.assertEqual(out, (GOLDEN / f"{name}.profile.tsv").read_bytes(), name)
 
+    def test_roi_ascii_matches_golden(self):
+        # Completion check for PR A-C: the [measured] ROIs, reproduced byte for byte.
+        for name in FIXTURE_NAMES:
+            code, out, err = run("protein", "roi", "--ascii", FIXTURES / f"{name}.fasta")
+            self.assertEqual((code, err), (0, ""), name)
+            self.assertEqual(out, (GOLDEN / f"{name}.roi.txt").read_bytes(), name)
+
     def test_same_input_gives_same_bytes(self):
         for args in (("protein", "features"), ("protein", "profile", "--json")):
             first = run(*args, FIXTURES / "P37840.fasta")
@@ -90,6 +97,37 @@ class TestFormats(unittest.TestCase):
             code, out, _ = run("fasta", "validate", FIXTURES / "P37840.fasta", cwd=tmp)
         self.assertEqual(code, 0)
         self.assertIn(b"sp|P37840|SYUA_HUMAN\t140\t140\t0\t0\t0\tfalse\t0", out)
+
+
+class TestRoi(unittest.TestCase):
+    def test_json_regions_and_threshold_override(self):
+        code, out, _ = run("protein", "roi", FIXTURES / "P37840.fasta")
+        self.assertEqual(code, 0)
+        doc = json.loads(out)
+        self.assertEqual([(r["start"], r["end"]) for r in doc["regions"]],
+                         [(14, 20), (47, 52), (62, 74), (107, 136)])
+        code, out, _ = run("protein", "roi", "--threshold", "charge_cluster=4",
+                           "--threshold", "hydropathy_peak=1.8", "--merge-gap", "1",
+                           "--min-len", "4", FIXTURES / "P37840.fasta")
+        roi = json.loads(out)["provenance"]["roi"]
+        self.assertEqual((roi["thresholds"]["charge_cluster"], roi["thresholds"]["hydropathy_peak"],
+                          roi["merge_gap"], roi["min_len"]), (4, 1.8, 1, 4))
+
+    def test_ascii_for_several_records(self):
+        code, out, _ = run("protein", "roi", "--ascii", "--width", "20", "-",
+                           stdin=b">a\n" + b"E" * 30 + b"\n>b\nACDEFGHIKL\n")
+        self.assertEqual(code, 0)
+        text = out.decode("ascii")
+        self.assertEqual(text.count("# ROI: heuristic"), 2)
+        self.assertTrue(all(len(line) <= 28 for line in text.splitlines()))
+
+    def test_bad_roi_options(self):
+        for args in (("--threshold", "unknown=1"), ("--threshold", "charge_cluster"),
+                     ("--threshold", "charge_cluster=inf"), ("--width", "19"),
+                     ("--merge-gap", "-1"), ("--min-len", "0")):
+            code, out, err = run("protein", "roi", *args, FIXTURES / "P37840.fasta")
+            self.assertEqual((code, out), (2, b""), args)
+            self.assertNotIn("Traceback", err)
 
 
 class TestFastaValidate(unittest.TestCase):
