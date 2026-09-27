@@ -65,8 +65,8 @@ def compare_aligned(
     """Compare two pre-aligned sequences and return a JSON-friendly record.
 
     Whitespace is removed and ASCII letters are upper-cased. The aligned
-    lengths must then be equal. \`start\`/\`end\` use 1-based inclusive aligned
-    coordinates. \`end=None\` means the final aligned column.
+    lengths must then be equal. start/end use 1-based inclusive aligned
+    coordinates. end=None means the final aligned column.
     """
     if alphabet not in ALPHABETS:
         raise ComparisonError(f"alphabet must be one of {', '.join(ALPHABETS)}")
