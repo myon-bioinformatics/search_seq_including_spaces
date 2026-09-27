@@ -134,6 +134,16 @@ class TestBehaviour(unittest.TestCase):
         self.assertEqual(region["triggers"][0]["feature"], "low_complexity")
         self.assertIn(region["edge_truncated"], ("start", "both"))
 
+    def test_charge_transition_only_region_marks_end_truncation(self):
+        doc = detect("A" * 10 + "EEEEE" + "A" + "KKKKK",
+                     thresholds={"charge_cluster": 99, "hydropathy_peak": 99,
+                                 "hydropathy_gradient": 99, "cys_cluster": 99,
+                                 "aromatic_cluster": 99, "pro_gly_cluster": 99,
+                                 "low_complexity": 0})
+        region = next(r for r in doc["regions"]
+                      if any(t["feature"] == "charge_transition" for t in r["triggers"]))
+        self.assertEqual(region["edge_truncated"], "end")
+
     def test_charge_transition_needs_opposite_signs(self):
         def features(seq):
             return {t["feature"] for r in detect(seq)["regions"] for t in r["triggers"]}
