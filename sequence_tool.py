@@ -27,6 +27,7 @@ import sys
 
 from comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
                         GAP_POLICIES, ComparisonError, compare_aligned)
+from comparison_s2 import render_ascii_diff, sliding_identity
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
 from protein.render import MIN_WIDTH, render_ascii
@@ -58,12 +59,42 @@ def main(argv: list[str] | None = None) -> int:
 # ---------------------------------------------------------------- subcommands
 
 def _compare(args) -> tuple[str, int]:
+    if args.file_a == "-" and args.file_b == "-":
+        raise InputError("compare cannot read both inputs from stdin")
+    if args.ascii and args.window is not None:
+        raise InputError("--ascii and --window cannot be used together")
+    if args.ascii and args.step != 1:
+        raise InputError("--step is only meaningful with --window")
+    if not args.ascii and args.width != 60:
+        raise InputError("--width is only meaningful with --ascii")
+    if args.window is None and args.step != 1:
+        raise InputError("--step is only meaningful with --window")
     header_a, raw_a = _one_raw_record(args.file_a)
     header_b, raw_b = _one_raw_record(args.file_b)
-    doc = compare_aligned(
-        raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
-        ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end
-    )
+    if args.ascii:
+        body = render_ascii_diff(
+            raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
+            ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end,
+            width=args.width
+        )
+        record_a = header_a.split()[0] if header_a.split() else ""
+        record_b = header_b.split()[0] if header_b.split() else ""
+        context = (
+            f"records: a={record_a} b={record_b}  alphabet={args.alphabet}  "
+            f"gap={args.gap_policy}  ambiguity={args.ambiguity_policy}\n"
+        )
+        return context + body, EXIT_OK
+    if args.window is not None:
+        doc = sliding_identity(
+            raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
+            ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end,
+            window=args.window, step=args.step
+        )
+    else:
+        doc = compare_aligned(
+            raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
+            ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end
+        )
     doc["records"] = {
         "a": {"id": header_a.split()[0] if header_a.split() else ""},
         "b": {"id": header_b.split()[0] if header_b.split() else ""},
@@ -246,8 +277,16 @@ def _build_parser() -> argparse.ArgumentParser:
                          help="1-based inclusive aligned start (default: 1)")
     compare.add_argument("--end", type=_int_at_least(1),
                          help="1-based inclusive aligned end (default: final column)")
+    compare.add_argument("--window", type=_int_at_least(1),
+                         help="S2 sliding-window size; emits only complete windows")
+    compare.add_argument("--step", type=_int_at_least(1), default=1,
+                         help="S2 sliding-window step (default: 1)")
+    compare.add_argument("--ascii", action="store_true",
+                         help="render an aligned ASCII diff instead of JSON")
+    compare.add_argument("--width", type=_int_at_least(10), default=60,
+                         help="aligned columns per block for --ascii (default: 60)")
     compare.add_argument("--json", action="store_true",
-                         help="JSON output (currently the only output format)")
+                         help="JSON output (default unless --ascii)")
     compare.set_defaults(handler=_compare)
 
     input_options = argparse.ArgumentParser(add_help=False)

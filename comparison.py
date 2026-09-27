@@ -68,35 +68,15 @@ def compare_aligned(
     lengths must then be equal. start/end use 1-based inclusive aligned
     coordinates. end=None means the final aligned column.
     """
-    if alphabet not in ALPHABETS:
-        raise ComparisonError(f"alphabet must be one of {', '.join(ALPHABETS)}")
-    if gap_policy not in GAP_POLICIES:
-        raise ComparisonError(f"gap_policy must be one of {', '.join(GAP_POLICIES)}")
-    if ambiguity_policy not in AMBIGUITY_POLICIES:
-        raise ComparisonError(
-            f"ambiguity_policy must be one of {', '.join(AMBIGUITY_POLICIES)}"
-        )
-
-    a = _normalize(sequence_a)
-    b = _normalize(sequence_b)
-    if len(a) != len(b):
-        raise ComparisonError(
-            f"aligned sequences must have equal length ({len(a)} != {len(b)})"
-        )
-    if not a:
-        raise ComparisonError("aligned sequences must not be empty")
-
-    _validate(a, alphabet, "sequence_a")
-    _validate(b, alphabet, "sequence_b")
-
-    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
-        raise ComparisonError(f"start must be an integer >= 1, got {start!r}")
-    if end is None:
-        end = len(a)
-    if isinstance(end, bool) or not isinstance(end, int) or end < start or end > len(a):
-        raise ComparisonError(
-            f"end must be an integer in {start}..{len(a)}, got {end!r}"
-        )
+    a, b, end = _prepare_aligned(
+        sequence_a,
+        sequence_b,
+        alphabet=alphabet,
+        gap_policy=gap_policy,
+        ambiguity_policy=ambiguity_policy,
+        start=start,
+        end=end,
+    )
 
     canonical, ambiguous = _alphabet_tables(alphabet)
     matches = mismatches = compatible_matches = 0
@@ -178,6 +158,49 @@ def compare_aligned(
         },
     }
 
+
+
+def _prepare_aligned(
+    sequence_a: str,
+    sequence_b: str,
+    *,
+    alphabet: str,
+    gap_policy: str,
+    ambiguity_policy: str,
+    start: int,
+    end: int | None,
+) -> tuple[str, str, int]:
+    """Normalize and validate the shared S1/S2 aligned-input contract."""
+    if alphabet not in ALPHABETS:
+        raise ComparisonError(f"alphabet must be one of {', '.join(ALPHABETS)}")
+    if gap_policy not in GAP_POLICIES:
+        raise ComparisonError(f"gap_policy must be one of {', '.join(GAP_POLICIES)}")
+    if ambiguity_policy not in AMBIGUITY_POLICIES:
+        raise ComparisonError(
+            f"ambiguity_policy must be one of {', '.join(AMBIGUITY_POLICIES)}"
+        )
+
+    a = _normalize(sequence_a)
+    b = _normalize(sequence_b)
+    if len(a) != len(b):
+        raise ComparisonError(
+            f"aligned sequences must have equal length ({len(a)} != {len(b)})"
+        )
+    if not a:
+        raise ComparisonError("aligned sequences must not be empty")
+
+    _validate(a, alphabet, "sequence_a")
+    _validate(b, alphabet, "sequence_b")
+
+    if isinstance(start, bool) or not isinstance(start, int) or start < 1:
+        raise ComparisonError(f"start must be an integer >= 1, got {start!r}")
+    if end is None:
+        end = len(a)
+    if isinstance(end, bool) or not isinstance(end, int) or end < start or end > len(a):
+        raise ComparisonError(
+            f"end must be an integer in {start}..{len(a)}, got {end!r}"
+        )
+    return a, b, end
 
 def _normalize(sequence: str) -> str:
     symbols: list[str] = []

@@ -29,6 +29,22 @@ python sequence_tool.py protein roi in.fasta --ascii         # regions of intere
 
 Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error. Details, thresholds and limitations: [docs/PROTEIN.md](docs/PROTEIN.md).
 
+## Aligned sequence comparison
+
+The stdlib-only comparison tools accept already-aligned DNA, RNA, or protein
+pairs. They do not perform alignment or infer homology.
+
+```sh
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
+```
+
+S1 reports exact identity and comparison coverage. S2 adds sliding-window
+identity/local divergence and an ASCII aligned diff while preserving the same
+gap and ambiguity policies. Details and scientific boundaries:
+[docs/COMPARISON.md](docs/COMPARISON.md).
+
 ## SEARCH_SEQUENCE_IMAGE
 ![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
 

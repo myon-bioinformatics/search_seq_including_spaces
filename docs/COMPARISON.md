@@ -1,11 +1,12 @@
-# Sequence comparison S1
+# Sequence comparison
 
 S1 provides deterministic, stdlib-only comparison of **already aligned**
 DNA, RNA, or protein sequences.
 
 It does **not** align sequences and does not compute evolutionary similarity.
-Needleman-Wunsch / Smith-Waterman, BLOSUM/PAM, MSA, sliding-window identity,
-ASCII diff, and conservation/divergence ROI are deferred.
+Needleman-Wunsch / Smith-Waterman, BLOSUM/PAM, MSA, and
+conservation/divergence ROI remain deferred. S2 adds sliding-window identity,
+local divergence, and an ASCII diff for already-aligned inputs.
 
 ## CLI
 
@@ -108,8 +109,69 @@ It does not infer homology, evolutionary distance, functional equivalence,
 or structural similarity. A high identity over low coverage must not be
 presented as high whole-sequence similarity.
 
+## S2: sliding windows and ASCII diff
+
+S2 keeps S1's already-aligned contract and adds local views without changing
+the S1 identity/coverage semantics. S1 and S2 use the same internal
+normalization, alphabet/policy validation, equal-length check, and aligned
+region validation, so the two modes cannot silently drift on input handling.
+
+### Sliding-window identity
+
+```bash
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
+```
+
+Only complete windows are emitted. Coordinates remain 1-based inclusive
+aligned columns. Each window reports the same match/mismatch/gap/ambiguity
+counts as S1, plus:
+
+- `percent_identity`
+- `divergence_percent = 100 - percent_identity`
+- `coverage_percent`
+- `percent_compatible` when `--ambiguity-policy compatible` is requested
+
+If a window has zero comparable positions, both identity and divergence are
+JSON `null`. A window larger than the selected region is an input error
+rather than a partial-window fallback.
+
+### ASCII diff
+
+```bash
+python -S sequence_tool.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
+```
+
+The marker line is evidence-oriented rather than a similarity score:
+
+```text
+|  exact compared match
+~  compatible but non-identical (compatible ambiguity policy only)
+.  compared mismatch
+^  one-sided gap counted as mismatch
+?  excluded ambiguity
+   excluded gap/gap or excluded gap column
+```
+
+CLI ASCII output includes the two FASTA record IDs plus alphabet, gap policy,
+and ambiguity policy before the legend, so copied output remains
+self-describing.
+
+S2 JSON provenance includes SHA-256 of both normalized aligned sequences,
+matching S1's input-traceability contract.
+
+The ASCII view does not perform alignment and does not imply homology,
+functional equivalence, or evolutionary similarity.
+
 ## Next
 
-S2 may add sliding-window identity, local divergence, and ASCII diff.
+S3 remains reserved for conservation/divergence regions and bounded
+multi-record summaries. Dynamic alignment (Needleman-Wunsch /
+Smith-Waterman), substitution-matrix similarity (BLOSUM/PAM), and MSA remain
+outside S1/S2.
 
-S3 may add conservation/divergence regions and bounded multi-record summaries.
+## Implementation contract
+
+The comparison modules remain standard-library only. Shared aligned-input
+preparation lives in `comparison.py`; S2 reuses that contract rather than
+duplicating normalization or validation. S2-specific window aggregation and
+ASCII rendering stay isolated in `comparison_s2.py`.
