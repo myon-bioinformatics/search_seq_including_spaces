@@ -61,6 +61,13 @@ class AnchorMatcherTests(unittest.TestCase):
         self.assertEqual([m["strand"] for m in matches], ["+", "-"])
         self.assertEqual([m["span"] for m in matches], [[1,2], [1,2]])
 
+    def test_internal_reverse_hit_maps_to_forward_reference(self):
+        match = find_matches("CCAACGTGG", "ACG", "TT", strand="-")["matches"][0]
+        self.assertEqual(match["span"], [3,7])
+        self.assertEqual(match["left_span"], [5,7])
+        self.assertEqual(match["right_span"], [3,4])
+        self.assertEqual(match["source_span"], [3,7])
+
     def test_literal_protein_letters(self):
         self.assertEqual(find_matches("MQKLV", "MQ", "LV", min_gap=1)["matches"][0]["middle"], "K")
 
@@ -90,11 +97,13 @@ class AnchorMatcherTests(unittest.TestCase):
         rng = random.Random(314)
         for _ in range(100):
             sequence = "".join(rng.choice("ACGT") for _ in range(12))
-            left, right = rng.choice("ACGT"), rng.choice("ACGT")
+            left = "".join(rng.choice("ACGT") for _ in range(rng.randint(1,3)))
+            right = "".join(rng.choice("ACGT") for _ in range(rng.randint(1,3)))
             expected = []
             for start, stop in itertools.product(range(12), range(12)):
-                gap = stop - start - 1
-                if 0 <= gap <= 3 and sequence[start] == left and sequence[stop] == right:
-                    expected.append(([start+1,stop+1], sequence[start+1:stop]))
+                gap = stop - start - len(left)
+                if (0 <= gap <= 3 and sequence[start:start+len(left)] == left
+                        and sequence[stop:stop+len(right)] == right):
+                    expected.append(([start+1,stop+len(right)], sequence[start+len(left):stop]))
             actual = find_matches(sequence, left, right, max_gap=3)["matches"]
             self.assertEqual([(m["span"],m["middle"]) for m in actual],expected)
