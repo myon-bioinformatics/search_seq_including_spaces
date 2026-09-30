@@ -55,6 +55,10 @@ gap and ambiguity policies. Details and scientific boundaries:
 
 ## Test evidence
 
+The stdlib [anchor/gap matcher](docs/ANCHOR_MATCHER.md) supports exact/ranged
+gaps, coordinate-preserving normalization, IUPAC DNA compatibility and reverse
+search as a separate importable module.
+
 Install test-only tools with `python -m pip install -r tests/requirements.txt`.
 CI preserves native pytest JSONL and JUnit while retaining the `python -S`
 runtime isolation lane. See [recording and exploration](docs/pytest-observations.md).
