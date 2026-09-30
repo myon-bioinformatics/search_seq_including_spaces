@@ -51,3 +51,10 @@ gap and ambiguity policies. Details and scientific boundaries:
 ## References
 - About Nucleotides:https://www.ncbi.nlm.nih.gov/nuccore/
 - About amino-acid: https://www.ncbi.nlm.nih.gov/protein/
+
+
+## Test evidence
+
+Install test-only tools with `python -m pip install -r tests/requirements.txt`.
+CI preserves native pytest JSONL and JUnit while retaining the `python -S`
+runtime isolation lane. See [recording and exploration](docs/pytest-observations.md).

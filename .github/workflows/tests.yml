@@ -1,19 +1,22 @@
 name: Tests
 
-# Unit tests for the stdlib-only core. Nothing is installed: tests run with
-# `python -S`, which disables site-packages, so any third-party import fails.
+# Keep stdlib runtime isolation separate from test-only pytest tooling.
 
 on:
   pull_request:
     paths:
       - "**.py"
       - "tests/**"
+      - "vendor/xprobe_pytest*"
+      - ".gitattributes"
       - ".github/workflows/tests.yml"
   push:
     branches: [main]
     paths:
       - "**.py"
       - "tests/**"
+      - "vendor/xprobe_pytest*"
+      - ".gitattributes"
       - ".github/workflows/tests.yml"
   workflow_dispatch:
 
@@ -108,3 +111,37 @@ jobs:
             echo "| Tests ran | ${ran} |"
             echo "| Command | \`python -S -m unittest discover -s tests\` |"
           } >> "${GITHUB_STEP_SUMMARY}"
+
+
+      - name: Install test-only dependencies
+        run: python -m pip install -r tests/requirements.txt
+      - name: Record native pytest outcomes and JUnit
+        run: python -m pytest tests -p vendor.xprobe_pytest --xprobe-jsonl=reports/pytest-events.jsonl --xprobe-repository=myon-bioinformatics/search_seq_including_spaces --junitxml=reports/pytest-${{ matrix.python-version }}.xml
+      - name: Preserve native observations
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pytest-events-py${{ matrix.python-version }}
+          path: reports/pytest-events.jsonl
+          if-no-files-found: warn
+          retention-days: 14
+      - name: Preserve raw JUnit
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: junit-py${{ matrix.python-version }}
+          path: reports/pytest-${{ matrix.python-version }}.xml
+          if-no-files-found: warn
+          retention-days: 14
+
+  failure-identity:
+    needs: unittest
+    if: always()
+    permissions:
+      contents: read
+      actions: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@4dfda95d6573250477f991a0421fa6acb9bc0258
+    with:
+      expected-reports: '["junit-py3.10/pytest-3.10.xml","junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
+      artifact-pattern: "junit-py*"
+      output-artifact: "failure-identity"
