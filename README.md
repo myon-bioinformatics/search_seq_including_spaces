@@ -29,6 +29,13 @@ python sequence_tool.py protein roi in.fasta --ascii         # regions of intere
 
 Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error. Details, thresholds and limitations: [docs/PROTEIN.md](docs/PROTEIN.md).
 
+## Streaming sequence readers
+
+`sequence_readers.read_sequences()` yields common `SequenceRecord` values from
+FASTA/FASTQ paths or text streams, including gzip/bz2/xz/lzma paths. Runtime is
+stdlib-only. Contract, detection rules, supported subset and migration map:
+[docs/SEQUENCE_READERS.md](docs/SEQUENCE_READERS.md).
+
 ## Aligned sequence comparison
 
 The stdlib-only comparison tools accept already-aligned DNA, RNA, or protein
