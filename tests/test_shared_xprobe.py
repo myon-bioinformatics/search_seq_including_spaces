@@ -11,7 +11,7 @@ class SharedXprobeTests(unittest.TestCase):
         data = (root / 'vendor/xprobe.py').read_bytes()
         meta = json.loads((root / 'vendor/xprobe.provenance.json').read_text())
         self.assertEqual(meta['repository'], 'myon-bioinformatics/xprobe')
-        self.assertEqual(meta['commit'], 'dbd56e22e91a1e7553053da4f6965758b9994e8e')
+        self.assertEqual(meta['commit'], '642999cea4185a68bffa7f7ccc46bd78dde03e5a')
         self.assertEqual(meta['path'], 'xprobe.py')
         self.assertEqual(meta['blob_sha'], '8cc1abbaf4269e5298de44f1b4ce7de692ec9ae2')
         self.assertEqual(hashlib.sha256(data).hexdigest(), meta['sha256'])
