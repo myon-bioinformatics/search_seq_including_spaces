@@ -1,6 +1,9 @@
 name: Tests
 
 # Keep stdlib runtime isolation separate from test-only pytest tooling.
+# CodeQL is intentionally not used: behavior gates run pytest/unittest, with
+# pinned cross-repository xprobe observations and shared JUnit identity evidence.
+# See docs/pytest-observations.md for their distinct contracts.
 
 on:
   pull_request:

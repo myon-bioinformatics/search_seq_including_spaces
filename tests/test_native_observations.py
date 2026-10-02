@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from vendor.xprobe import pytest_receipt
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -26,21 +28,13 @@ def test_adapter_provenance():
 
 def test_native_failure_evidence(tmp_path):
     suite = tmp_path / 'test_sample.py'
-    suite.write_text('''import pytest
+    # Keep only the reader -> pytest -> shared-validator integration here.
+    # Generic xfail/XPASS/setup/teardown and corrupt receipts are upstream tests.
+    suite.write_text('''import io
+from sequence_readers import read_sequences
 def test_failure():
-    assert False, "private diagnostic"
-@pytest.mark.xfail(reason="private reason")
-def test_known_gap():
-    assert False
-@pytest.mark.xfail(strict=True)
-def test_unexpected_pass():
-    pass
-@pytest.fixture
-def resource():
-    yield
-    raise RuntimeError("private teardown")
-def test_cleanup(resource):
-    pass
+    record, = read_sequences(io.StringIO(">fixture\\nAC\\n"), format="fasta")
+    assert record.sequence == "AG", "private diagnostic"
 ''', encoding='utf-8')
     destination = tmp_path / 'events.jsonl'
     env = dict(os.environ, PYTHONPATH=str(ROOT), PYTEST_DISABLE_PLUGIN_AUTOLOAD='1')
@@ -48,15 +42,13 @@ def test_cleanup(resource):
     result = subprocess.run(
         [sys.executable, '-m', 'pytest', '-c', os.devnull, '-p', 'vendor.xprobe_pytest',
          '--xprobe-jsonl=' + str(destination), '--xprobe-repository=myon-bioinformatics/search_seq_including_spaces',
+         '--xprobe-run-id=reader-integration',
          str(suite)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode == 1, result.stdout + result.stderr
     text = destination.read_text(encoding='utf-8')
-    rows = [json.loads(line) for line in text.splitlines()]
-    assert rows[0]['value']['schema'] == 'xprobe.pytest.v1'
-    assert rows[-1]['value']['exitstatus'] == 1
-    assert rows[-1]['value']['complete'] is True
-    outcomes = {(r['value'].get('phase'), r['value'].get('outcome')) for r in rows}
-    assert {('call', 'failed'), ('call', 'xfail'), ('call', 'xpass_strict'), ('teardown', 'error')} <= outcomes
-    assert all(r['context']['commit_sha'] is None for r in rows)
-    assert all(r['context']['repository'] == 'myon-bioinformatics/search_seq_including_spaces' for r in rows)
+    receipt = pytest_receipt(text, expected_context={
+        'repository': 'myon-bioinformatics/search_seq_including_spaces',
+        'commit_sha': None, 'report_id': 'reader-integration'})
+    assert receipt['exitstatus'] == result.returncode
+    assert receipt['phase_counts']['call'] == {'failed': 1}
     assert 'private' not in text
