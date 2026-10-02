@@ -6,6 +6,8 @@ from pathlib import Path
 import subprocess
 import sys
 
+from vendor.xprobe import corpus_from_json, corpus_to_json, merge_cases
+
 ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -51,7 +53,11 @@ def test_cleanup(resource):
          str(suite)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=30)
     assert result.returncode == 1, result.stdout + result.stderr
     text = destination.read_text(encoding='utf-8')
-    rows = [json.loads(line) for line in text.splitlines()]
+    rows = corpus_from_json(text, jsonl=True)
+    # Shared validation/sorting owns the corpus contract; locate envelopes by event.
+    assert corpus_from_json(corpus_to_json(rows, jsonl=True), jsonl=True) == rows
+    assert merge_cases(rows, rows) == rows
+    rows.sort(key=lambda row: row['id'])
     assert rows[0]['value']['schema'] == 'xprobe.pytest.v1'
     assert rows[-1]['value']['exitstatus'] == 1
     assert rows[-1]['value']['complete'] is True

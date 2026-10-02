@@ -1,0 +1,8 @@
+{
+  "repository": "myon-bioinformatics/xprobe",
+  "commit": "326acd667e13b21bf53ccc1590af960edf8cbf6c",
+  "path": "xprobe.py",
+  "sha256": "d7583e4b960f22074f71e51fa5336f5fb13a41f43872ce3ebb0194dcf6f8f5c6",
+  "blob_sha": "dbc5b7d55005d6288c072a7612584d6170c216f4",
+  "license": "xprobe-LICENSE"
+}
