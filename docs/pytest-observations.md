@@ -41,3 +41,25 @@ do not overwrite each other. Run IDs distinguish observations across jobs.
 
 Reproduction inputs and chat-text references must be explicit, reviewed records
 linked by `origin_id`; this adapter does not infer causes or ingest chat history.
+
+## CI gates and shared coverage
+
+CodeQL is deliberately removed from this repository's CI. The behavior gates
+are `python -S -m unittest discover -s tests` plus the full pytest suite on
+Python 3.10–3.14; a failed test retains its nonzero status. Workflow changes are
+checked separately by the existing shared actionlint workflow. Docs-only changes
+do not trigger the Tests workflow.
+
+| Coverage / evidence | Source and role |
+| --- | --- |
+| Reader behavior | `tests/test_sequence_readers.py`: FASTA/FASTQ, malformed input, compression, stream ownership, record-boundary blanks, provenance and 8192-character sniff boundaries |
+| Existing domain regression | Anchor matcher, protein parser/features/rendering, CLI golden outputs and comparison tests in `tests/` |
+| Cross-repository adapter integrity | `tests/test_native_observations.py::test_adapter_provenance`: checks the vendored xprobe adapter against its pinned upstream commit, blob and SHA-256 |
+| Controlled failure behavior | `test_native_failure_evidence`: runs a real failing nested pytest and checks assertion failure, xfail, strict XPASS, teardown error, unchanged exit status, complete observation receipt and omitted private diagnostics |
+| Shared JUnit identity | `myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@4dfda95d6573250477f991a0421fa6acb9bc0258`: collects the five exact matrix report paths, runs even after test failure and preserves collection evidence |
+
+The shared collector checks report identity/completeness; pytest checks behavior.
+Neither a successfully collected report nor a complete native finish receipt
+turns a failed test into a pass. These checks do not claim CodeQL-equivalent
+static security analysis. Reuse upstream helpers with provenance and meaningful
+consumer regressions, rather than copying unrelated repositories' full suites.
