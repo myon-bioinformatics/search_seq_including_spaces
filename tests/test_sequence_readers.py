@@ -86,6 +86,75 @@ class ReaderTests(unittest.TestCase):
         stream.seek(len('ignored\n'))
         self.assertEqual(next(read_sequences(stream)).id, 'a')
 
+    def test_fastq_blank_record_boundaries(self):
+        text = '\n \t\n@a\nAC\n+\n!!\n\n \n@b\nG\n+\n~\n\n'
+        for format in (None, 'fastq'):
+            with self.subTest(format=format):
+                rows = list(read_sequences(io.StringIO(text), format=format))
+                self.assertEqual([(r.id, r.sequence, r.quality) for r in rows],
+                                 [('a', 'AC', '!!'), ('b', 'G', '~')])
+                self.assertEqual([(r.provenance.record_index, r.provenance.start_line,
+                                   r.provenance.end_line) for r in rows],
+                                 [(1, 3, 6), (2, 9, 12)])
+        self.assertEqual(list(read_sequences(io.StringIO('\n \t\n'), format='fastq')), [])
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'input.fq.gz'
+            path.write_bytes(gzip.compress(text.encode()))
+            self.assertEqual([r.id for r in read_sequences(path)], ['a', 'b'])
+
+    def test_comments_are_fasta_only(self):
+        row, = read_sequences(io.StringIO('\n;comment\n>a\nAC\n'))
+        self.assertEqual(row.id, 'a')
+        for prefix in (';comment\n', '\n;comment\n'):
+            text = prefix + '@a\nAC\n+\n!!\n'
+            with self.assertRaisesRegex(SequenceReadError, 'conservatively detect'):
+                list(read_sequences(io.StringIO(text)))
+            with self.assertRaisesRegex(SequenceReadError, '@ header'):
+                list(read_sequences(io.StringIO(text), format='fastq'))
+        with self.assertRaisesRegex(SequenceReadError, '@ header'):
+            list(read_sequences(io.StringIO('@a\nAC\n+\n!!\n;comment\n'), format='fastq'))
+
+    def test_blank_lines_inside_fastq_stay_invalid(self):
+        for text, reason in [('@a\n\nAC\n+\n!!\n', 'sequence line'),
+                             ('@a\nAC\n+\n\n!!\n', 'invalid FASTQ quality'),
+                             ('@a\nAC\n+\n!\n\n!\n', 'invalid FASTQ quality')]:
+            with self.subTest(text=text), self.assertRaisesRegex(SequenceReadError, reason):
+                list(read_sequences(io.StringIO(text), format='fastq'))
+
+    def test_sniff_uses_parser_line_boundaries(self):
+        for separator in ('\x0b', '\x0c', '\x1c', '\x85', '\u2028', '\u2029'):
+            text = separator.join(['@a', 'AC', '+', '!!']) + '\n'
+            with self.subTest(separator=separator), self.assertRaisesRegex(
+                    SequenceReadError, 'conservatively detect'):
+                list(read_sequences(io.StringIO(text)))
+        text = '@a\rAC\r+\r!!\r'
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / 'input.unknown'
+            path.write_bytes(text.encode())
+            self.assertEqual(next(read_sequences(path)).quality, '!!')
+        for newline in (None, ''):
+            with io.TextIOWrapper(io.BytesIO(text.encode()), newline=newline) as stream:
+                row, = read_sequences(stream)
+                self.assertEqual((row.sequence, row.quality, row.provenance.end_line), ('AC', '!!', 4))
+        with self.assertRaisesRegex(SequenceReadError, 'conservatively detect'):
+            list(read_sequences(io.StringIO(text)))
+
+    def test_sniff_exact_limit_and_truncated_quality(self):
+        text = '@ab\n' + 'A' * 4092 + '\n+\n' + '!' * 4092 + '\n'
+        self.assertEqual(len(text), 8192)
+        row, = read_sequences(io.StringIO(text))
+        self.assertEqual(len(row.quality), 4092)
+        for truncated in (text[:-1] + '!\n', '@abc\n' + text[4:-1]):
+            stream = io.StringIO(truncated)
+            with self.subTest(length=len(truncated)), self.assertRaisesRegex(
+                    SequenceReadError, 'conservatively detect'):
+                list(read_sequences(stream))
+            self.assertEqual(stream.tell(), 0)
+        # At the exact limit, EOF without a line ending cannot be proven by
+        # the bounded sniff. Explicit format still parses that complete record.
+        row, = read_sequences(io.StringIO('@abc\n' + text[4:-1]), format='fastq')
+        self.assertEqual(len(row.sequence), 4092)
+
     def test_nonseek_and_stream_ownership(self):
         stream = NonSeek('>a\nAC\n>b\nGT\n')
         with self.assertRaisesRegex(SequenceReadError, 'non-seek'):

@@ -6,20 +6,44 @@ produces JSON-friendly fields; serialized envelopes may use schema
 
 | Field | Type / semantics |
 | --- | --- |
-| id | str; first whitespace-delimited header token, nonempty |
-| description | str; remaining header text, or empty string |
+| id | str, nonempty; derived per format (FASTA/FASTQ: first whitespace-delimited header token) |
+| description | str; FASTA/FASTQ remaining header text, or empty string |
 | sequence | str; sequence lines concatenated, case/symbols preserved |
-| quality | str for FASTQ, None for FASTA; equal length to sequence; no Phred decoding |
+| quality | str for FASTQ, None for FASTA; FASTQ requires equal length to sequence; no Phred decoding |
 | source | str input path/caller label, or None if unknown |
 | provenance | ReadProvenance: format, compression (gzip/bz2/xz/lzma or None), record_index, start_line, end_line |
 
 Record index and line ranges are 1-based inclusive in **decompressed text**,
 relative to the stream's current position. They are not file byte offsets or
-genomic coordinates. FASTA ranges include intervening blank/comment lines.
+genomic coordinates. A range is a **bounding span**, not a claim that every
+line in it contributes residues or belongs exclusively to that record. FASTA
+ranges include trailing/intervening blank/comment lines up to the next header;
+FASTQ ranges end at the last quality line and exclude boundary blanks.
+`anchor_matcher` spans are also 1-based inclusive: normalized spans refer to
+the normalized sequence, while `source_span` / `middle_source_span` refer to
+Python character positions in `record.sequence`, never the original file.
 No whole-file hash or per-residue file-coordinate map is promised. FASTA removes
 sequence whitespace; FASTQ removes only line endings and rejects whitespace in
 sequence lines. Neither reader uppercases, removes N/gaps/stops, infers alphabet,
 or validates DNA/RNA/protein symbols. Those are explicit downstream policies.
+
+### Contract evolution
+
+The current `ReadProvenance.format` vocabulary is lowercase `fasta` / `fastq`.
+Each future reader must document its new canonical format name and how it derives
+`id` and `description`; the FASTA header rule is not universal. New trailing
+fields with defaults and documented new format names may be added within
+`sequence-record/1`, preserving existing positional construction and existing
+field meanings. Consumers should tolerate additional serialized keys. Removing,
+renaming, reordering or changing existing field meanings requires a new schema
+version. There is no generic metadata field in this increment; future formats
+must define a typed/defaulted extension before emitting extra metadata, rather
+than hiding structured data in `description`.
+
+Current readers always provide meaningful positive line ranges; there is no
+unknown-coordinate sentinel. A future non-contiguous record may use a documented
+bounding span. A format without meaningful line coordinates needs an explicit
+contract decision before implementation.
 
 ## Existing implementation map
 
@@ -52,6 +76,9 @@ for record in read_sequences(text_stream, format='fastq', source='stdin'):
   33..126 and exact sequence/quality length. Quality lines starting `@` or `+`
   are quality, not delimiters. Short/long quality, missing separator, whitespace
   sequence and invalid quality raise `SequenceReadError` with source/line.
+  Blank/whitespace-only lines before, between and after complete records are
+  ignored. Blank lines inside sequence or quality remain errors. Column-one `;`
+  comments are FASTA-only and are rejected at FASTQ record boundaries.
   Wrapped quality consumes lines until sequence length; missing data can consume
   a subsequent header before reporting an error, so there is no recovery/resync.
 - Paths: UTF-8; transparent `.gz`, `.bz2`, `.xz`, `.lzma` selected by suffix.
@@ -74,6 +101,17 @@ plain sequences, wrapped/long FASTQ, or ambiguous/truncated samples. Use explici
 format for those cases. **Non-seek streams require explicit format or a recognized
 filename; no sniff read or seek occurs.** No stdin/binary-stream CLI adapter is
 added here.
+
+Sniffing uses bounded `readline()` calls and the parser uses iteration over the
+same handle, preserving its line-splitting policy; Unicode separators such as
+U+0085/U+2028 are not separately split by the sniffer. Paths use universal
+newlines (LF, CRLF and lone CR). Caller-owned text streams retain their configured
+newline policy, so use universal-newline decoding for path-equivalent line
+numbers/results. Leading blank lines are allowed for either format; leading `;`
+comments are skipped only for FASTA. A complete quality line ending exactly at
+character 8192 is sniffable; a quality line truncated at that limit, or ending
+there without a line terminator (EOF cannot be established within the limit),
+requires explicit format/extension.
 
 Parsing yields records lazily with memory proportional to the largest current
 record/line, not total file size. A single chromosome-sized record still occupies

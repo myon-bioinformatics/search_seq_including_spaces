@@ -44,14 +44,31 @@ def _detect(handle, format, source):
         raise SequenceReadError("non-seek stream needs explicit format or recognized filename", source)
     position = handle.tell()
     try:
-        sample = handle.read(_SNIFF_LIMIT)
+        # Use the caller's own line splitting, just as the parser does. In
+        # particular, Unicode separators are not implicit record boundaries.
+        pieces, size = [], 0
+        while size < _SNIFF_LIMIT:
+            piece = handle.readline(_SNIFF_LIMIT - size)
+            if not piece:
+                break
+            pieces.append(piece)
+            size += len(piece)
     finally:
         handle.seek(position)
-    lines = sample.removeprefix('\ufeff').splitlines()
-    while lines and (not lines[0].strip() or lines[0].startswith(';')):
-        lines.pop(0)
-    if lines and lines[0].startswith('>') and lines[0][1:].strip():
+    sample = ''.join(pieces)
+    lines = [piece.rstrip('\r\n') for piece in pieces]
+    if lines:
+        lines[0] = lines[0].removeprefix('\ufeff')
+    fasta_start = 0
+    while fasta_start < len(lines) and (not lines[fasta_start].strip()
+                                       or lines[fasta_start].startswith(';')):
+        fasta_start += 1
+    if (fasta_start < len(lines) and lines[fasta_start].startswith('>')
+            and lines[fasta_start][1:].strip()):
         return "fasta"
+    # FASTQ permits blank record boundaries, but not FASTA-style comments.
+    while lines and not lines[0].strip():
+        lines.pop(0)
     # Only a complete simple four-line record is evidence for FASTQ sniffing.
     # Wrapped/long/ambiguous input needs an explicit format or extension.
     if (len(lines) >= 4 and lines[0].startswith('@') and lines[0][1:].strip()
@@ -128,6 +145,8 @@ def _fasta(lines, source, compression):
 def _fastq(lines, source, compression):
     index = 0
     for start, line in lines:
+        if not line.strip():
+            continue
         if not line.startswith('@') or not line[1:].strip():
             raise SequenceReadError("expected nonempty FASTQ @ header", source, start)
         header, chunks, length = line[1:], [], 0
