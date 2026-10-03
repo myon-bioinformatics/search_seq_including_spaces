@@ -177,34 +177,24 @@ records = read_sequences(text_stream, format='tsv', sequence_column='sequence',
   Choose an explicit format or recognized extension. Existing conservative
   FASTA/FASTQ sniffing is unchanged. Column options on other formats are errors.
 
-## Reversible FASTA ↔ text conversion subset
+## Deferred preprocessing / export follow-up
 
-`sequence_conversion.fasta_to_text(input, output)` writes a TSV text table with
-`id`, `description`, `sequence` columns. `text_to_fasta(input, output)` reads that
-schema and writes canonical one-line FASTA. Inputs accept paths (including
-compression) or decoded streams; output is a caller-owned text stream, opened
-with `newline=''`. No CLI migration or output-path/compression wrapper is added.
+This increment adds readers only. `sequence_conversion.py`, `fasta_to_text()`
+and `text_to_fasta()` are deferred to roadmap #2's consolidated former #8
+preprocessing / multi-format export track. They are output consumers of
+`read_sequences()`, not dependencies of the reader API or `SequenceRecord`
+contract, so FASTA ↔ TSV conversion is not needed to deliver text/CSV/TSV input.
 
-```python
-from sequence_conversion import fasta_to_text, text_to_fasta
-
-with open('records.tsv', 'w', encoding='utf-8', newline='') as output:
-    fasta_to_text('records.fa.gz', output)
-with open('restored.fa', 'w', encoding='utf-8', newline='') as output:
-    text_to_fasta('records.tsv', output)
-```
-
-The round trip preserves parsed **ID, description, sequence and record order**.
-It does not reproduce original bytes, wrapping, comments, sequence whitespace,
-line endings, source or read provenance; reading the new file records its own
-provenance. Sequence-only plain text cannot retain FASTA headers or multiple
-records and is not the reversible representation. Arbitrary TSV follows the
-reader's whitespace normalization; the guarantee applies to helper-generated
-TSV. Fields incompatible with FASTA header/sequence syntax (whitespace in IDs,
-leading/trailing description whitespace, description CR/LF, sequence starting
-with `>` or `;`) are rejected. Conversion streams and may write a valid prefix
-before a later error; validate or write to a temporary file for atomic workflows.
+A separate small export PR should define its supported representation, validation,
+semantic round-trip guarantees (not original bytes/layout), streaming failure and
+output ownership policy, and machine-readable transformation provenance/receipts
+required by former #8. Its tests should cover compressed inputs, empty inputs,
+Unicode/quoted fields, parsed field/order preservation and unrepresentable FASTA
+fields. The removed prototype and its tests remain available in PR #25's original
+commit `cf2750ec3e054ec1b6c956df0ab97b1f593ab5f8` as a reference, not an API promised
+by this reader increment. Former #8 stays closed as a tracking consolidation;
+implementation progress is tracked in #2.
 
 The foundation was merged in #24 (`c9d5878a9c4601d38d654f836f9d474c92370709`).
-This follow-up adds text/tabular readers and the above narrow conversion subset;
-JSON/JSONL, GenBank and general preprocessing/export remain roadmap work.
+This follow-up adds text/tabular readers only; JSON/JSONL, GenBank and
+preprocessing/export remain roadmap work.

@@ -8,7 +8,6 @@ import tempfile
 import unittest
 
 from sequence_readers import read_sequences, SequenceReadError
-from sequence_conversion import fasta_to_text, text_to_fasta
 from test_sequence_readers import NonSeek
 
 
@@ -116,41 +115,6 @@ class TextTabularTests(unittest.TestCase):
         self.assertEqual(caught.exception.source, 'large')
         self.assertEqual(caught.exception.line, 2)
         self.assertEqual(csv.field_size_limit(), limit)
-
-    def test_conversion_compressed_inputs_and_empty(self):
-        with tempfile.TemporaryDirectory() as directory:
-            fasta = Path(directory) / 'input.fa.gz'
-            fasta.write_bytes(gzip.compress('>名 description\nacNT\n'.encode()))
-            text = io.StringIO()
-            fasta_to_text(fasta, text)
-            table = Path(directory) / 'records.tsv.xz'
-            table.write_bytes(lzma.compress(text.getvalue().encode()))
-            output = io.StringIO()
-            text_to_fasta(table, output)
-            self.assertEqual(output.getvalue(), '>名 description\nacNT\n')
-        empty, output = io.StringIO(), io.StringIO()
-        fasta_to_text(io.StringIO(''), empty)
-        empty.seek(0)
-        text_to_fasta(empty, output)
-        self.assertEqual(output.getvalue(), '')
-
-    def test_semantic_fasta_text_round_trip(self):
-        original = ';comment\n>名 description, with\ttab\nac N-*\nT\n>two\nGG\n'
-        text, fasta = io.StringIO(), io.StringIO()
-        fasta_to_text(io.StringIO(original), text)
-        text.seek(0)
-        text_to_fasta(text, fasta)
-        def semantic(value):
-            return [(r.id, r.description, r.sequence) for r in read_sequences(io.StringIO(value), format='fasta')]
-        self.assertEqual(semantic(original), semantic(fasta.getvalue()))
-        again = io.StringIO()
-        fasta_to_text(io.StringIO(fasta.getvalue()), again)
-        self.assertEqual(text.getvalue(), again.getvalue())
-        self.assertFalse(text.closed or fasta.closed)
-        for bad in ['bad id\tdesc\tAC', 'id\t"two\nlines"\tAC',
-                    'id\t leading\tAC', 'id\tdesc\t>AC', 'id\tdesc\t;AC']:
-            with self.subTest(bad=bad), self.assertRaisesRegex(SequenceReadError, 'round-trip'):
-                text_to_fasta(io.StringIO('id\tdescription\tsequence\n' + bad + '\n'), io.StringIO())
 
 
 if __name__ == '__main__':
