@@ -1,2 +1,2 @@
-# Test tooling only; pytest 8 supports the Python 3.9 lane.
+# Test tooling only; pytest 8 supports the CI lanes (Python 3.10–3.14).
 pytest>=8,<9
