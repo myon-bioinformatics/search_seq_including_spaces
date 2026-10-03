@@ -9,7 +9,7 @@
 
 ![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/search_seq_including_spaces)
 ![GitHub last commit](https://img.shields.io/github/last-commit/myon-bioinformatics/search_seq_including_spaces)
-[![CodeQL](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/codeql.yml/badge.svg)](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/codeql.yml)
+[![Tests](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/tests.yml/badge.svg)](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/tests.yml)
 
 [![GitHub followers](https://img.shields.io/github/followers/myon-bioinformatics?style=social)](https://github.com/myon-bioinformatics)
 [![Reddit User Karma](https://img.shields.io/reddit/user-karma/combined/myon_reddit?style=social)](https://www.reddit.com/user/myon_reddit/)
@@ -32,7 +32,8 @@ Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates
 ## Streaming sequence readers
 
 `sequence_readers.read_sequences()` yields common `SequenceRecord` values from
-FASTA/FASTQ paths or text streams, including gzip/bz2/xz/lzma paths. Runtime is
+FASTA, FASTQ, plain text, CSV, and TSV paths or text streams, including
+gzip/bz2/xz/lzma paths (CSV/TSV need an explicit sequence column). Runtime is
 stdlib-only. Contract, detection rules, supported subset and migration map:
 [docs/SEQUENCE_READERS.md](docs/SEQUENCE_READERS.md).
 
