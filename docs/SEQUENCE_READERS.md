@@ -177,24 +177,6 @@ records = read_sequences(text_stream, format='tsv', sequence_column='sequence',
   Choose an explicit format or recognized extension. Existing conservative
   FASTA/FASTQ sniffing is unchanged. Column options on other formats are errors.
 
-## Deferred preprocessing / export follow-up
-
-This increment adds readers only. `sequence_conversion.py`, `fasta_to_text()`
-and `text_to_fasta()` are deferred to roadmap #2's consolidated former #8
-preprocessing / multi-format export track. They are output consumers of
-`read_sequences()`, not dependencies of the reader API or `SequenceRecord`
-contract, so FASTA ↔ TSV conversion is not needed to deliver text/CSV/TSV input.
-
-A separate small export PR should define its supported representation, validation,
-semantic round-trip guarantees (not original bytes/layout), streaming failure and
-output ownership policy, and machine-readable transformation provenance/receipts
-required by former #8. Its tests should cover compressed inputs, empty inputs,
-Unicode/quoted fields, parsed field/order preservation and unrepresentable FASTA
-fields. The removed prototype and its tests remain available in PR #25's original
-commit `cf2750ec3e054ec1b6c956df0ab97b1f593ab5f8` as a reference, not an API promised
-by this reader increment. Former #8 stays closed as a tracking consolidation;
-implementation progress is tracked in #2.
-
 The foundation was merged in #24 (`c9d5878a9c4601d38d654f836f9d474c92370709`).
 This follow-up adds text/tabular readers only; JSON/JSONL, GenBank and
 preprocessing/export remain roadmap work.
