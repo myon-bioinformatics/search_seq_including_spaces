@@ -1,3 +1,8 @@
+> CLI, JSON pattern packs, additional reader formats and a separate bounded
+> chunk-event API now exist; see [ROADMAP_TOOLS.md](ROADMAP_TOOLS.md).
+> This document describes the unchanged whole-record envelope API, whose memory
+> contract is still proportional to one record.
+
 # Record-by-record matching (roadmap #2, Phase 4 adapter)
 
 `sequence_matcher.find_sequence_matches()` connects `read_sequences()` to
@@ -110,6 +115,5 @@ size of the sequence. There is no new per-record byte cap, genome-scale indexing
 or incremental matching within a record. Phase 4 therefore remains partial.
 
 `anchor_matcher.py`, `sequence_readers.py`, `sequence_records.py`,
-`definition_main.py`, and `sequence_tool.py` behavior is unchanged. Phase 2
-custom-pattern CLI/schema, JSON/JSONL readers, GenBank, exporters and biological
-presets are separate work and are not implemented by this adapter.
+`definition_main.py`, and `sequence_tool.py` behavior is unchanged. Custom-pattern CLI/schema, JSON/JSONL and GenBank readers, exporters and
+biological presets now exist in separate modules, not in this adapter.

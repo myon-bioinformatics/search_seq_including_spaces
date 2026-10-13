@@ -1,5 +1,5 @@
 """Minimal stdlib reader contract; independent of matching and analysis."""
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 SCHEMA = "sequence-record/1"
 __all__ = ["SCHEMA", "SequenceRecord", "ReadProvenance"]
@@ -22,3 +22,4 @@ class SequenceRecord:
     source: str | None
     provenance: ReadProvenance
     quality: str | None = None
+    metadata: dict[str, str] = field(default_factory=dict)

@@ -78,8 +78,8 @@ class ReaderTests(unittest.TestCase):
         for text in ['ACGT', '@a\nAC\n+\n!', '>\nAC', 'x' * 9000 + '>a\nAC']:
             with self.assertRaisesRegex(SequenceReadError, 'conservatively detect'):
                 list(read_sequences(io.StringIO(text)))
-        with self.assertRaisesRegex(SequenceReadError, 'format must'):
-            list(read_sequences(io.StringIO('>a\nAC'), format='genbank', source='a.fa'))
+        with self.assertRaisesRegex(SequenceReadError, 'unsupported sequence format'):
+            list(read_sequences(io.StringIO('>a\nAC'), format='vcf', source='a.fa'))
 
     def test_sniff_restores_current_position(self):
         stream = io.StringIO('ignored\n>a\nAC\n')

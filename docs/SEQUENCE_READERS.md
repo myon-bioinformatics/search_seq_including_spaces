@@ -1,3 +1,9 @@
+> Current extension: JSON/JSONL and best-effort GenBank ORIGIN readers are now
+> implemented. `SequenceRecord` has trailing defaulted `metadata: dict[str, str]`.
+> JSON document ranges are enclosing spans; JSONL ranges are exact. New formats,
+> paths, limits and metadata are defined in [ROADMAP_TOOLS.md](ROADMAP_TOOLS.md).
+> The original FASTA/FASTQ/text/table contract below remains unchanged.
+
 # Streaming sequence records (roadmap #2, FASTA/FASTQ foundation and text/tabular increment)
 
 `sequence_records.py` defines frozen stdlib dataclasses. `dataclasses.asdict()`
@@ -36,9 +42,9 @@ fields with defaults and documented new format names may be added within
 `sequence-record/1`, preserving existing positional construction and existing
 field meanings. Consumers should tolerate additional serialized keys. Removing,
 renaming, reordering or changing existing field meanings requires a new schema
-version. There is no generic metadata field in this increment; future formats
-must define a typed/defaulted extension before emitting extra metadata, rather
-than hiding structured data in `description`.
+version. The trailing defaulted `metadata` field now holds string-valued GenBank
+identifiers; older records default to an empty dictionary. Structured metadata
+is not hidden in `description`.
 
 Current readers always provide meaningful positive line ranges; there is no
 unknown-coordinate sentinel. A future non-contiguous record may use a documented
@@ -179,8 +185,8 @@ records = read_sequences(text_stream, format='tsv', sequence_column='sequence',
   FASTA/FASTQ sniffing is unchanged. Column options on other formats are errors.
 
 The foundation was merged in #24 (`c9d5878a9c4601d38d654f836f9d474c92370709`).
-This follow-up adds text/tabular readers only; JSON/JSONL, GenBank and
-preprocessing/export remain roadmap work.
+This follow-up adds text/tabular readers only; additional JSON/JSONL, GenBank and preprocessing/export contracts are
+documented in ROADMAP_TOOLS.md.
 
 ## Reader-to-matcher adapter
 
@@ -190,5 +196,5 @@ preprocessing/export remain roadmap work.
 proportional to the current record plus its matches, not constant for a huge
 single FASTA record. Coordinate meanings above are unchanged. See
 [SEQUENCE_MATCHER.md](SEQUENCE_MATCHER.md) for examples, per-record match limits,
-lazy error propagation and early-close ownership. The adapter is library-only;
-legacy/other CLI behavior and unimplemented reader formats remain out of scope.
+lazy error propagation and early-close ownership. The adapter retains its record-level contract; the newer match CLI and
+chunk event API are documented in ROADMAP_TOOLS.md.
