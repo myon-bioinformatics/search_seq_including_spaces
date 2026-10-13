@@ -17,6 +17,27 @@
 
 
 
+## Search, summarize and analyze
+
+Runtime remains standard-library only. [Roadmap tools and contracts](docs/ROADMAP_TOOLS.md)
+cover the new CLI, limits, coordinate semantics and optional adapters.
+
+```sh
+python -S sequence_tool.py match input.fa --left AC --right GT --min-gap 1 --jsonl
+python -S sequence_tool.py candidates input.fa --mode pairwise --seed 42 --limit 1000
+python -S sequence_tool.py summarize-hits hits.csv --gap-merge 10000 --top 10
+python -S sequence_tool.py compare a.fa b.fa --alphabet dna --window 21 --summary
+python -S sequence_tool.py nucleotide-features input.fa --alphabet dna --jsonl
+python -S sequence_tool.py rna-fold input.fa --jsonl
+```
+
+Also available: JSON pattern packs; JSON/JSONL and GenBank ORIGIN readers;
+FASTA/FASTQ/text chunk search; poly-A/TSD/SNP/STR clues; pH charge/pI;
+preprocessing with receipts and MEGA export; NCBI acquisition; PDB/mmCIF
+geometry; bounded HTTP/MCP adapters and an optional Jev routing boundary.
+External services, scientific model quality and Docker deployment need their
+own operational validation. FASTA↔TSV conversion remains out of scope.
+
 ## Protein sequence tools (in development)
 Standard library only. CI-tested on Python 3.10–3.14. Values are sequence-derived hints, not structure.
 
@@ -32,7 +53,7 @@ Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates
 ## Streaming sequence readers
 
 `sequence_readers.read_sequences()` yields common `SequenceRecord` values from
-FASTA, FASTQ, plain text, CSV, and TSV paths or text streams, including
+FASTA, FASTQ, plain text, CSV, TSV, JSON, JSONL and the GenBank ORIGIN subset, including
 gzip/bz2/xz/lzma paths (CSV/TSV need an explicit sequence column). Runtime is
 stdlib-only. Contract, detection rules, supported subset and migration map:
 [docs/SEQUENCE_READERS.md](docs/SEQUENCE_READERS.md).

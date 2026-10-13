@@ -21,6 +21,7 @@ bytes. --json writes one document and needs exactly one FASTA record;
 """
 
 import argparse
+import csv
 import json
 import math
 import sys
@@ -28,6 +29,8 @@ import sys
 from comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
                         GAP_POLICIES, ComparisonError, compare_aligned)
 from comparison_s2 import render_ascii_diff, sliding_identity
+from result_summary import summarize_windows
+from sequence_commands import add_commands
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
 from protein.render import MIN_WIDTH, render_ascii
@@ -48,11 +51,18 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     try:
         output, status = args.handler(args)
-    except (InputError, SequenceError, ComparisonError) as error:
+        if isinstance(output, str):
+            sys.stdout.buffer.write(output.encode("utf-8"))
+        else:
+            try:
+                for chunk in output:
+                    sys.stdout.buffer.write(chunk.encode("utf-8"))
+            finally:
+                output.close()
+        sys.stdout.flush()
+    except (InputError, ValueError, OSError, UnicodeError, csv.Error) as error:
         print(f"{parser.prog}: error: {error}", file=sys.stderr)
         return EXIT_INPUT_ERROR
-    sys.stdout.buffer.write(output.encode("utf-8"))
-    sys.stdout.flush()
     return status
 
 
@@ -69,6 +79,10 @@ def _compare(args) -> tuple[str, int]:
         raise InputError("--width is only meaningful with --ascii")
     if args.window is None and args.step != 1:
         raise InputError("--step is only meaningful with --window")
+    if args.summary and (args.window is None or args.ascii):
+        raise InputError("--summary requires --window and JSON output")
+    if not args.summary and (args.identity_threshold != 90 or args.min_coverage != 0 or args.top != 10):
+        raise InputError("summary options require --summary")
     header_a, raw_a = _one_raw_record(args.file_a)
     header_b, raw_b = _one_raw_record(args.file_b)
     if args.ascii:
@@ -95,6 +109,8 @@ def _compare(args) -> tuple[str, int]:
             raw_a, raw_b, alphabet=args.alphabet, gap_policy=args.gap_policy,
             ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end
         )
+    if args.summary:
+        doc = summarize_windows(doc, threshold=args.identity_threshold, min_coverage=args.min_coverage, top=args.top)
     doc["records"] = {
         "a": {"id": header_a.split()[0] if header_a.split() else ""},
         "b": {"id": header_b.split()[0] if header_b.split() else ""},
@@ -260,7 +276,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="sequence_tool.py",
                                      description="Sequence tools (stdlib only).")
     groups = parser.add_subparsers(dest="group", required=True,
-                                   metavar="{compare,fasta,protein}")
+                                   metavar="COMMAND")
+    add_commands(groups)
 
     compare = groups.add_parser(
         "compare", help="aligned pairwise identity/coverage (does not align sequences)")
@@ -287,6 +304,10 @@ def _build_parser() -> argparse.ArgumentParser:
                          help="aligned columns per block for --ascii (default: 60)")
     compare.add_argument("--json", action="store_true",
                          help="JSON output (default unless --ascii)")
+    compare.add_argument("--summary", action="store_true", help="S3 bounded window-region summary")
+    compare.add_argument("--identity-threshold", type=float, default=90)
+    compare.add_argument("--min-coverage", type=float, default=0)
+    compare.add_argument("--top", type=int, default=10)
     compare.set_defaults(handler=_compare)
 
     input_options = argparse.ArgumentParser(add_help=False)

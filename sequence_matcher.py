@@ -12,7 +12,8 @@ __all__ = ["SCHEMA", "find_sequence_matches"]
 def find_sequence_matches(input, left, right, *, format=None, source=None,
                           sequence_column=None, id_column=None, name_column=None,
                           description_column=None, min_gap=0, max_gap=None,
-                          iupac=False, strand="+", max_matches=10000):
+                          iupac=False, strand="+", max_matches=10000,
+                          sequence_path=None, id_path=None, description_path=None):
     """Yield one metadata envelope and unchanged anchor-gap/1 result per record.
 
     Reader options go to read_sequences; matcher options go to find_matches.
@@ -35,7 +36,8 @@ def find_sequence_matches(input, left, right, *, format=None, source=None,
     with closing(read_sequences(
             input, format=format, source=source, sequence_column=sequence_column,
             id_column=id_column, name_column=name_column,
-            description_column=description_column)) as records:
+            description_column=description_column, sequence_path=sequence_path,
+            id_path=id_path, description_path=description_path)) as records:
         for record in records:
             yield {
                 "schema": SCHEMA,

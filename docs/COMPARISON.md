@@ -5,7 +5,7 @@ DNA, RNA, or protein sequences.
 
 It does **not** align sequences and does not compute evolutionary similarity.
 Needleman-Wunsch / Smith-Waterman, BLOSUM/PAM, MSA, and
-conservation/divergence ROI remain deferred. S2 adds sliding-window identity,
+dynamic alignment remain deferred. S3 provides bounded window-evidence regions. S2 adds sliding-window identity,
 local divergence, and an ASCII diff for already-aligned inputs.
 
 ## CLI
@@ -164,8 +164,9 @@ functional equivalence, or evolutionary similarity.
 
 ## Next
 
-S3 remains reserved for conservation/divergence regions and bounded
-multi-record summaries. Dynamic alignment (Needleman-Wunsch /
+S3 now provides bounded conservation/divergence/unknown window-evidence
+regions and legacy hit summaries. See [ROADMAP_TOOLS.md](ROADMAP_TOOLS.md)
+for CLI, merging, count conservation and coordinate contracts. Dynamic alignment (Needleman-Wunsch /
 Smith-Waterman), substitution-matrix similarity (BLOSUM/PAM), and MSA remain
 outside S1/S2.
 

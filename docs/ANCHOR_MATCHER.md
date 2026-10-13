@@ -2,7 +2,8 @@
 
 `anchor_matcher.py` is one stdlib-only importable module. It does not read files,
 configuration or the network at import time. The legacy `definition_main.py`
-remains intact. CLI/file readers and pseudogene/TSD presets are later phases.
+remains intact. CLI, readers and TSD clue presets now live in sibling adapters; see
+[ROADMAP_TOOLS.md](ROADMAP_TOOLS.md). The core contract below is unchanged.
 
 ```python
 import json
@@ -67,5 +68,5 @@ requested search, not biological validity. The feasible gap range is clamped
 to the available sequence. This direct baseline scales with sequence length,
 gap range and anchor lengths; it is not an indexed genome-scale search engine.
 
-No CLI integration, alignment, edit-distance matching, TSD/pseudogene verdict
-or network acquisition is added in this phase.
+The matcher itself does not perform alignment, edit-distance matching,
+TSD/pseudogene interpretation or network acquisition.

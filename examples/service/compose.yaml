@@ -1,0 +1,12 @@
+services:
+  sequence:
+    build:
+      context: ../..
+      dockerfile: examples/service/Dockerfile
+    ports:
+      - "127.0.0.1:8765:8765"
+    read_only: true
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL

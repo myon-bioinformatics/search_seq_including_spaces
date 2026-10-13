@@ -12,7 +12,9 @@ __all__ = ["SequenceReadError", "read_sequences"]
 _FORMATS = {".fa": "fasta", ".fas": "fasta", ".fasta": "fasta",
             ".fna": "fasta", ".ffn": "fasta", ".faa": "fasta",
             ".frn": "fasta", ".fq": "fastq", ".fastq": "fastq",
-            ".txt": "text", ".csv": "csv", ".tsv": "tsv"}
+            ".txt": "text", ".csv": "csv", ".tsv": "tsv",
+            ".json": "json", ".jsonl": "jsonl", ".ndjson": "jsonl",
+            ".gb": "genbank", ".gbk": "genbank", ".genbank": "genbank", ".gp": "genbank"}
 _CODECS = {".gz": ("gzip", gzip.open), ".bz2": ("bz2", bz2.open),
            ".xz": ("xz", lzma.open), ".lzma": ("lzma", lzma.open)}
 _SNIFF_LIMIT = 8192
@@ -36,8 +38,8 @@ def _extension(name):
 
 def _detect(handle, format, source):
     if format is not None:
-        if format not in ("fasta", "fastq", "text", "csv", "tsv"):
-            raise SequenceReadError("format must be fasta, fastq, text, csv or tsv", source)
+        if format not in set(_FORMATS.values()):
+            raise SequenceReadError("unsupported sequence format", source)
         return format
     extension, _ = _extension(source)
     if extension:
@@ -84,7 +86,8 @@ def _detect(handle, format, source):
 
 
 def read_sequences(input, *, format=None, source=None, sequence_column=None,
-                   id_column=None, name_column=None, description_column=None):
+                   id_column=None, name_column=None, description_column=None,
+                   sequence_path=None, id_path=None, description_path=None):
     """Yield SequenceRecord from a path or caller-owned text stream.
 
     Paths are UTF-8 (initial BOM accepted), compression selected by suffix.
@@ -96,21 +99,30 @@ def read_sequences(input, *, format=None, source=None, sequence_column=None,
     id_column and name_column are aliases and cannot be combined.
     """
     columns = (sequence_column, id_column, name_column, description_column)
+    paths = (sequence_path, id_path, description_path)
     if isinstance(input, (str, os.PathLike)):
         path = os.fspath(input)
         _, codec = _extension(path)
         compression, opener = codec if codec else (None, open)
         with opener(path, 'rt', encoding='utf-8-sig', newline='') as handle:
-            yield from _read(handle, format, source if source is not None else path, compression, path, columns)
+            yield from _read(handle, format, source if source is not None else path, compression, path, columns, paths)
     else:
         name = source if source is not None else getattr(input, 'name', None)
         if not isinstance(name, str):
             name = None
-        yield from _read(input, format, name, None, name, columns)
+        yield from _read(input, format, name, None, name, columns, paths)
 
 
-def _read(handle, format, source, compression, filename, columns):
+def _read(handle, format, source, compression, filename, columns, paths):
     selected = _detect(handle, format, filename)
+    if selected in ('json', 'jsonl'):
+        if any(column is not None for column in columns):
+            raise SequenceReadError('column options require csv or tsv', source)
+        from structured_readers import read_json
+        yield from read_json(handle, source, compression, selected, *paths)
+        return
+    if any(path is not None for path in paths):
+        raise SequenceReadError('path options require json or jsonl', source)
     if selected in ('csv', 'tsv'):
         yield from _tabular(handle, source, compression, selected, *columns)
         return
@@ -119,6 +131,10 @@ def _read(handle, format, source, compression, filename, columns):
     lines = ((number, line.rstrip('\r\n').removeprefix('\ufeff')
               if number == 1 else line.rstrip('\r\n'))
              for number, line in enumerate(handle, 1))
+    if selected == 'genbank':
+        from structured_readers import read_genbank
+        yield from read_genbank(iter(lines), source, compression)
+        return
     parser = {'fasta': _fasta, 'fastq': _fastq, 'text': _text}[selected]
     yield from parser(iter(lines), source, compression)
 

@@ -1,0 +1,6 @@
+{
+  "schema": "sequence-patterns/1",
+  "patterns": [
+    {"id": "AC-gap-GT", "left": "AC", "right": "GT", "min_gap": 1, "max_gap": 3, "strand": "both", "iupac": true}
+  ]
+}

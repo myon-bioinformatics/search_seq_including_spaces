@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "sequence-tools": {
+      "command": "python",
+      "args": ["-S", "/absolute/path/to/search_seq_including_spaces/sequence_service.py", "stdio"]
+    }
+  }
+}
