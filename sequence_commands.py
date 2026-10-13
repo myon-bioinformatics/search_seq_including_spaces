@@ -203,12 +203,14 @@ def add_commands(groups):
     structure.add_argument('--cutoff', type=float, default=4.0)
     structure.add_argument('--top', type=int, default=100)
     structure.set_defaults(handler=run_structure)
-    fetch = groups.add_parser('fetch', help='explicit optional NCBI acquisition (uses network)')
+    fetch = groups.add_parser('fetch', help='explicit optional NCBI/RCSB acquisition (uses network)')
     fetch.add_argument('--operation', choices=('search', 'summary', 'records'), required=True)
     fetch.add_argument('--database', choices=('pubmed','nuccore','protein','structure'), default='pubmed')
     fetch.add_argument('--ids', nargs='+')
     fetch.add_argument('--query')
-    fetch.add_argument('--format', choices=('fasta','genbank'), default='fasta')
+    fetch.add_argument('--format', choices=('fasta','genbank','cif','pdb'),
+                       help='records only: fasta/genbank for sequences (default fasta), '
+                            'cif/pdb for one RCSB structure (default cif)')
     fetch.add_argument('--timeout', type=float, default=15)
     fetch.add_argument('--max-bytes', type=int, default=8*1024*1024)
     fetch.add_argument('--limit', type=int, default=100)
@@ -263,6 +265,8 @@ def run_structure(args):
 
 
 def run_fetch(args):
+    if args.format is not None and (args.operation != 'records' or args.database == 'pubmed'):
+        raise ValueError('--format is only supported for sequence/structure records')
     client=Client(timeout=args.timeout,max_bytes=args.max_bytes,email=args.email)
     if args.operation=='search':
         if args.ids: raise ValueError('search uses --query, not --ids')
@@ -270,4 +274,8 @@ def run_fetch(args):
     if not args.ids or args.query: raise ValueError('summary/records requires --ids, without --query')
     if args.operation=='summary': return dump(client.summary(args.ids,db=args.database)),0
     if args.database=='pubmed': return dump(client.pubmed(args.ids)),0
-    return dump({'schema':'ncbi-sequences/1','records':[asdict(r) for r in client.sequences(args.ids,db=args.database,format=args.format)]}),0
+    if args.database=='structure':
+        if len(args.ids) != 1:
+            raise ValueError('structure records requires exactly one legacy PDB id')
+        return dump(client.structure(args.ids[0],format=args.format or 'cif')),0
+    return dump({'schema':'ncbi-sequences/1','records':[asdict(r) for r in client.sequences(args.ids,db=args.database,format=args.format or 'fasta')]}),0

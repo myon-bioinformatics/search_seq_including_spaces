@@ -41,6 +41,8 @@ python -S sequence_tool.py protein-ionization input.fa --ph 7 --jsonl
 python -S sequence_tool.py preprocess input.fa --alphabet dna --deduplicate sequence --aligned --export-format mega --receipt new-receipt.json > output.meg
 python -S sequence_tool.py structure input.cif --input-format cif --cutoff 4 --top 20
 python -S sequence_tool.py fetch --operation search --database pubmed --query 'RNA folding' --limit 20
+python -S sequence_tool.py fetch --operation records --database structure --ids 1CRN --format cif
+python -S sequence_tool.py fetch --operation records --database structure --ids 1CRN --format pdb
 ```
 
 New record commands use `--input-format` plus the common reader's column/path
@@ -201,6 +203,15 @@ caller cap; duplicate pages/error payloads fail. PubMed ESearch is bounded to
 and cross-reference ids, not book records or internal entity declarations.
 `Client.structure` accepts four-character legacy RCSB ids; extended PDB ids and
 MMDB ASN.1 are not implied. Live access is optional, never a CI requirement.
+
+For `fetch --operation records --database structure`, supply exactly one legacy
+PDB id; `--format` is `cif` (default) or `pdb`. Output is a JSON
+`structure-download/1` envelope containing the downloaded text and provenance,
+not a raw coordinate file or geometry report. Sequence records retain default
+`fasta` or explicit `genbank`. Other database/format combinations fail before
+network I/O. `--format` is not accepted for PubMed, search or summary. Structure
+search/summary still use NCBI's structure database and its numeric UIDs, not the
+RCSB record-download endpoint or PDB ids.
 
 Structure parsers support PDB fixed-column ATOM/HETATM with explicit elements,
 and one mmCIF atom-site loop/data block with quoted/multiline tokens. Missing or
