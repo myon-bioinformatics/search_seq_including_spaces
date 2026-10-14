@@ -11,8 +11,9 @@ python -m pytest -p vendor.xprobe_pytest --xprobe-jsonl=reports/local-001.jsonl 
 
 The vendored adapter is byte-for-byte from xprobe commit
 `326acd667e13b21bf53ccc1590af960edf8cbf6c`, `scripts/xprobe_pytest.py`.
-Its license and SHA-256/Git blob provenance live alongside it in `vendor/`.
-Update from a reviewed upstream commit and refresh the provenance together.
+Its license lives in `vendor/`; commit/blob/SHA-256 identity for all shared
+vendor files is recorded in `vendor.lock.json`. Update from a reviewed upstream
+commit and refresh the lock together.
 
 Records distinguish setup/call/teardown and collection, with native failure,
 error, skip, xfail, xpass and strict XPASS outcomes. Records describe phases,
@@ -35,8 +36,8 @@ python -S -c "from pathlib import Path; from vendor.xprobe import corpus_from_js
 ```
 
 `vendor/xprobe.py` is byte-for-byte from merged upstream receipt-helper revision
-`642999cea4185a68bffa7f7ccc46bd78dde03e5a` ([paired xprobe PR #5](https://github.com/myon-bioinformatics/xprobe/pull/5)), with its own
-SHA-256/Git blob provenance and the shared `vendor/xprobe-LICENSE`.
+`642999cea4185a68bffa7f7ccc46bd78dde03e5a` ([paired xprobe PR #5](https://github.com/myon-bioinformatics/xprobe/pull/5)), with identity
+recorded in `vendor.lock.json` and the shared `vendor/xprobe-LICENSE`.
 Use `vendor.xprobe.corpus_from_json(text, jsonl=True)` to validate observations,
 `merge_cases(*corpora)` to deduplicate identical IDs (conflicts raise), and
 `corpus_to_json(rows, jsonl=True)` to serialize them. Preserve run IDs when merging;
@@ -56,7 +57,7 @@ test runs a real reader assertion failure and checks the adapter/helper connecti
 FASTA/FASTQ domain regressions remain here. xprobe PR #5 was merged first;
 this pin references its squash merge commit. Before merging SearchSeq #24,
 verify Tests and workflow validation on the consumer's repinned current head.
-Future upstream revisions must refresh this pin and provenance checks.
+Future upstream revisions must refresh this pin and `vendor.lock.json` checks.
 Keep downloaded artifacts in separate job directories so identical filenames
 do not overwrite each other. Run IDs distinguish observations across jobs.
 
@@ -75,10 +76,10 @@ do not trigger the Tests workflow.
 | --- | --- |
 | Reader behavior | `tests/test_sequence_readers.py`: FASTA/FASTQ, malformed input, compression, stream ownership, record-boundary blanks, provenance and 8192-character sniff boundaries |
 | Existing domain regression | Anchor matcher, protein parser/features/rendering, CLI golden outputs and comparison tests in `tests/` |
-| Cross-repository adapter integrity | `tests/test_native_observations.py::test_adapter_provenance`: checks the vendored xprobe adapter against its pinned upstream commit, blob and SHA-256 |
+| Cross-repository adapter integrity | `tests/test_vendor_lock.py` and `tests/test_native_observations.py::test_adapter_provenance`: lock entries and vendored xprobe adapter bytes |
 | Shared receipt validation | xprobe `tests/test_pytest_receipt.py` and `tests/test_pytest_adapter.py`: generic receipt corruption, all native outcomes, truncation/interruption and producer integration |
 | Reader evidence integration | `test_native_failure_evidence`: runs a real reader assertion failure through the vendored adapter, calls the shared receipt validator, checks preserved exit status and omitted private diagnostics |
-| Shared JUnit identity | `myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@4dfda95d6573250477f991a0421fa6acb9bc0258`: collects the five exact matrix report paths, runs even after test failure and preserves collection evidence |
+| Shared JUnit identity | `myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@652608b16c73ecd1e39db848abba3d08a00a8a3a`: collects the five exact matrix report paths, runs even after test failure and preserves collection evidence |
 
 The shared collector checks report identity/completeness; pytest checks behavior.
 Neither a successfully collected report nor a complete native finish receipt
