@@ -10,7 +10,8 @@ on:
     paths:
       - "**.py"
       - "tests/**"
-      - "vendor/xprobe_pytest*"
+      - "vendor.lock.json"
+      - "vendor/**"
       - ".gitattributes"
       - ".github/workflows/tests.yml"
   push:
@@ -18,7 +19,8 @@ on:
     paths:
       - "**.py"
       - "tests/**"
-      - "vendor/xprobe_pytest*"
+      - "vendor.lock.json"
+      - "vendor/**"
       - ".gitattributes"
       - ".github/workflows/tests.yml"
   workflow_dispatch:
@@ -36,8 +38,37 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  vendor-lock:
+    name: Verify vendor lock
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v7
+        with:
+          python-version: "3.12"
+
+      - name: Fetch pinned shared vendor tool
+        uses: actions/checkout@v7
+        with:
+          repository: myon-bioinformatics/myon-bioinformatics
+          ref: f907560c2b9b3f7a0f78f4434f547f91cb2ef954
+          path: .vendor-sync-tools
+          persist-credentials: false
+          sparse-checkout: |
+            vendor_sync.py
+
+      - name: Verify vendored bytes against lock
+        run: python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
+
   unittest:
     name: unittest (Python ${{ matrix.python-version }}, stdlib only)
+    needs: vendor-lock
     runs-on: ubuntu-latest
     timeout-minutes: 10
     strategy:
