@@ -79,7 +79,7 @@ do not trigger the Tests workflow.
 | Cross-repository adapter integrity | `tests/test_vendor_lock.py` and `tests/test_native_observations.py::test_adapter_provenance`: lock entries and vendored xprobe adapter bytes |
 | Shared receipt validation | xprobe `tests/test_pytest_receipt.py` and `tests/test_pytest_adapter.py`: generic receipt corruption, all native outcomes, truncation/interruption and producer integration |
 | Reader evidence integration | `test_native_failure_evidence`: runs a real reader assertion failure through the vendored adapter, calls the shared receipt validator, checks preserved exit status and omitted private diagnostics |
-| Shared JUnit identity | `myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@f907560c2b9b3f7a0f78f4434f547f91cb2ef954`: collects the five exact matrix report paths, runs even after test failure and preserves collection evidence |
+| Shared JUnit identity | `myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@ab17b409d82f95abc81116af7ff0d3e7bdc4158c`: collects the five exact matrix report paths, runs even after test failure and preserves collection evidence |
 
 The shared collector checks report identity/completeness; pytest checks behavior.
 Neither a successfully collected report nor a complete native finish receipt
