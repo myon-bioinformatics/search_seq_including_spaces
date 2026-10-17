@@ -31,7 +31,7 @@ LAYERS = {
 }
 SAME_LAYER_ALLOWED = {("roi", "hints")}
 # Modules that may not import any package module (package init, output sink).
-NO_PACKAGE_IMPORTS = {ROOT_INIT, "render"}
+NO_PACKAGE_IMPORTS = {ROOT_INIT, "search_seq_including_spaces_render"}
 
 FORBIDDEN_TOP_LEVEL_CALLS = {"print", "open", "input", "exec", "eval", "breakpoint",
                              "__import__"}

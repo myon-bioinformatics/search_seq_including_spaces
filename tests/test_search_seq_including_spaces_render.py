@@ -3,7 +3,7 @@ import unittest
 
 from protein.features import protein_profiles
 from protein.parse import prepare, read_fasta
-from protein.render import render_ascii
+from protein.search_seq_including_spaces_render import render_ascii
 from protein.roi import regions_of_interest
 
 FIXTURES = pathlib.Path(__file__).parent / "fixtures"
@@ -138,14 +138,14 @@ class TestContent(unittest.TestCase):
         self.assertNotIn("[", text.split("\n\n", 1)[1])
 
     def test_close_region_labels_go_to_extra_rows(self):
-        from protein.render import _label_rows
+        from protein.search_seq_including_spaces_render import _label_rows
         rows = _label_rows([(0, "ROI-01"), (3, "ROI-02"), (8, "ROI-03"), (13, "ROI-04 ->")], 15)
         self.assertEqual(rows, ["ROI-01  ROI-03 ",
                                 "   ROI-02      ",
                                 "      ROI-04 ->"])  # moved left to stay in the block
 
     def test_truncated_region_label_is_marked(self):
-        from protein.render import _label_rows
+        from protein.search_seq_including_spaces_render import _label_rows
         self.assertEqual(_label_rows([(0, "<- ROI-04")], 7), ["<- ROI~"])
 
 
