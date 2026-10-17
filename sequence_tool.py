@@ -33,7 +33,7 @@ from result_summary import summarize_windows
 from sequence_commands import add_commands
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
-from protein.render import MIN_WIDTH, render_ascii
+from protein.search_seq_including_spaces_render import MIN_WIDTH, render_ascii
 from protein.roi import DEFAULT_THRESHOLDS, regions_of_interest
 
 EXIT_OK = 0
