@@ -42,7 +42,8 @@ class RoadmapCliTests(unittest.TestCase):
             (('nucleotide-features',),b'>x\nACGTN\n','nucleotide-features/1'),
             (('rna-fold',),b'>x\nGGGAAACCC\n','rna-nussinov/1'),
             (('protein-ionization',),b'>x\nINGAR\n','protein-ionization/1'),
-            (('preset','--kind','poly-a'),b'>x\nAAAAAA\n','sequence-marker-clues/1')):
+            (('preset','--kind','poly-a'),b'>x\nAAAAAA\n','sequence-marker-clues/1'),
+            (('translate',),b'>x\nATGGCC\n','nucleotide-translation/1')):
             code,out,err=run(*args,'-','--input-format','fasta',stdin=data)
             self.assertEqual((code,err),(0,''))
             self.assertEqual(json.loads(out)['schema'],schema)

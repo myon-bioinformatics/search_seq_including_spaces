@@ -11,7 +11,7 @@ from sequence_patterns import load_patterns
 from sequence_readers import read_sequences
 from streaming_matcher import match_large_file
 from result_summary import integer
-from sequence_analysis import nucleotide_features, marker_clues, fold_rna
+from sequence_analysis import nucleotide_features, marker_clues, fold_rna, translate_nucleotide
 from sequence_preprocess import preprocess, export_records
 from protein_ionization import ionization
 from structure_tools import parse_structure, geometry
@@ -136,7 +136,7 @@ def output_arguments(parser):
 
 
 def add_commands(groups):
-    for command, operation in (('nucleotide-features', 'nucleotide'), ('rna-fold', 'rna'), ('preset', 'preset'), ('protein-ionization', 'ionization')):
+    for command, operation in (('nucleotide-features', 'nucleotide'), ('rna-fold', 'rna'), ('preset', 'preset'), ('protein-ionization', 'ionization'), ('translate', 'translate')):
         analysis = groups.add_parser(command)
         reader_arguments(analysis)
         output_arguments(analysis)
@@ -151,6 +151,11 @@ def add_commands(groups):
             analysis.add_argument('--min-loop', type=int, default=3)
             analysis.add_argument('--max-length', type=int, default=300)
             analysis.add_argument('--no-wobble', action='store_true')
+        elif operation == 'translate':
+            analysis.add_argument('--frame', default='0', help='reading frame offset: 0, 1, 2 or all (default: 0)')
+            analysis.add_argument('--strand', choices=('+', '-', 'both'), default='+', help='strand: +, - or both (default: +)')
+            analysis.add_argument('--to-stop', action='store_true', help='stop translation at first stop codon')
+            analysis.add_argument('--table', type=int, default=1, help='NCBI genetic code table (default: 1)')
         else:
             analysis.add_argument('--kind', choices=('poly-a', 'tsd', 'str', 'snp'), required=True)
             analysis.add_argument('--motif')
@@ -235,6 +240,17 @@ def run_analysis(args):
                     report = ionization(record.sequence, ph=args.ph)
                 elif args.operation == 'rna':
                     report = fold_rna(record.sequence, min_loop=args.min_loop, max_length=args.max_length, wobble=not args.no_wobble)
+                elif args.operation == 'translate':
+                    frame = args.frame
+                    if frame in ('0', '1', '2'):
+                        frame = int(frame)
+                    elif frame != 'all':
+                        try:
+                            frame = int(frame)
+                        except ValueError:
+                            pass
+                    report = translate_nucleotide(record.sequence, frame=frame, table=args.table,
+                                                  strand=args.strand, to_stop=args.to_stop)
                 else:
                     report = marker_clues(record.sequence, kind=args.kind, motif=args.motif, min_length=args.min_length,
                                           position=args.position, allele=args.allele, repeat_length=args.repeat_length,

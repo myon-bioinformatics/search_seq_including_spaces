@@ -28,6 +28,7 @@ python -S sequence_tool.py candidates input.fa --mode pairwise --seed 42 --limit
 python -S sequence_tool.py summarize-hits hits.csv --gap-merge 10000 --top 10
 python -S sequence_tool.py compare a.fa b.fa --alphabet dna --window 21 --summary
 python -S sequence_tool.py nucleotide-features input.fa --alphabet dna --jsonl
+python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl
 python -S sequence_tool.py rna-fold input.fa --jsonl
 ```
 

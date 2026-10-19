@@ -34,6 +34,7 @@ python -S sequence_tool.py match input.fa --left AC --right GT --min-gap 1 --jso
 python -S sequence_tool.py match input.jsonl --sequence-path /payload/sequence --id-path id --patterns examples/patterns.json --jsonl
 python -S sequence_tool.py match genome.fa.gz --input-format fasta --chunk-size 65536 --left AC --right GT --min-gap 1 --jsonl
 python -S sequence_tool.py nucleotide-features input.fa --alphabet dna --k 3 --codon-frame 0 --jsonl
+python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl
 python -S sequence_tool.py preset input.fa --kind poly-a --min-length 6 --jsonl
 python -S sequence_tool.py preset input.fa --kind tsd --repeat-length 4 --min-gap 5 --max-gap 50 --jsonl
 python -S sequence_tool.py rna-fold input.fa --min-loop 3 --jsonl
@@ -167,9 +168,13 @@ in SequenceRecords and passed through the same preprocess/export API.
 
 Nucleotide GC/AT(U)/entropy denominators exclude ambiguous symbols. K-mers
 (`1 <= k <= 6`) skip any window containing ambiguity. Optional codon-frame counts
-nonoverlapping triplets with explicit frame 0/1/2 and leftover/excluded counts;
-no translation or reading-frame inference. `nucleotide_pairwise` reuses aligned
-comparison and counts transitions/transversions only for canonical substitutions.
+nonoverlapping triplets with explicit frame 0/1/2 and leftover/excluded counts.
+`translate_nucleotide` translates DNA/RNA to protein amino acids using standard genetic code
+Table 1 across reading frames (0, 1, 2 or `all`), strands (`+`, `-` or `both`), and optional
+`to_stop` truncations, resolving unambiguous IUPAC degenerate codons (such as ACN -> T).
+The library `stop_symbol` option accepts a single character (default `*`) for rendering;
+stop detection and counts always follow the genetic code, independent of that symbol.
+`nucleotide_pairwise` reuses aligned comparison and counts transitions/transversions only for canonical substitutions.
 RNA fold accepts canonical RNA, AU/GC and optional GU pairing, default minimum
 loop 3, default length cap 300 (library ceiling 1,000). Ties prefer an unpaired
 right endpoint, then the smallest partner. It maximizes noncrossing pairs;

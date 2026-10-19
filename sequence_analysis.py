@@ -3,9 +3,31 @@ from collections import Counter
 import hashlib
 import math
 
+from itertools import product
 from anchor_matcher import normalize_sequence, _BASES
 from comparison import compare_aligned, _alphabet_tables
 from result_summary import integer
+
+_COMPLEMENT = str.maketrans("ACGTRYSWKMBDHVN", "TGCAYRSWMKVHDBN")
+
+_CODON_TABLE = {
+    'TTT': 'F', 'TTC': 'F', 'TTA': 'L', 'TTG': 'L',
+    'TCT': 'S', 'TCC': 'S', 'TCA': 'S', 'TCG': 'S',
+    'TAT': 'Y', 'TAC': 'Y', 'TAA': '*', 'TAG': '*',
+    'TGT': 'C', 'TGC': 'C', 'TGA': '*', 'TGG': 'W',
+    'CTT': 'L', 'CTC': 'L', 'CTA': 'L', 'CTG': 'L',
+    'CCT': 'P', 'CCC': 'P', 'CCA': 'P', 'CCG': 'P',
+    'CAT': 'H', 'CAC': 'H', 'CAA': 'Q', 'CAG': 'Q',
+    'CGT': 'R', 'CGC': 'R', 'CGA': 'R', 'CGG': 'R',
+    'ATT': 'I', 'ATC': 'I', 'ATA': 'I', 'ATG': 'M',
+    'ACT': 'T', 'ACC': 'T', 'ACA': 'T', 'ACG': 'T',
+    'AAT': 'N', 'AAC': 'N', 'AAA': 'K', 'AAG': 'K',
+    'AGT': 'S', 'AGC': 'S', 'AGA': 'R', 'AGG': 'R',
+    'GTT': 'V', 'GTC': 'V', 'GTA': 'V', 'GTG': 'V',
+    'GCT': 'A', 'GCC': 'A', 'GCA': 'A', 'GCG': 'A',
+    'GAT': 'D', 'GAC': 'D', 'GAA': 'E', 'GAG': 'E',
+    'GGT': 'G', 'GGC': 'G', 'GGA': 'G', 'GGG': 'G',
+}
 
 
 def _nucleotide(text, alphabet):
@@ -204,3 +226,76 @@ def fold_rna(text, *, min_loop=3, max_length=300, wobble=True):
             'min_loop': min_loop, 'wobble': wobble, 'max_length': max_length,
             'coordinate_convention': '1-based-inclusive', 'model': 'maximum-pairs; pseudoknot-free; no energy parameters',
             'tie_break': 'unpaired-right then smallest partner'}
+
+
+def translate_nucleotide(text, *, frame=0, table=1, strand='+', to_stop=False, stop_symbol='*'):
+    if table != 1:
+        raise ValueError('only standard genetic code table 1 is supported')
+    if isinstance(frame, str) and frame.isdigit():
+        frame = int(frame)
+    if frame not in (0, 1, 2, 'all'):
+        raise ValueError("frame must be 0, 1, 2 or 'all'")
+    if strand not in ('+', '-', 'both'):
+        raise ValueError("strand must be '+', '-' or 'both'")
+    if not isinstance(to_stop, bool):
+        raise ValueError('to_stop must be a boolean')
+    if not isinstance(stop_symbol, str) or len(stop_symbol) != 1:
+        raise ValueError('stop_symbol must be a single character')
+
+    raw_seq = normalize_sequence(text).sequence.replace('U', 'T')
+    if not raw_seq or any(c not in _BASES for c in raw_seq):
+        raise ValueError('expected nonempty DNA/RNA nucleotide sequence')
+
+    seq_len = len(raw_seq)
+    strands = ('+', '-') if strand == 'both' else (strand,)
+    frames = (0, 1, 2) if frame == 'all' else (frame,)
+    translations = []
+
+    for s in strands:
+        oriented = raw_seq if s == '+' else raw_seq.translate(_COMPLEMENT)[::-1]
+        for f in frames:
+            amino_acids = []
+            for i in range(f, seq_len - 2, 3):
+                triplet = oriented[i:i + 3]
+                bases = [_BASES[c] for c in triplet]
+                targets = {_CODON_TABLE[b0 + b1 + b2] for b0, b1, b2 in product(*bases)}
+                aa = list(targets)[0] if len(targets) == 1 else 'X'
+                if to_stop and aa == '*':
+                    break
+                amino_acids.append(aa)
+
+            # Stop identity comes from the code table, never the display symbol.
+            protein_seq = ''.join(stop_symbol if aa == '*' else aa for aa in amino_acids)
+            stop_count = amino_acids.count('*')
+            if to_stop:
+                has_internal = False
+            else:
+                has_internal = '*' in amino_acids[:-1]
+
+            num_codons = len(amino_acids)
+            if num_codons > 0:
+                if s == '+':
+                    span = [f + 1, f + num_codons * 3]
+                else:
+                    span = [seq_len - f - num_codons * 3 + 1, seq_len - f]
+            else:
+                span = None
+
+            translations.append({
+                'strand': s,
+                'frame': f,
+                'protein_sequence': protein_seq,
+                'length': num_codons,
+                'stop_count': stop_count,
+                'has_internal_stop': has_internal,
+                'nucleotide_span': span,
+            })
+
+    return {
+        'schema': 'nucleotide-translation/1',
+        'table': table,
+        'to_stop': to_stop,
+        'coordinate_convention': '1-based-inclusive',
+        'translations': translations,
+        'source_sha256': hashlib.sha256(text.encode('utf-8')).hexdigest(),
+    }
