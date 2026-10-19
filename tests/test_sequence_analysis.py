@@ -103,3 +103,34 @@ class AnalysisTests(unittest.TestCase):
         with self.assertRaises(ValueError): translate_nucleotide('ATGGCC', frame=5)
         with self.assertRaises(ValueError): translate_nucleotide('ATGGCC', strand='invalid')
         with self.assertRaises(ValueError): translate_nucleotide('1234')
+
+
+class TranslationStopSymbolTests(unittest.TestCase):
+    def test_custom_symbol_rendering_counts_and_truncation(self):
+        for symbol in ('#', 'M', 'X'):
+            with self.subTest(symbol=symbol):
+                full = translate_nucleotide('ATGTAAGCC', stop_symbol=symbol)['translations'][0]
+                self.assertEqual(full['protein_sequence'], 'M' + symbol + 'A')
+                self.assertEqual(full['stop_count'], 1)
+                self.assertTrue(full['has_internal_stop'])
+                self.assertEqual(full['length'], 3)
+                self.assertEqual(full['nucleotide_span'], [1, 9])
+                stopped = translate_nucleotide('ATGTAAGCC', stop_symbol=symbol, to_stop=True)['translations'][0]
+                self.assertEqual(stopped['protein_sequence'], 'M')
+                self.assertEqual(stopped['stop_count'], 0)
+                self.assertFalse(stopped['has_internal_stop'])
+                self.assertEqual(stopped['nucleotide_span'], [1, 3])
+
+    def test_terminal_and_degenerate_stops_and_reverse_coordinates(self):
+        terminal = translate_nucleotide('ATGTAR', stop_symbol='#')['translations'][0]
+        self.assertEqual(terminal['protein_sequence'], 'M#')
+        self.assertEqual(terminal['stop_count'], 1)
+        self.assertFalse(terminal['has_internal_stop'])
+        reverse = translate_nucleotide('GGCTTACAT', strand='-', stop_symbol='#', to_stop=True)['translations'][0]
+        self.assertEqual(reverse['protein_sequence'], 'M')
+        self.assertEqual(reverse['nucleotide_span'], [7, 9])
+
+    def test_stop_symbol_must_be_one_character(self):
+        for symbol in ('', '**', None, 1):
+            with self.subTest(symbol=symbol), self.assertRaises(ValueError):
+                translate_nucleotide('ATGTAA', stop_symbol=symbol)

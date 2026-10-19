@@ -172,6 +172,8 @@ nonoverlapping triplets with explicit frame 0/1/2 and leftover/excluded counts.
 `translate_nucleotide` translates DNA/RNA to protein amino acids using standard genetic code
 Table 1 across reading frames (0, 1, 2 or `all`), strands (`+`, `-` or `both`), and optional
 `to_stop` truncations, resolving unambiguous IUPAC degenerate codons (such as ACN -> T).
+The library `stop_symbol` option accepts a single character (default `*`) for rendering;
+stop detection and counts always follow the genetic code, independent of that symbol.
 `nucleotide_pairwise` reuses aligned comparison and counts transitions/transversions only for canonical substitutions.
 RNA fold accepts canonical RNA, AU/GC and optional GU pairing, default minimum
 loop 3, default length cap 300 (library ceiling 1,000). Ties prefer an unpaired

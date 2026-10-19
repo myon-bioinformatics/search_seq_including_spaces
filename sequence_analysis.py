@@ -239,6 +239,8 @@ def translate_nucleotide(text, *, frame=0, table=1, strand='+', to_stop=False, s
         raise ValueError("strand must be '+', '-' or 'both'")
     if not isinstance(to_stop, bool):
         raise ValueError('to_stop must be a boolean')
+    if not isinstance(stop_symbol, str) or len(stop_symbol) != 1:
+        raise ValueError('stop_symbol must be a single character')
 
     raw_seq = normalize_sequence(text).sequence.replace('U', 'T')
     if not raw_seq or any(c not in _BASES for c in raw_seq):
@@ -258,16 +260,17 @@ def translate_nucleotide(text, *, frame=0, table=1, strand='+', to_stop=False, s
                 bases = [_BASES[c] for c in triplet]
                 targets = {_CODON_TABLE[b0 + b1 + b2] for b0, b1, b2 in product(*bases)}
                 aa = list(targets)[0] if len(targets) == 1 else 'X'
-                if to_stop and aa == stop_symbol:
+                if to_stop and aa == '*':
                     break
                 amino_acids.append(aa)
 
-            protein_seq = ''.join(amino_acids)
-            stop_count = protein_seq.count(stop_symbol)
+            # Stop identity comes from the code table, never the display symbol.
+            protein_seq = ''.join(stop_symbol if aa == '*' else aa for aa in amino_acids)
+            stop_count = amino_acids.count('*')
             if to_stop:
                 has_internal = False
             else:
-                has_internal = stop_symbol in protein_seq[:-1] if protein_seq else False
+                has_internal = '*' in amino_acids[:-1]
 
             num_codons = len(amino_acids)
             if num_codons > 0:
