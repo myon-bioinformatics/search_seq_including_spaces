@@ -1,1 +1,17 @@
 __pycache__/
+
+# --- common ignores (shared) ---
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+*.egg-info/
+.venv/
+venv/
+node_modules/
+.DS_Store
+Thumbs.db
+# --- end common ignores ---
