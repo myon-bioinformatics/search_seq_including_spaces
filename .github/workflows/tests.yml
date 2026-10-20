@@ -10,6 +10,8 @@ on:
     paths:
       - "**.py"
       - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
@@ -19,6 +21,8 @@ on:
     paths:
       - "**.py"
       - "tests/**"
+      - "pyproject.toml"
+      - "uv.lock"
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
@@ -44,17 +48,17 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Set up Python
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: "3.12"
 
       - name: Fetch pinned shared vendor tool
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/myon-bioinformatics
           ref: 1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
@@ -75,7 +79,7 @@ jobs:
       fail-fast: false
       matrix:
         # Minimum supported version and the current stable release.
-        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       # On pull_request events GITHUB_SHA is the test merge commit; also
@@ -83,10 +87,10 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
 
@@ -148,12 +152,19 @@ jobs:
 
 
       - name: Install test-only dependencies
-        run: python -m pip install -r tests/requirements.txt
+        uses: astral-sh/setup-uv@1c37ad07a6a961277cf70c0d37d6f313000f5884 # v10.3.0
+        with:
+          version: "0.13.3"
+      - name: Sync locked development environment
+        shell: bash
+        run: |
+          uv sync --locked --python "$(python -c 'import sys; print(sys.executable)')"
+          python -c "import os; from pathlib import Path; print(Path('.venv').resolve() / ('Scripts' if os.name == 'nt' else 'bin'))" >> "$GITHUB_PATH"
       - name: Record native pytest outcomes and JUnit
         run: python -m pytest tests -p vendor.xprobe_pytest --xprobe-jsonl=reports/pytest-events.jsonl --xprobe-repository=myon-bioinformatics/search_seq_including_spaces --junitxml=reports/pytest-${{ matrix.python-version }}.xml
       - name: Preserve native observations
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pytest-events-py${{ matrix.python-version }}
           path: reports/pytest-events.jsonl
@@ -161,7 +172,7 @@ jobs:
           retention-days: 14
       - name: Preserve raw JUnit
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python-version }}
           path: reports/pytest-${{ matrix.python-version }}.xml
@@ -177,6 +188,6 @@ jobs:
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
-      expected-reports: '["junit-py3.10/pytest-3.10.xml","junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
+      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
       artifact-pattern: "junit-py*"
       output-artifact: "failure-identity"

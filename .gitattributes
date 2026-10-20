@@ -1,1 +1,5 @@
 vendor/xprobe_pytest.py text eol=lf
+# Preserve locked vendor bytes on every operating system.
+vendor/* -text
+# Golden CLI bytes are platform independent.
+tests/golden/* -text
