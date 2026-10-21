@@ -25,10 +25,12 @@ repository alone; the optional xprobe checkout below is for source inspection.
 The second command was run against the repository fixture tree and selected
 3 FASTA inputs with no truncation.
 
-Validation: the full pytest suite passed **314 tests and 160 subtests** on
+Validation: the full pytest suite passed **309 tests and 166 subtests** on
 Python 3.12.14. New discovery cases cover reader extension/compression rules,
 multiple naming rules, exact/global limits, hidden paths, symlinks, walk errors,
 and standalone `python -S` execution with deliberately invalid file contents.
+The discovery tests themselves use only unittest/tempfile/mock from the
+standard library so the existing dependency-free CI discovery can import them.
 
 ## Optional source-symbol inspection
 
