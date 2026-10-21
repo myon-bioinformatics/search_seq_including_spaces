@@ -5,6 +5,9 @@ Tests beyond standard unit tests:
 - Exercises parsers and tools against adversarial/edge-case inputs (control characters,
   malformed headers, boundary whitespace, malformed CIF/FASTA) ensuring proper error
   handling or expected results without unhandled process crashes.
+- Simulates custom character table encoding maps and payload boundary conditions
+  (custom byte/character table translation, terminator boundary truncation,
+  and safe sequence record conversion).
 """
 
 import io
@@ -64,6 +67,42 @@ class TestAdversarialDiscovery(unittest.TestCase):
                 self.assertIsInstance(records, list)
             except (SequenceReadError, ValueError, TypeError, UnicodeError, AttributeError):
                 pass  # Handled error
+
+    def test_custom_character_table_encoding_simulation(self):
+        """Simulate custom character table translation and payload boundary termination.
+
+        Demonstrates translating custom character encodings (e.g. legacy system
+        character maps with explicit termination markers like 0x50/'\x50' or null)
+        into valid biological sequence payloads and reading them deterministically.
+        """
+        # Custom character map translating legacy symbols to canonical DNA/RNA characters
+        # 'ア' -> 'A', 'イ' -> 'C', 'ウ' -> 'G', 'エ' -> 'T', '\x50' -> Terminator
+        custom_charmap = {
+            "ア": "A", "イ": "C", "ウ": "G", "エ": "T",
+            "オ": "N", "カ": "A", "キ": "C", "ク": "G",
+            "\x50": None, "\x00": None,  # Terminator markers
+        }
+
+        raw_custom_payload = "アイウエオカキク\x50余剰ペロード"
+
+        # Translate custom stream using charmap until terminator
+        translated_symbols = []
+        for char in raw_custom_payload:
+            mapped = custom_charmap.get(char, "")
+            if mapped is None:
+                break  # Boundary terminator encountered
+            translated_symbols.append(mapped)
+
+        translated_sequence = "".join(translated_symbols)
+        self.assertEqual(translated_sequence, "ACGTNACG")
+
+        # Convert translated payload into a FASTA stream and read with read_sequences
+        fasta_stream = io.StringIO(f">custom_charmap_record\n{translated_sequence}\n")
+        records = list(read_sequences(fasta_stream, format="fasta", source="charmap_test"))
+
+        self.assertEqual(len(records), 1)
+        self.assertEqual(records[0].id, "custom_charmap_record")
+        self.assertEqual(records[0].sequence, "ACGTNACG")
 
     def test_adversarial_streaming_matcher(self):
         """Test streaming matcher with edge-case gap and anchor parameters."""
