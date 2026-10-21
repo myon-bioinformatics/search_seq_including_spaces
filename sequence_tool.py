@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Command-line entry point for the sequence tools (stdlib only).
 
+    python sequence_tool.py discover ROOT [--format fasta] [--format fastq] [--pattern 'sample*']
     python sequence_tool.py compare FILE_A FILE_B --alphabet {dna,rna,protein} [--json]
     python sequence_tool.py fasta validate FILE [--strip-gaps] [--allow-internal-stop] [--json]
     python sequence_tool.py protein features FILE [--ambiguity POLICY] [--json | --jsonl]

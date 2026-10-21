@@ -1,14 +1,16 @@
 """Streaming sequence readers. See docs/SEQUENCE_READERS.md for the subset."""
 import bz2
 import csv
+import fnmatch
 import gzip
 import lzma
 import os
+import stat
 from pathlib import Path
 
 from sequence_records import ReadProvenance, SequenceRecord
 
-__all__ = ["SequenceReadError", "read_sequences"]
+__all__ = ["SequenceReadError", "read_sequences", "discover_sequences", "SEQUENCE_FORMATS"]
 _FORMATS = {".fa": "fasta", ".fas": "fasta", ".fasta": "fasta",
             ".fna": "fasta", ".ffn": "fasta", ".faa": "fasta",
             ".frn": "fasta", ".fq": "fastq", ".fastq": "fastq",
@@ -18,6 +20,56 @@ _FORMATS = {".fa": "fasta", ".fas": "fasta", ".fasta": "fasta",
 _CODECS = {".gz": ("gzip", gzip.open), ".bz2": ("bz2", bz2.open),
            ".xz": ("xz", lzma.open), ".lzma": ("lzma", lzma.open)}
 _SNIFF_LIMIT = 8192
+SEQUENCE_FORMATS = tuple(sorted(set(_FORMATS.values())))
+
+
+def discover_sequences(root, *, formats=(), patterns=("*",), recursive=True,
+                       include_hidden=False, max_files=10000):
+    """List candidate inputs by existing reader extensions and caller globs.
+
+    Files are not opened, decompressed or validated. Format/compression are
+    filename hints from the same rules used by read_sequences. Patterns match
+    basenames or relative POSIX paths, case-sensitively; alternatives are ORed.
+    Traversal is sorted, skips symlinks, and fails on walk/stat errors. Exact
+    max_files is complete until one more candidate is found.
+    """
+    if isinstance(formats, str) or isinstance(patterns, str):
+        raise TypeError('formats and patterns must be sequences')
+    formats, patterns = tuple(formats), tuple(patterns)
+    if any(value not in SEQUENCE_FORMATS for value in formats):
+        raise ValueError('unsupported sequence format')
+    if any(not isinstance(value, str) or not value for value in patterns):
+        raise ValueError('patterns must be non-empty strings')
+    if type(max_files) is not int or max_files < 1:
+        raise ValueError('max_files must be a positive integer')
+    base = Path(root)
+    if base.is_symlink() or not base.is_dir():
+        raise ValueError('root must be a directory, not a symlink')
+    report = {'files': [], 'truncated': False}
+    def failed(error):
+        raise error
+    for directory, dirs, names in os.walk(base, followlinks=False, onerror=failed):
+        dirs[:] = sorted(name for name in dirs if recursive
+                         and (include_hidden or not name.startswith('.'))
+                         and not (Path(directory) / name).is_symlink())
+        for name in sorted(names):
+            if not include_hidden and name.startswith('.'):
+                continue
+            path = Path(directory) / name
+            relative = path.relative_to(base).as_posix()
+            format, codec = _extension(name)
+            if format is None or (formats and format not in formats):
+                continue
+            if not any(fnmatch.fnmatchcase(name, rule) or fnmatch.fnmatchcase(relative, rule) for rule in patterns):
+                continue
+            if not stat.S_ISREG(path.lstat().st_mode):
+                continue
+            if len(report['files']) == max_files:
+                report['truncated'] = True
+                return report
+            report['files'].append({'path': relative, 'format': format,
+                                    'compression': codec[0] if codec else None})
+    return report
 
 
 class SequenceReadError(ValueError):

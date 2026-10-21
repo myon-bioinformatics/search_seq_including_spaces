@@ -8,7 +8,7 @@ from ambiguity_candidates import MODES, generate_candidates, select_representati
 from anchor_matcher import find_matches
 from result_summary import summarize_csv
 from sequence_patterns import load_patterns
-from sequence_readers import read_sequences
+from sequence_readers import read_sequences, discover_sequences, SEQUENCE_FORMATS
 from streaming_matcher import match_large_file
 from result_summary import integer
 from sequence_analysis import nucleotide_features, marker_clues, fold_rna, translate_nucleotide
@@ -136,6 +136,14 @@ def output_arguments(parser):
 
 
 def add_commands(groups):
+    discover = groups.add_parser('discover', help='list candidate sequence inputs by filename; no content validation')
+    discover.add_argument('root')
+    discover.add_argument('--format', dest='formats', action='append', choices=SEQUENCE_FORMATS)
+    discover.add_argument('--pattern', action='append', help='basename/relative-path glob; repeat for OR')
+    discover.add_argument('--no-recursive', action='store_true')
+    discover.add_argument('--include-hidden', action='store_true')
+    discover.add_argument('--max-files', type=int, default=10000)
+    discover.set_defaults(handler=run_discover)
     for command, operation in (('nucleotide-features', 'nucleotide'), ('rna-fold', 'rna'), ('preset', 'preset'), ('protein-ionization', 'ionization'), ('translate', 'translate')):
         analysis = groups.add_parser(command)
         reader_arguments(analysis)
@@ -228,6 +236,13 @@ def add_commands(groups):
     summary.add_argument('--sequence-length', type=int)
     summary.add_argument('--coordinates', choices=('0-based-half-open', '1-based-inclusive'), default='0-based-half-open')
     summary.set_defaults(handler=run_summary)
+
+
+def run_discover(args):
+    report = discover_sequences(args.root, formats=args.formats or (), patterns=args.pattern or ('*',),
+                                recursive=not args.no_recursive, include_hidden=args.include_hidden,
+                                max_files=args.max_files)
+    return dump(report), 2 if report['truncated'] else 0
 
 
 def run_analysis(args):

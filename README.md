@@ -118,4 +118,8 @@ raw JUnit reports from both operating systems are required by the identity colle
 
 ## Discover production entry points
 
-[Convention-driven file and symbol discovery](docs/convention-discovery.md) gives verified one-liners for this repository. Supply filename/name rules to inspect production code, configuration and workflows with the shared stdlib-only xprobe tool.
+```sh
+python -S sequence_tool.py discover ./data --format fasta --format fastq --pattern 'sample*'
+```
+
+The native command lists sequence input candidates using the existing reader format/compression rules. [Discovery usage and optional source inspection](docs/convention-discovery.md).

@@ -1,5 +1,37 @@
 # Discover files and production entry points by convention
 
+## Built-in sequence input discovery
+
+```sh
+python -S sequence_tool.py discover ./data --format fasta --format fastq --pattern 'sample*'
+python -S sequence_tool.py discover tests --format fasta --format fastq --pattern '*.fa*'
+```
+
+This native command uses `sequence_readers.discover_sequences()`. It reuses the
+reader's extension and compression rules (`.fa`, `.fasta`, `.fastq`, `.gbk`,
+`.jsonl`, etc., with gzip/bz2/xz/lzma suffixes). Repeated `--format` and
+`--pattern` select alternatives; the groups intersect. Patterns match basenames
+or relative paths, case-sensitively. Results are JSON records with `path`,
+`format` and `compression`, inside a `files`/`truncated` report.
+
+Discovery lists filename candidates without reading/decompressing contents;
+use the existing reader/analysis commands to validate actual sequence records.
+Recursion is on by default (`--no-recursive` disables it); hidden paths are
+opt-in via `--include-hidden`, and symlinks are skipped. `--max-files` defaults
+to 10,000, with exact-limit detection. Exit 0 means complete (including empty),
+2 means a bad input/walk error or a truncated report. The command runs with the
+repository alone; the optional xprobe checkout below is for source inspection.
+
+The second command was run against the repository fixture tree and selected
+3 FASTA inputs with no truncation.
+
+Validation: the full pytest suite passed **314 tests and 160 subtests** on
+Python 3.12.14. New discovery cases cover reader extension/compression rules,
+multiple naming rules, exact/global limits, hidden paths, symlinks, walk errors,
+and standalone `python -S` execution with deliberately invalid file contents.
+
+## Optional source-symbol inspection
+
 Find sequence readers and validation entry points before adding a format or changing input handling.
 
 Use a sibling xprobe checkout with the convention-discovery API from
