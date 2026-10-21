@@ -115,3 +115,7 @@ using Node 24 require runner 2.327.1 or newer (GitHub-hosted runners are used).
 CI also exercises the stdlib runtime floor and Python 3.14 on Windows and macOS.
 Dependency-bearing portability tests use locked uv environments on Python 3.11+;
 raw JUnit reports from both operating systems are required by the identity collector.
+
+## Discover production entry points
+
+[Convention-driven file and symbol discovery](docs/convention-discovery.md) gives verified one-liners for this repository. Supply filename/name rules to inspect production code, configuration and workflows with the shared stdlib-only xprobe tool.
