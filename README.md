@@ -17,6 +17,12 @@
 
 
 
+## Concept overview
+
+![Sequence inputs and anchor pairs pass through matching and analysis tools to CSV or JSONL results and hit summaries.](docs/images/search_seq_including_spaces-concept.png)
+
+Anchor sequences and gap constraints drive matching, with CSV/JSONL output and follow-on sequence summaries. Command-specific formats, supported inputs, and scientific limits are documented below.
+
 ## Search, summarize and analyze
 
 Runtime remains standard-library only. [Roadmap tools and contracts](docs/ROADMAP_TOOLS.md)
