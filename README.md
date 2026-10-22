@@ -2,10 +2,10 @@
 ## Summary
 ![DNA_IMAGE](line_dna_short.webp)
 
-- Narrowly, Find sequences including nucleotide(or amino acid) spaces and Output the results to every csv file.
-- Broadly, you can find the speific sequences of front and back while ignoring the middle sequences)
+- Narrowly, find sequences including nucleotide (or amino acid) spaces and output the results to CSV files.
+- Broadly, you can find the specific sequences of front and back while ignoring the middle sequences.
 - Language: Python (CI-tested on 3.10–3.14)
->__Note__ You can confirm for Bioinformatics Tips at Wiki.
+>__Note__ Bioinformatics tips are collected on the [repository Wiki](https://github.com/myon-bioinformatics/search_seq_including_spaces/wiki).
 
 ![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/search_seq_including_spaces)
 ![GitHub last commit](https://img.shields.io/github/last-commit/myon-bioinformatics/search_seq_including_spaces)
@@ -16,6 +16,18 @@
 [![Twitter Follow](https://img.shields.io/twitter/follow/myonitbusiness?style=social)](https://twitter.com/myonitbusiness)
 
 
+
+## Concept overview
+
+![Sequence inputs and anchor pairs pass through matching and analysis tools to CSV or JSONL results and hit summaries.](docs/images/search_seq_including_spaces-concept.png)
+
+Anchor sequences and gap constraints drive matching, with CSV/JSONL output and follow-on sequence summaries. Command-specific formats, supported inputs, and scientific limits are documented below.
+
+### Challenges, roles, and outcomes
+
+![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
+
+Complementary view of sequence readers, matching/candidate tools, and result summaries. Formats and limits vary by command; the comparison tools use already-aligned sequences and do not perform alignment or infer homology.
 
 ## Search, summarize and analyze
 
@@ -106,8 +118,9 @@ uv run --locked python -m pytest
 python -S -m unittest discover -s tests -p test_sequence_readers.py -v
 ```
 
-`pyproject.toml` is the canonical development dependency definition; legacy
-requirements files remain for downstream callers. Runtime metadata does not
+`pyproject.toml` is the canonical development dependency definition. The runtime
+has no third-party dependencies, and `tests/requirements.txt` lists only the
+test-only tools. Runtime metadata does not
 raise the source/vendoring floor to the development floor. CI pins setup-python
 v7.0.0 and setup-uv v10.3.0 by full commit SHA, and uses uv 0.13.3. Setup actions
 using Node 24 require runner 2.327.1 or newer (GitHub-hosted runners are used).
