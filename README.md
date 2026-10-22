@@ -23,6 +23,12 @@
 
 Anchor sequences and gap constraints drive matching, with CSV/JSONL output and follow-on sequence summaries. Command-specific formats, supported inputs, and scientific limits are documented below.
 
+### Challenges, roles, and outcomes
+
+![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
+
+Complementary view of sequence readers, matching/candidate tools, and result summaries. Formats and limits vary by command; the comparison tools use already-aligned sequences and do not perform alignment or infer homology.
+
 ## Search, summarize and analyze
 
 Runtime remains standard-library only. [Roadmap tools and contracts](docs/ROADMAP_TOOLS.md)
