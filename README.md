@@ -2,10 +2,10 @@
 ## Summary
 ![DNA_IMAGE](line_dna_short.webp)
 
-- Narrowly, Find sequences including nucleotide(or amino acid) spaces and Output the results to every csv file.
-- Broadly, you can find the speific sequences of front and back while ignoring the middle sequences)
+- Narrowly, find sequences including nucleotide (or amino acid) spaces and output the results to CSV files.
+- Broadly, you can find the specific sequences of front and back while ignoring the middle sequences.
 - Language: Python (CI-tested on 3.10–3.14)
->__Note__ You can confirm for Bioinformatics Tips at Wiki.
+>__Note__ Bioinformatics tips are collected on the [repository Wiki](https://github.com/myon-bioinformatics/search_seq_including_spaces/wiki).
 
 ![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/search_seq_including_spaces)
 ![GitHub last commit](https://img.shields.io/github/last-commit/myon-bioinformatics/search_seq_including_spaces)
