@@ -6,7 +6,7 @@ and preserves it with the JUnit report, including when tests fail. All Python ma
 For local runs, choose a fresh destination (existing evidence is never overwritten):
 
 ```sh
-python -m pytest -p vendor.xprobe_pytest --xprobe-jsonl=reports/local-001.jsonl --xprobe-repository=myon-bioinformatics/search_seq_including_spaces
+uv run --locked pytest -p vendor.xprobe_pytest --xprobe-jsonl=reports/local-001.jsonl --xprobe-repository=myon-bioinformatics/search_seq_including_spaces
 ```
 
 The vendored adapter is byte-for-byte from xprobe commit
@@ -67,7 +67,7 @@ linked by `origin_id`; this adapter does not infer causes or ingest chat history
 ## CI gates and shared coverage
 
 CodeQL is deliberately removed from this repository's CI. The behavior gates
-are `python -S -m unittest discover -s tests` plus the full pytest suite on
+are `python -S -m unittest discover -s tests` plus the locked `uv run --locked pytest` suite on
 Python 3.10–3.14; a failed test retains its nonzero status. Workflow changes are
 checked separately by the existing shared actionlint workflow. Docs-only changes
 do not trigger the Tests workflow.

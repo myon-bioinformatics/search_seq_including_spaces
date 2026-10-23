@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 import subprocess
-import sys
 
 from vendor.xprobe import pytest_receipt
 
@@ -42,10 +41,11 @@ def test_failure():
     env = dict(os.environ, PYTHONPATH=str(ROOT), PYTEST_DISABLE_PLUGIN_AUTOLOAD='1')
     env.pop('PYTEST_ADDOPTS', None)
     result = subprocess.run(
-        [sys.executable, '-m', 'pytest', '-c', os.devnull, '-p', 'vendor.xprobe_pytest',
+        ['uv', 'run', '--locked', '--project', str(ROOT), 'pytest', '-c', os.devnull,
+         '-p', 'vendor.xprobe_pytest',
          '--xprobe-jsonl=' + str(destination), '--xprobe-repository=myon-bioinformatics/search_seq_including_spaces',
          '--xprobe-run-id=reader-integration',
-         str(suite)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=30)
+         str(suite)], cwd=tmp_path, env=env, capture_output=True, text=True, timeout=60)
     assert result.returncode == 1, result.stdout + result.stderr
     text = destination.read_text(encoding='utf-8')
     receipt = pytest_receipt(text, expected_context={
