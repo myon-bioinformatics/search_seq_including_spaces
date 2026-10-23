@@ -1,4 +1,10 @@
 # search_seq_including_spaces
+
+<p align="center">
+  <img src="docs/brand/icon.png" alt="search_seq_including_spaces icon" width="160" />
+</p>
+
+[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
 ## Summary
 ![DNA_IMAGE](line_dna_short.webp)
 

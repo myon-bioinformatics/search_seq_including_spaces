@@ -1,0 +1,27 @@
+{
+  "source": "User-supplied project artwork sheet, 2026-10-23",
+  "source_dimensions": [
+    1536,
+    1024
+  ],
+  "coordinate_convention": "left, top, right-exclusive, bottom-exclusive",
+  "project": {
+    "label": "search_seq_including_spaces",
+    "icon": [
+      331,
+      634,
+      500,
+      803
+    ],
+    "favicon": [
+      513,
+      720,
+      583,
+      790
+    ],
+    "icon_sha256": "306c1ed55b16940da6317c4b2523a4cf995989273ab5467103a2b265fb8e354a",
+    "icon_rgb_sha256": "08075663f2f324476c7c11a1868473afbe12fda4c55aa5b77c2eb1f32ff4d659",
+    "favicon_sha256": "5ea4396837046f4d6dbf70d561bc68152559d89cf6e64eaee18f529f1476df07",
+    "favicon_rgb_sha256": "341d3447140f2c2498be7defb14f26daf6f4b1a72130f51c6fc33c4f3b057cef"
+  }
+}
