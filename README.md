@@ -94,7 +94,7 @@ gap and ambiguity policies. Details and scientific boundaries:
 [docs/COMPARISON.md](docs/COMPARISON.md).
 
 ## SEARCH_SEQUENCE_IMAGE
-![SEARCH_IMAGE](SEARCH_SEQUENCE_INCLUDING_SPACES_IMAGE.webp)
+![search_seq_including_spaces search illustration](docs/images/search_seq_including_spaces-search.jpg)
 
 ## References
 - About Nucleotides:https://www.ncbi.nlm.nih.gov/nuccore/
