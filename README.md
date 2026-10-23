@@ -107,9 +107,10 @@ The stdlib [anchor/gap matcher](docs/ANCHOR_MATCHER.md) supports exact/ranged
 gaps, coordinate-preserving normalization, IUPAC DNA compatibility and reverse
 search as a separate importable module.
 
-Install test-only tools with `python -m pip install -r tests/requirements.txt`.
-CI preserves native pytest JSONL and JUnit while retaining the `python -S`
-runtime isolation lane. See [recording and exploration](docs/pytest-observations.md).
+pytest is a development dependency with a lower bound only (`pytest>=9.1.1`).
+CI runs that suite with `uv run --locked pytest`, and preserves native pytest
+JSONL and JUnit while retaining the `python -S` runtime isolation lane. See
+[recording and exploration](docs/pytest-observations.md).
 
 ## Runtime and development Python policy
 
@@ -120,15 +121,16 @@ package. Development/test environments use Python 3.11+ and a committed uv lock:
 
 ```sh
 uv sync --locked --python 3.11
-uv run --locked python -m pytest
+uv run --locked pytest
 python -S -m unittest discover -s tests -p test_sequence_readers.py -v
 ```
 
-`pyproject.toml` is the canonical development dependency definition. The runtime
-has no third-party dependencies, and `tests/requirements.txt` lists only the
-test-only tools. Runtime metadata does not
-raise the source/vendoring floor to the development floor. CI pins setup-python
-v7.0.0 and setup-uv v10.3.0 by full commit SHA, and uses uv 0.13.3. Setup actions
+`pyproject.toml` is the canonical development dependency definition. pytest is
+declared there, and again in `tests/requirements.txt`, as a lower bound only.
+The runtime has no third-party dependencies. Runtime metadata does not
+raise the source/vendoring floor to the development floor. CI pins setup-uv
+v10.3.2 by full commit SHA and selects uv version latest. Other actions from
+the actions organization use major tags. Setup actions
 using Node 24 require runner 2.327.1 or newer (GitHub-hosted runners are used).
 
 CI also exercises the stdlib runtime floor and Python 3.14 on Windows and macOS.

@@ -1,2 +1,3 @@
-# Test tooling only. pytest 9.1.1 and newer support the CI lanes (Python 3.10–3.14).
+# Test tooling only. Lower bound only, matching the pyproject dev group.
+# The locked lane runs this with: uv run --locked pytest
 pytest>=9.1.1
