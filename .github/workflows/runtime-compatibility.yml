@@ -25,9 +25,12 @@ jobs:
             python: "3.14"
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-python@v7
+      - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          python-version: ${{ matrix.python }}
+          version: "0.13.3"
+          python-version: "${{ matrix.python }}"
+          activate-environment: true
+          enable-cache: false
       - name: Exercise runtime behavior without site-packages
         run: python -S -m unittest discover -s tests -p test_sequence_readers.py -v
 
@@ -46,12 +49,12 @@ jobs:
       - uses: actions/checkout@v7
         with:
           persist-credentials: false
-      - uses: actions/setup-python@v7
-        with:
-          python-version: "3.11"
       - uses: astral-sh/setup-uv@68559e99cc807c1eb7e9238fd43a15bba460eec2 # v10.3.3
         with:
-          version: "latest"
+          version: "0.13.3"
+          python-version: "3.11"
+          activate-environment: true
+          enable-cache: false
       - name: Sync locked development environment
         run: uv sync --locked --python "$(python -c 'import sys; print(sys.executable)')"
       - name: Run portability tests with raw JUnit
