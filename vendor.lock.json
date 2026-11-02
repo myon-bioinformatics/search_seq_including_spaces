@@ -3,12 +3,12 @@
   "files": [
     {
       "repository": "myon-bioinformatics/xprobe",
-      "ref": "ca03a165db2d675513b69e6980821de193c120c9",
-      "commit": "ca03a165db2d675513b69e6980821de193c120c9",
+      "ref": "1ffbb7b984075c683690bbe4e9deb06199cdfe94",
+      "commit": "1ffbb7b984075c683690bbe4e9deb06199cdfe94",
       "source": "xprobe.py",
       "destination": "vendor/xprobe.py",
-      "blob_sha": "b8387362ea58e45a4129a7daa00bc04df66dd0f2",
-      "sha256": "af46db5428f8ff2b2ff55ab2432207909823760949256874d35cdcd63dea9a32"
+      "blob_sha": "7595fe5eb7fd2e375b82e7c702079f6496a3276d",
+      "sha256": "43535128a5a018e99a3e681086562298afd3c5240710d14a02e79e6966e0a723"
     },
     {
       "repository": "myon-bioinformatics/xprobe",

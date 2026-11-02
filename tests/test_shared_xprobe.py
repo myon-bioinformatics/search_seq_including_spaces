@@ -17,7 +17,7 @@ class SharedXprobeTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[1]
         meta = _lock_entry(root, "vendor/xprobe.py")
         self.assertEqual(meta["repository"], "myon-bioinformatics/xprobe")
-        self.assertEqual(meta["commit"], "ca03a165db2d675513b69e6980821de193c120c9")
+        self.assertEqual(meta["commit"], "1ffbb7b984075c683690bbe4e9deb06199cdfe94")
         self.assertEqual(meta["source"], "xprobe.py")
         self.assertTrue((root / "vendor" / "xprobe-LICENSE").is_file())
         from vendor import xprobe
