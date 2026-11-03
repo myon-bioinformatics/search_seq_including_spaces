@@ -9,6 +9,7 @@ I/O or print at import time.
 """
 
 import ast
+from functools import lru_cache
 import pathlib
 import subprocess
 import sys
@@ -56,6 +57,7 @@ def _path_for(parts):
     return None
 
 
+@lru_cache(maxsize=1)
 def package_modules():
     names = []
     for path in PACKAGE.rglob("*.py"):
@@ -63,12 +65,25 @@ def package_modules():
         if parts[-1] == "__init__":
             parts = parts[:-1]
         names.append(_name_from_parts(parts))
-    return sorted(names)
+    return tuple(sorted(names))
 
 
+@lru_cache(maxsize=None)
 def parse_module(name):
     path = _path_for(_parts_from_name(name))
     return ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+
+
+def setUpModule():
+    # A suite inspects one source snapshot. Never retain it across invocations:
+    # both unittest and pytest call these module fixtures for this test module.
+    package_modules.cache_clear()
+    parse_module.cache_clear()
+
+
+def tearDownModule():
+    package_modules.cache_clear()
+    parse_module.cache_clear()
 
 
 def _resolve(base, alias):
