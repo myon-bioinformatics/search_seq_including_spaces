@@ -48,10 +48,39 @@ class SequenceDiscoveryTests(unittest.TestCase):
         self.assertEqual(discover_sequences(self.root, patterns=('nested/*',), max_files=1)['files'][0]['format'], 'genbank')
         self.assertEqual(discover_sequences(self.root, patterns=())['files'], [])
 
+    def test_exclude_drops_matches_and_keeps_order(self):
+        self.inputs()
+        everything = discover_sequences(self.root)['files']
+        self.assertEqual(discover_sequences(self.root, exclude=())['files'], everything)
+        kept = discover_sequences(self.root, exclude=('nested/*', 'other*'))['files']
+        self.assertEqual(kept, [row for row in everything
+                                if not row['path'].startswith('nested/') and not row['path'].split('/')[-1].startswith('other')])
+        self.assertLess(len(kept), len(everything))
+        self.assertEqual(discover_sequences(self.root, exclude=('*',))['files'], [])
+        # basename only: 'sample.gbk' does not match the relative path 'nested/sample.gbk'.
+        self.assertIn('nested/sample.gbk', [row['path'] for row in everything])
+        self.assertEqual(discover_sequences(self.root, exclude=('sample.gbk',))['files'],
+                         [row for row in everything if row['path'] != 'nested/sample.gbk'])
+
+    def test_exclude_applies_before_max_files(self):
+        self.inputs()
+        everything = discover_sequences(self.root)['files']
+        # The excluded file comes last, so counting it would flag truncation.
+        last = everything[-1]['path']
+        report = discover_sequences(self.root, exclude=(last,), max_files=len(everything) - 1)
+        self.assertFalse(report['truncated'])
+        self.assertEqual(report['files'], everything[:-1])
+        args = [sys.executable, '-S', str(ROOT / 'sequence_tool.py'), 'discover', str(self.root), '--exclude', 'nested/*']
+        result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', timeout=20)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['files'],
+                         [row for row in everything if not row['path'].startswith('nested/')])
+
     def test_bad_rules_rejected_on_empty_root(self):
         for options, error in [
             ({'formats': ('unknown',)}, ValueError), ({'formats': 'fasta'}, TypeError),
             ({'patterns': '*.fa'}, TypeError), ({'patterns': ('',)}, ValueError),
+            ({'exclude': '*.fa'}, TypeError), ({'exclude': ('',)}, ValueError), ({'exclude': (1,)}, ValueError),
             ({'max_files': 0}, ValueError), ({'max_files': True}, ValueError),
         ]:
             with self.subTest(options=options), self.assertRaises(error):

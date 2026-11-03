@@ -140,6 +140,7 @@ def add_commands(groups):
     discover.add_argument('root')
     discover.add_argument('--format', dest='formats', action='append', choices=SEQUENCE_FORMATS)
     discover.add_argument('--pattern', action='append', help='basename/relative-path glob; repeat for OR')
+    discover.add_argument('--exclude', action='append', help='basename/relative-path glob to drop; repeat for OR')
     discover.add_argument('--no-recursive', action='store_true')
     discover.add_argument('--include-hidden', action='store_true')
     discover.add_argument('--max-files', type=int, default=10000)
@@ -239,7 +240,7 @@ def add_commands(groups):
 
 
 def run_discover(args):
-    report = discover_sequences(args.root, formats=args.formats or (), patterns=args.pattern or ('*',),
+    report = discover_sequences(args.root, formats=args.formats or (), patterns=args.pattern or ('*',), exclude=args.exclude or (),
                                 recursive=not args.no_recursive, include_hidden=args.include_hidden,
                                 max_files=args.max_files)
     return dump(report), 2 if report['truncated'] else 0
