@@ -9,7 +9,6 @@ I/O or print at import time.
 """
 
 import ast
-from functools import lru_cache
 import pathlib
 import subprocess
 import sys
@@ -47,9 +46,9 @@ def _parts_from_name(name):
     return [] if name == ROOT_INIT else name.split(".")
 
 
-def _path_for(parts):
+def _path_for(parts, package=None):
     """File of a module given as parts relative to protein/, or None."""
-    base = PACKAGE.joinpath(*parts)
+    base = pathlib.Path(PACKAGE if package is None else package).joinpath(*parts)
     if (base / "__init__.py").is_file():
         return base / "__init__.py"
     if parts and base.with_suffix(".py").is_file():
@@ -57,33 +56,106 @@ def _path_for(parts):
     return None
 
 
-@lru_cache(maxsize=1)
-def package_modules():
+CACHE_MODES = ("off", "suite", "reuse")
+
+
+class SourceSnapshot:
+    """Discover and parse protein/ sources, with a selectable cache policy.
+
+    cache="off":   no caching; every call rescans and re-parses (main's behaviour).
+    cache="suite": (default) reuse results inside one module suite; begin_suite()
+                   and end_suite() drop them, so the next suite sees fresh sources.
+    cache="reuse": never drop results while the process lives. Fastest for
+                   repeated in-process runs, but RISKY: edited, added or removed
+                   sources stay invisible (stale results), and parse() hands out
+                   the same mutable ast tree, so a caller that mutates it leaks
+                   that change into every later test and suite.
+
+    Keys include the package path, so pointing PACKAGE elsewhere (as the cache
+    tests do) never returns another directory's result. File contents/mtimes are
+    deliberately not part of the key; that is what suite clearing is for.
+    """
+
+    def __init__(self, cache="suite"):
+        if cache not in CACHE_MODES:
+            raise ValueError(f"cache must be one of {CACHE_MODES}, got {cache!r}")
+        self.cache = cache
+        self._modules = {}
+        self._trees = {}
+        self.misses = 0
+
+    def modules(self, package):
+        if self.cache == "off":
+            return _scan_modules(package)
+        key = pathlib.Path(package)
+        if key not in self._modules:
+            self.misses += 1
+            self._modules[key] = _scan_modules(package)
+        return self._modules[key]
+
+    def parse(self, package, name):
+        if self.cache == "off":
+            return _parse_file(package, name)
+        key = (pathlib.Path(package), name)
+        if key not in self._trees:
+            self.misses += 1
+            self._trees[key] = _parse_file(package, name)
+        return self._trees[key]
+
+    def clear(self):
+        self._modules.clear()
+        self._trees.clear()
+
+    def cached_entries(self):
+        return len(self._modules) + len(self._trees)
+
+    def begin_suite(self):
+        if self.cache == "suite":
+            self.clear()
+
+    end_suite = begin_suite
+
+
+def _scan_modules(package):
     names = []
-    for path in PACKAGE.rglob("*.py"):
-        parts = list(path.relative_to(PACKAGE).with_suffix("").parts)
+    for path in pathlib.Path(package).rglob("*.py"):
+        parts = list(path.relative_to(package).with_suffix("").parts)
         if parts[-1] == "__init__":
             parts = parts[:-1]
         names.append(_name_from_parts(parts))
     return tuple(sorted(names))
 
 
-@lru_cache(maxsize=None)
-def parse_module(name):
-    path = _path_for(_parts_from_name(name))
+def _parse_file(package, name):
+    path = _path_for(_parts_from_name(name), package)
     return ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
 
 
+SNAPSHOT = SourceSnapshot()
+
+
+def use_cache(mode):
+    """Switch the policy from Python (e.g. a runner script); returns the snapshot."""
+    global SNAPSHOT
+    SNAPSHOT = SourceSnapshot(mode)
+    return SNAPSHOT
+
+
+def package_modules():
+    return SNAPSHOT.modules(PACKAGE)
+
+
+def parse_module(name):
+    return SNAPSHOT.parse(PACKAGE, name)
+
+
 def setUpModule():
-    # A suite inspects one source snapshot. Never retain it across invocations:
-    # both unittest and pytest call these module fixtures for this test module.
-    package_modules.cache_clear()
-    parse_module.cache_clear()
+    # A suite inspects one source snapshot (unless cache="reuse" was chosen).
+    SNAPSHOT.begin_suite()
 
 
 def tearDownModule():
-    package_modules.cache_clear()
-    parse_module.cache_clear()
+    SNAPSHOT.end_suite()
 
 
 def _resolve(base, alias):
@@ -230,3 +302,12 @@ class TestRuntimeWithoutSitePackages(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout, "")
         self.assertEqual(result.stderr, "")
+
+
+if __name__ == "__main__":
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--cache", choices=CACHE_MODES, default="suite")
+    known, rest = parser.parse_known_args()
+    use_cache(known.cache)
+    unittest.main(argv=[sys.argv[0], *rest])
