@@ -40,8 +40,10 @@ def discover_sequences(root, *, formats=(), patterns=("*",), exclude=(),
     formats, patterns, exclude = tuple(formats), tuple(patterns), tuple(exclude)
     if any(value not in SEQUENCE_FORMATS for value in formats):
         raise ValueError('unsupported sequence format')
-    if any(not isinstance(value, str) or not value for value in patterns + exclude):
+    if any(not isinstance(value, str) or not value for value in patterns):
         raise ValueError('patterns must be non-empty strings')
+    if any(not isinstance(value, str) or not value for value in exclude):
+        raise ValueError('exclude patterns must be non-empty strings')
     if type(max_files) is not int or max_files < 1:
         raise ValueError('max_files must be a positive integer')
     base = Path(root)
@@ -50,6 +52,8 @@ def discover_sequences(root, *, formats=(), patterns=("*",), exclude=(),
     report = {'files': [], 'truncated': False}
     def failed(error):
         raise error
+    def hit(rules, name, relative):
+        return any(fnmatch.fnmatchcase(name, rule) or fnmatch.fnmatchcase(relative, rule) for rule in rules)
     for directory, dirs, names in os.walk(base, followlinks=False, onerror=failed):
         dirs[:] = sorted(name for name in dirs if recursive
                          and (include_hidden or not name.startswith('.'))
@@ -62,9 +66,7 @@ def discover_sequences(root, *, formats=(), patterns=("*",), exclude=(),
             format, codec = _extension(name)
             if format is None or (formats and format not in formats):
                 continue
-            def hit(rules):
-                return any(fnmatch.fnmatchcase(name, rule) or fnmatch.fnmatchcase(relative, rule) for rule in rules)
-            if not hit(patterns) or hit(exclude):
+            if not hit(patterns, name, relative) or hit(exclude, name, relative):
                 continue
             if not stat.S_ISREG(path.lstat().st_mode):
                 continue
