@@ -48,10 +48,26 @@ class SequenceDiscoveryTests(unittest.TestCase):
         self.assertEqual(discover_sequences(self.root, patterns=('nested/*',), max_files=1)['files'][0]['format'], 'genbank')
         self.assertEqual(discover_sequences(self.root, patterns=())['files'], [])
 
+    def test_exclude_drops_matches_and_keeps_order(self):
+        self.inputs()
+        everything = discover_sequences(self.root)['files']
+        self.assertEqual(discover_sequences(self.root, exclude=())['files'], everything)
+        kept = discover_sequences(self.root, exclude=('nested/*', 'other*'))['files']
+        self.assertEqual(kept, [row for row in everything
+                                if not row['path'].startswith('nested/') and not row['path'].split('/')[-1].startswith('other')])
+        self.assertLess(len(kept), len(everything))
+        self.assertEqual(discover_sequences(self.root, exclude=('*',))['files'], [])
+        args = [sys.executable, '-S', str(ROOT / 'sequence_tool.py'), 'discover', str(self.root), '--exclude', 'nested/*']
+        result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', timeout=20)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['files'],
+                         [row for row in everything if not row['path'].startswith('nested/')])
+
     def test_bad_rules_rejected_on_empty_root(self):
         for options, error in [
             ({'formats': ('unknown',)}, ValueError), ({'formats': 'fasta'}, TypeError),
             ({'patterns': '*.fa'}, TypeError), ({'patterns': ('',)}, ValueError),
+            ({'exclude': '*.fa'}, TypeError), ({'exclude': ('',)}, ValueError),
             ({'max_files': 0}, ValueError), ({'max_files': True}, ValueError),
         ]:
             with self.subTest(options=options), self.assertRaises(error):
