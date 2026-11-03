@@ -101,3 +101,85 @@ class TestCacheModes(unittest.TestCase):
     def test_rejects_unknown_mode(self):
         with self.assertRaises(ValueError):
             self.subject.use_cache("forever")
+
+    def test_parse_key_includes_package(self):
+        self.subject.use_cache("reuse")
+        first = self.subject.parse_module("sample")
+        other = tempfile.TemporaryDirectory()
+        self.addCleanup(other.cleanup)
+        self.subject.PACKAGE = Path(other.name)
+        (self.subject.PACKAGE / "sample.py").write_text("other = 2\n", encoding="utf-8")
+        second = self.subject.parse_module("sample")
+        self.assertIsNot(first, second)
+        self.assertEqual(ast.dump(second), ast.dump(ast.parse("other = 2\n")))
+
+    def test_off_does_not_cache_modules(self):
+        snap = self.subject.use_cache("off")
+        first = self.subject.package_modules()
+        self.assertEqual(first, ("sample",))
+        (self.subject.PACKAGE / "added.py").write_text("x = 1\n", encoding="utf-8")
+        self.assertEqual(self.subject.package_modules(), ("added", "sample"))
+        self.assertEqual(snap.cached_entries(), 0)
+        self.assertEqual(snap.misses, 0)
+
+    def test_reuse_shares_mutable_tree(self):
+        # documented risk: a mutation by one caller leaks to the next
+        self.subject.use_cache("reuse")
+        self.subject.parse_module("sample").body.clear()
+        self.assertEqual(self.subject.parse_module("sample").body, [])
+
+    def test_reuse_does_not_see_added_or_removed_files(self):
+        self.subject.use_cache("reuse")
+        root = self.subject.PACKAGE
+        self.subject.setUpModule()
+        self.assertEqual(self.subject.package_modules(), ("sample",))
+        self.subject.tearDownModule()
+        (root / "sample.py").unlink()
+        (root / "added.py").write_text("x = 1\n", encoding="utf-8")
+        self.subject.setUpModule()
+        self.assertEqual(self.subject.package_modules(), ("sample",))  # stale
+
+
+class TestCacheCli(unittest.TestCase):
+    def setUp(self):
+        spec = importlib.util.spec_from_file_location(
+            "isolated_layer_cli", Path(__file__).with_name("test_layers.py"))
+        self.subject = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(self.subject)
+
+    def test_default_and_each_mode(self):
+        self.assertEqual(self.subject.parse_cli([]), ("suite", []))
+        for mode in ("off", "suite", "reuse"):
+            with self.subTest(mode=mode):
+                self.assertEqual(self.subject.parse_cli(["--cache", mode, "-v"]),
+                                 (mode, ["-v"]))
+
+    def test_rejects_invalid_mode(self):
+        import contextlib, io
+        with contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as cm:
+                self.subject.parse_cli(["--cache", "forever"])
+        self.assertEqual(cm.exception.code, 2)
+
+    def test_main_entry_uses_cli_mode(self):
+        import subprocess, sys
+        script = Path(__file__).with_name("test_layers.py")
+        bad = subprocess.run([sys.executable, str(script), "--cache", "forever"],
+                             capture_output=True, text=True)
+        self.assertEqual(bad.returncode, 2)
+        self.assertIn("--cache", bad.stderr)
+        probe = ("import runpy, sys, unittest\n"
+                 "seen = {}\n"
+                 "def fake_main(argv):\n"
+                 "    seen['argv'] = argv[1:]\n"
+                 "unittest.main = fake_main\n"
+                 "sys.argv = [sys.argv[1], *sys.argv[2:]]\n"
+                 "ns = runpy.run_path(sys.argv[0], run_name='__main__')\n"
+                 "print(ns['SNAPSHOT'].cache, *seen['argv'])\n")
+        for mode in ("off", "suite", "reuse"):
+            with self.subTest(mode=mode):
+                ok = subprocess.run([sys.executable, "-c", probe, str(script),
+                                     "--cache", mode, "-v"],
+                                    capture_output=True, text=True)
+                self.assertEqual(ok.returncode, 0, ok.stderr)
+                self.assertEqual(ok.stdout.split(), [mode, "-v"])

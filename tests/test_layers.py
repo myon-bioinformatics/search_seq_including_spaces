@@ -304,10 +304,16 @@ class TestRuntimeWithoutSitePackages(unittest.TestCase):
         self.assertEqual(result.stderr, "")
 
 
-if __name__ == "__main__":
+def parse_cli(argv):
+    """Split --cache off|suite|reuse from argv; the rest goes to unittest."""
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument("--cache", choices=CACHE_MODES, default="suite")
-    known, rest = parser.parse_known_args()
-    use_cache(known.cache)
+    known, rest = parser.parse_known_args(argv)
+    return known.cache, rest
+
+
+if __name__ == "__main__":
+    mode, rest = parse_cli(sys.argv[1:])
+    use_cache(mode)
     unittest.main(argv=[sys.argv[0], *rest])
