@@ -144,3 +144,9 @@ python -S sequence_tool.py discover ./data --format fasta --format fastq --patte
 ```
 
 The native command lists sequence input candidates using the existing reader format/compression rules. [Discovery usage and optional source inspection](docs/convention-discovery.md).
+
+## Focused test discovery
+
+See [standard-library discovery commands](docs/unittest-discovery.md) for
+validated `python -S -m unittest discover` recipes, filename/name filtering,
+and the boundary with the full pytest suite.
