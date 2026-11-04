@@ -49,7 +49,8 @@ def main():
          lambda: list(streaming_matcher.match_chunks(
             (text[i:i+1024] for i in range(0, len(text), 1024)), 'ACR', 'YGT', **options))),
     ):
-        assert before() == after(), name
+        if before() != after():
+            raise SystemExit(f"output mismatch: {name}")
         times = [[], []]
         for turn in range(9):
             for index in ((0, 1) if turn % 2 == 0 else (1, 0)):

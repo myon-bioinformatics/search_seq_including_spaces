@@ -41,3 +41,13 @@ These are about 22% and 24% reductions in this local workload. They are not
 CI/build-time measurements or guarantees for other inputs. Literal-mode
 performance, process peak memory and deployed artifact size were not benchmarked.
 No dependencies or workflow changes are added.
+
+## Optimized Python guard
+
+Benchmark parity checks use explicit conditions and `SystemExit`, so they remain
+active under `python -O`. A subprocess regression test injects incorrect results
+and verifies a nonzero exit with a mismatch diagnostic and no success JSON:
+
+```sh
+python -S -m unittest discover -s tests -p test_benchmark_optimization_guard.py -v
+```
