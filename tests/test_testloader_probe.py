@@ -1,17 +1,79 @@
 """Contracts for the experiment's use of public unittest APIs."""
 from pathlib import Path
 import sys
+import subprocess
+import copy
 import tempfile
 import unittest
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from experiments import testloader_probe as probe
+with patch.object(sys, 'path', [str(Path(__file__).resolve().parents[1]), *sys.path]):
+    from experiments import testloader_probe as probe
 
 
 class TestPublicLoader(unittest.TestCase):
     def tearDown(self):
         probe.subject.use_cache('suite')
+
+    def test_imports_and_loading_preserve_sys_path(self):
+        script = """
+import runpy, sys
+from pathlib import Path
+before = list(sys.path)
+for name in ('experiments/testloader_probe.py', 'tests/test_testloader_probe.py'):
+    runpy.run_path(name, run_name='import_probe')
+    if sys.path != before:
+        raise RuntimeError('import changed sys.path: ' + name)
+from experiments import testloader_probe as probe
+for method in ('discover', 'names'):
+    probe.load(method)
+    if sys.path != before:
+        raise RuntimeError('loading changed sys.path: ' + method)
+"""
+        completed = subprocess.run([sys.executable, '-S', '-c', script], cwd=probe.ROOT,
+                                   capture_output=True, text=True, timeout=30)
+        self.assertEqual(completed.returncode, 0, completed.stderr)
+
+    def test_commands_have_timeout_and_propagate_timeout(self):
+        with patch.object(probe.subprocess, 'run') as run_command:
+            probe.run_command(['python', '--version'], check=True)
+            self.assertEqual(run_command.call_args.kwargs['timeout'], 120)
+            self.assertTrue(run_command.call_args.kwargs['check'])
+            run_command.side_effect = subprocess.TimeoutExpired('python', 120)
+            with self.assertRaises(subprocess.TimeoutExpired):
+                probe.run_command(['python'])
+        with patch.object(probe, 'run_command', side_effect=
+                          subprocess.TimeoutExpired('python', 120)):
+            with self.assertRaises(subprocess.TimeoutExpired):
+                probe.entrypoints()
+
+    def test_validation_rejects_corrupted_results(self):
+        ids = ['case.' + str(i) for i in range(8)]
+        external = {'main_ids': ids, 'commands': [{'selection': 'all', 'returncode': 0}]}
+        recorded = {'ids': ids, 'exitcode': 0,
+                    'reports': [{'outcome': 'passed'} for _ in ids]}
+        rows = [{'selection': 'all', 'ids': ids, 'collected': 8,
+                 'success': True, 'errors': 0, 'failures': 0}]
+        probe.validate_results(rows, external, recorded)
+        for target, key, value in [('external', 'main_ids', []),
+                                   ('recorded', 'ids', []),
+                                   ('recorded', 'exitcode', 1),
+                                   ('recorded', 'reports', [{'outcome': 'failed'}] * 8),
+                                   ('row', 'collected', 0), ('row', 'success', False)]:
+            with self.subTest(target=target, key=key):
+                copies = copy.deepcopy({'external': external, 'recorded': recorded,
+                                        'row': rows[0]})
+                copies[target][key] = value
+                with self.assertRaises(RuntimeError):
+                    probe.validate_results([copies['row']], copies['external'], copies['recorded'])
+
+    def test_validation_still_fails_under_optimized_python(self):
+        script = ("from experiments.testloader_probe import validate_results; "
+                  "validate_results([], {'main_ids': []}, {})")
+        completed = subprocess.run([sys.executable, '-O', '-S', '-c', script],
+                                   cwd=probe.ROOT, capture_output=True, text=True, timeout=30)
+        self.assertNotEqual(completed.returncode, 0)
+        self.assertIn('Expected eight distinct baseline test IDs', completed.stderr)
 
     def test_discover_names_and_main_have_identical_ids_and_results(self):
         results = []

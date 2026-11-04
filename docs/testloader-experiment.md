@@ -127,3 +127,18 @@ Added Python: **287 lines** (experiment and regression tests combined);
 new reusable production runner: **0 lines**. The portable recipe above is
 sufficient for other unittest repositories; no cross-repository rollout or
 performance claim is made without repository-specific validation.
+
+## Safety follow-up
+
+The experiment now restores `sys.path` after importing its subject and after
+loader discovery, so importing the probe does not change other tests' import
+precedence. Each external command has a 120-second timeout; a timeout fails
+the experiment rather than emitting a successful comparison. Result validation
+uses explicit exceptions, including when Python is run with `-O`.
+
+The measurements and raw JSON above remain the original observations at
+`b374fc01956f155d2870bbc9c34180875b05ccb5`; they have not been replaced or
+relabelled as measurements of this safety follow-up. The added regression tests
+check import/loading isolation, timeout propagation, corrupted results, and
+validation under optimized Python. Existing selection and cache-safety tests
+remain in place.

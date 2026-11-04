@@ -11,20 +11,24 @@ import unittest
 from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / 'tests'))
-import test_layers as subject
+with patch.object(sys, 'path', [str(ROOT / 'tests'), *sys.path]):
+    import test_layers as subject
+
+COMMAND_TIMEOUT_SECONDS = 120
 
 
 def load(method='discover', patterns=None):
     """Selection and traversal belong entirely to unittest's public loader."""
     loader = unittest.TestLoader()
     loader.testNamePatterns = patterns
-    if method == 'discover':
-        suite = loader.discover(str(ROOT / 'tests'), pattern='test_layers.py')
-    elif method == 'names':
-        suite = loader.loadTestsFromNames(['test_layers'], module=None)
-    else:
-        raise ValueError(method)
+    # discover may add its start directory; do not leak it to other tests.
+    with patch.object(sys, 'path', list(sys.path)):
+        if method == 'discover':
+            suite = loader.discover(str(ROOT / 'tests'), pattern='test_layers.py')
+        elif method == 'names':
+            suite = loader.loadTestsFromNames(['test_layers'], module=None)
+        else:
+            raise ValueError(method)
     if loader.errors:
         raise RuntimeError('\n'.join(loader.errors))
     return suite
@@ -84,6 +88,11 @@ def benchmark(repeats=21):
     return rows
 
 
+def run_command(command, *, check=False):
+    return subprocess.run(command, cwd=ROOT, capture_output=True, text=True,
+                          check=check, timeout=COMMAND_TIMEOUT_SECONDS)
+
+
 def entrypoints():
     """Compare actual CLI entry points, plus their programmatic ID records."""
     commands = [
@@ -99,7 +108,7 @@ def entrypoints():
     outputs = []
     for selection, command in commands:
         start = time.perf_counter_ns()
-        completed = subprocess.run(command, cwd=ROOT, capture_output=True, text=True)
+        completed = run_command(command)
         outputs.append(dict(selection=selection, command=command, returncode=completed.returncode,
                             wall_ms=(time.perf_counter_ns()-start)/1e6,
                             stdout=completed.stdout, stderr=completed.stderr))
@@ -139,29 +148,40 @@ def pytest_record():
     print(json.dumps(dict(ids=plugin.ids, reports=plugin.reports, exitcode=int(code))))
 
 
+def validate_results(rows, external, recorded):
+    """Fail closed even with Python optimization enabled."""
+    expected = external['main_ids']
+    if len(expected) != 8 or len(set(expected)) != 8:
+        raise RuntimeError('Expected eight distinct baseline test IDs')
+    if sorted(recorded['ids']) != sorted(expected):
+        raise RuntimeError('pytest test IDs differ from unittest')
+    if recorded['exitcode'] != 0 or len(recorded['reports']) != 8:
+        raise RuntimeError('pytest did not complete eight tests successfully')
+    if not all(r['outcome'] == 'passed' for r in recorded['reports']):
+        raise RuntimeError('pytest reported a non-passing test')
+    if not all(command['returncode'] == (5 if command['selection'] == 'zero' else 0)
+               for command in external['commands']):
+        raise RuntimeError('CLI outcome differs from the expected selection result')
+    for row in rows:
+        wanted = expected if row['selection'] == 'all' else [
+            'test_layers.TestLayers.test_only_standard_library_is_imported']
+        if row['ids'] != wanted or row['collected'] != len(wanted):
+            raise RuntimeError('Measured test selection differs from expected IDs')
+        if not row['success'] or row['errors'] or row['failures']:
+            raise RuntimeError('Measured suite did not pass')
+
+
 if __name__ == '__main__':
     if '--pytest-record' in sys.argv:
         pytest_record()
     else:
         rows = benchmark()
         external = entrypoints()
-        recorded = subprocess.run([sys.executable, str(Path(__file__).resolve()),
-                                   '--pytest-record'], cwd=ROOT,
-                                  capture_output=True, text=True, check=True)
-        expected = external['main_ids']
-        assert len(expected) == 8
-        assert sorted(json.loads(recorded.stdout)['ids']) == sorted(expected)
-        assert json.loads(recorded.stdout)['exitcode'] == 0
-        assert len(json.loads(recorded.stdout)['reports']) == 8
-        assert all(r['outcome'] == 'passed' for r in json.loads(recorded.stdout)['reports'])
-        assert all(command['returncode'] == (5 if command['selection'] == 'zero' else 0)
-                   for command in external['commands'])
-        for row in rows:
-            wanted = expected if row['selection'] == 'all' else [
-                'test_layers.TestLayers.test_only_standard_library_is_imported']
-            assert row['ids'] == wanted and row['collected'] == len(wanted)
-            assert row['success'] and not row['errors'] and not row['failures']
+        completed = run_command([sys.executable, str(Path(__file__).resolve()),
+                                 '--pytest-record'], check=True)
+        recorded = json.loads(completed.stdout)
+        validate_results(rows, external, recorded)
         output = dict(python=sys.version, platform=platform.platform(),
                       repeats=21, rows=rows, entrypoints=external,
-                      pytest=json.loads(recorded.stdout))
+                      pytest=recorded)
         print(json.dumps(output, indent=2))
