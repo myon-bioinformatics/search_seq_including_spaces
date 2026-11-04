@@ -8,7 +8,7 @@ from contextlib import contextmanager
 import hashlib
 import os
 
-from anchor_matcher import find_matches, normalize_sequence, reverse_complement, _BASES, _dna
+from anchor_matcher import find_matches, normalize_sequence, reverse_complement, _BASE_MASKS, _dna
 from result_summary import integer
 from sequence_readers import _extension, SequenceReadError
 
@@ -45,7 +45,7 @@ def match_chunks(chunks, left, right, *, min_gap=0, max_gap=None, iupac=False,
             def matches(start, anchor):
                 observed = oriented[start:start + len(anchor)]
                 return (observed == anchor if not iupac else
-                        all(set(_BASES[a]) & set(_BASES[b]) for a, b in zip(observed, anchor)))
+                        all(_BASE_MASKS[a] & _BASE_MASKS[b] for a, b in zip(observed, anchor)))
             def span(start, end):
                 if start == end:
                     return None

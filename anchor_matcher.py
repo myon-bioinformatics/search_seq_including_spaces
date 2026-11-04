@@ -8,6 +8,9 @@ __all__ = ["SCHEMA", "NormalizedSequence", "normalize_sequence", "reverse_comple
 _BASES = {"A": "A", "C": "C", "G": "G", "T": "T", "R": "AG", "Y": "CT",
           "S": "CG", "W": "AT", "K": "GT", "M": "AC", "B": "CGT",
           "D": "AGT", "H": "ACT", "V": "ACG", "N": "ACGT"}
+# A/C/G/T occupy four bits; ambiguity is their union. Build once, not per comparison.
+_BASE_MASKS = {code: sum(1 << "ACGT".index(base) for base in bases)
+               for code, bases in _BASES.items()}
 _COMPLEMENT = str.maketrans("ACGTRYSWKMBDHVN", "TGCAYRSWMKVHDBN")
 
 
@@ -90,7 +93,7 @@ def find_matches(text, left, right, *, min_gap=0, max_gap=None, iupac=False,
         observed = sequence[offset:offset + len(anchor)]
         if not iupac:
             return observed == anchor
-        return all(set(_BASES[a]).intersection(_BASES[b])
+        return all(_BASE_MASKS[a] & _BASE_MASKS[b]
                    for a, b in zip(observed, anchor))
 
     result = []
