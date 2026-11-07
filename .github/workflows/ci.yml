@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 # Keep stdlib runtime isolation separate from test-only pytest tooling.
 # CodeQL is intentionally not used: behavior gates run pytest/unittest, with
@@ -15,7 +15,7 @@ on:
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
-      - ".github/workflows/tests.yml"
+      - ".github/workflows/ci.yml"
   push:
     branches: [main]
     paths:
@@ -26,7 +26,7 @@ on:
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
-      - ".github/workflows/tests.yml"
+      - ".github/workflows/ci.yml"
   workflow_dispatch:
 
 permissions:
