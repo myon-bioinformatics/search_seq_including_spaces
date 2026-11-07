@@ -3,10 +3,8 @@
 No key lookup or I/O at import. Pass an injected transport for offline tests or
 an explicit key for live requests. The router retains final routing authority.
 """
-import json
-import math
-from urllib.error import URLError, HTTPError
-from urllib.request import Request, build_opener, HTTPRedirectHandler
+import json, math
+from urllib.error import HTTPError, URLError; from urllib.request import build_opener, HTTPRedirectHandler, Request
 
 from result_summary import integer
 from sequence_router import QUESTIONS

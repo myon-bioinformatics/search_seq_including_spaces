@@ -4,9 +4,8 @@ New event contract, independent of the existing record-envelope API. Matches
 are emitted by chunk completion, not whole-record strand order. Success is
 established only by exhausting the iterator and receiving the completion event.
 """
+import hashlib, os
 from contextlib import contextmanager
-import hashlib
-import os
 
 from anchor_matcher import find_matches, normalize_sequence, reverse_complement, _BASE_MASKS, _dna
 from result_summary import integer

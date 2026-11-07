@@ -1,7 +1,5 @@
-import json
+import json, tempfile, unittest
 from pathlib import Path
-import tempfile
-import unittest
 from test_cli import run
 
 

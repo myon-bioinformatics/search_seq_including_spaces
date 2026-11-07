@@ -1,7 +1,4 @@
-import json
-import itertools
-import random
-import unittest
+import itertools, json, random, unittest
 
 from anchor_matcher import find_matches, normalize_sequence, reverse_complement
 
