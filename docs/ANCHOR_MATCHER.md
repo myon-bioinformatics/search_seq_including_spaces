@@ -7,7 +7,7 @@ remains intact. CLI, readers and TSD clue presets now live in sibling adapters; 
 
 ```python
 import json
-from anchor_matcher import find_matches
+from seqlib.anchor_matcher import find_matches
 
 report = find_matches("a c\nN t g", "AC", "TG", min_gap=1)
 assert report["matches"][0]["middle"] == "N"

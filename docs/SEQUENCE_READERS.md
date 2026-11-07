@@ -66,7 +66,7 @@ contract decision before implementation.
 ## Supported input subset
 
 ```python
-from sequence_readers import read_sequences
+from seqlib.sequence_readers import read_sequences
 
 for record in read_sequences('input.fasta.gz'):
     print(record.id, len(record.sequence))

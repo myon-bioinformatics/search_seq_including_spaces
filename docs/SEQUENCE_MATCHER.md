@@ -11,7 +11,7 @@ stdlib-only Python library API, not a CLI or a new pattern language.
 
 ```python
 from contextlib import closing
-from sequence_matcher import find_sequence_matches
+from seqlib.sequence_matcher import find_sequence_matches
 
 with closing(find_sequence_matches(
         'input.fasta.gz', 'AC', 'GT', min_gap=1, max_matches=1000)) as results:

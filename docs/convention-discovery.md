@@ -75,14 +75,15 @@ without importing them. No `.gitignore` interpretation is implied.
 
 ## Observed trial
 
-On 2026-10-21 at `725a3602327b083e60263a1eabc83a82436b84c3`, the first command parsed
+On 2026-10-21 at `725a3602327b083e60263a1eabc83a82436b84c3`, the source-symbol query used the then-current root-level paths
+`sequence_readers.py` and `structured_readers.py`. It parsed
 9 files and found 6 definitions with no errors, skips or
 truncation. Examples:
 
-- `seqlib/sequence_readers.py`: `read_sequences`
-- `seqlib/structured_readers.py`: `read_genbank`
-- `seqlib/structured_readers.py`: `read_json`
-- `seqlib/structured_readers.py`: `read_json.objects`
+- `sequence_readers.py`: `read_sequences`
+- `structured_readers.py`: `read_genbank`
+- `structured_readers.py`: `read_json`
+- `structured_readers.py`: `read_json.objects`
 
 The second command selected 6 YAML/TOML files at the same revision.
 These are observations for that snapshot, not future expected counts. Full
