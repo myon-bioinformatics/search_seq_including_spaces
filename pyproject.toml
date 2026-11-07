@@ -16,6 +16,6 @@ environments = ["python_version >= '3.11'"]
 dev = { requires-python = ">=3.11" }
 
 # `uv run pytest` starts the pytest script, which does not put the working
-# directory on sys.path. Keep the repository root importable for the flat layout.
+# directory on sys.path. Keep the repository root importable: entry points sit at the root and the helpers are the `seqlib` package.
 [tool.pytest.ini_options]
 pythonpath = ["."]

@@ -32,7 +32,7 @@ def test_native_failure_evidence(tmp_path):
     # Keep only the reader -> pytest -> shared-validator integration here.
     # Generic xfail/XPASS/setup/teardown and corrupt receipts are upstream tests.
     suite.write_text('''import io
-from sequence_readers import read_sequences
+from seqlib.sequence_readers import read_sequences
 def test_failure():
     record, = read_sequences(io.StringIO(">fixture\\nAC\\n"), format="fasta")
     assert record.sequence == "AG", "private diagnostic"

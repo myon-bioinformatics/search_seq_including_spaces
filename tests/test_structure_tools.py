@@ -1,7 +1,7 @@
 from dataclasses import replace
 import math
 import unittest
-from structure_tools import Atom, parse_structure, geometry
+from seqlib.structure_tools import Atom, parse_structure, geometry
 
 CIF='''data_demo
 _title

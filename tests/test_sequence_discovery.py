@@ -7,7 +7,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from sequence_readers import discover_sequences
+from seqlib.sequence_readers import discover_sequences
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -115,5 +115,5 @@ class SequenceDiscoveryTests(unittest.TestCase):
         def failed(root, **options):
             options['onerror'](PermissionError('denied'))
             return iter(())
-        with patch('sequence_readers.os.walk', failed), self.assertRaises(PermissionError):
+        with patch('seqlib.sequence_readers.os.walk', failed), self.assertRaises(PermissionError):
             discover_sequences(self.root)

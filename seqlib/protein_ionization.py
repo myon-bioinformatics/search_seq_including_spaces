@@ -1,7 +1,7 @@
 """Optional pKa-based sequence proxy; leaves existing protein golden outputs intact."""
 from collections import Counter
 import math
-from anchor_matcher import normalize_sequence
+from seqlib.anchor_matcher import normalize_sequence
 
 # Bjellqvist model constants; provenance and limits in docs/ROADMAP_TOOLS.md.
 POSITIVE = {'Nterm':7.5,'K':10.0,'R':12.0,'H':5.98}

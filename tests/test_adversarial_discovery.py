@@ -11,11 +11,11 @@ import os
 import unittest
 from pathlib import Path
 
-from comparison import compare_aligned, ComparisonError
-from protein_ionization import ionization
-from sequence_readers import read_sequences, SequenceReadError
-from streaming_matcher import match_chunks
-from structure_tools import Atom, parse_structure
+from seqlib.comparison import compare_aligned, ComparisonError
+from seqlib.protein_ionization import ionization
+from seqlib.sequence_readers import read_sequences, SequenceReadError
+from seqlib.streaming_matcher import match_chunks
+from seqlib.structure_tools import Atom, parse_structure
 
 
 # Residue hashes/lengths are recorded independently in tests/fixtures/SOURCE.md.

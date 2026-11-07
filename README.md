@@ -35,6 +35,12 @@ Anchor sequences and gap constraints drive matching, with CSV/JSONL output and f
 
 Complementary view of sequence readers, matching/candidate tools, and result summaries. Formats and limits vary by command; the comparison tools use already-aligned sequences and do not perform alignment or infer homology.
 
+## Layout
+
+- Root: the entry points `sequence_tool.py`, `sequence_service.py` and the legacy `definition_main.py`.
+- `seqlib/`: the helper modules they use (readers, matchers, comparison, summaries). Import them as `from seqlib.sequence_readers import ...`.
+- `protein/`: the protein package. `tests/`, `docs/`, `scripts/`, `examples/` and `vendor/` hold the rest.
+
 ## Search, summarize and analyze
 
 Runtime remains standard-library only. [Roadmap tools and contracts](docs/ROADMAP_TOOLS.md)

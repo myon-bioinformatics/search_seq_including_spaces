@@ -27,11 +27,11 @@ import json
 import math
 import sys
 
-from comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
+from seqlib.comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
                         GAP_POLICIES, ComparisonError, compare_aligned)
-from comparison_s2 import render_ascii_diff, sliding_identity
-from result_summary import summarize_windows
-from sequence_commands import add_commands
+from seqlib.comparison_s2 import render_ascii_diff, sliding_identity
+from seqlib.result_summary import summarize_windows
+from seqlib.sequence_commands import add_commands
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
 from protein.search_seq_including_spaces_render import MIN_WIDTH, render_ascii

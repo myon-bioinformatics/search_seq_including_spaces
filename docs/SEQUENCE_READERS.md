@@ -6,7 +6,7 @@
 
 # Streaming sequence records (roadmap #2, FASTA/FASTQ foundation and text/tabular increment)
 
-`sequence_records.py` defines frozen stdlib dataclasses. `dataclasses.asdict()`
+`seqlib/sequence_records.py` defines frozen stdlib dataclasses. `dataclasses.asdict()`
 produces JSON-friendly fields; serialized envelopes may use schema
 `sequence-record/1`. There is no network, analysis or matcher dependency.
 

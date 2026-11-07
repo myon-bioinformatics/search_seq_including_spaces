@@ -8,9 +8,9 @@ from contextlib import contextmanager
 import hashlib
 import os
 
-from anchor_matcher import find_matches, normalize_sequence, reverse_complement, _BASE_MASKS, _dna
-from result_summary import integer
-from sequence_readers import _extension, SequenceReadError
+from seqlib.anchor_matcher import find_matches, normalize_sequence, reverse_complement, _BASE_MASKS, _dna
+from seqlib.result_summary import integer
+from seqlib.sequence_readers import _extension, SequenceReadError
 
 
 def match_chunks(chunks, left, right, *, min_gap=0, max_gap=None, iupac=False,

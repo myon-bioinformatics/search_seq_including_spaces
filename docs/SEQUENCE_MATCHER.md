@@ -114,6 +114,6 @@ also one whole record. `find_matches()` materializes the matches for each record
 size of the sequence. There is no new per-record byte cap, genome-scale indexing,
 or incremental matching within a record. Phase 4 therefore remains partial.
 
-`anchor_matcher.py`, `sequence_readers.py`, `sequence_records.py`,
+`seqlib/anchor_matcher.py`, `seqlib/sequence_readers.py`, `seqlib/sequence_records.py`,
 `definition_main.py`, and `sequence_tool.py` behavior is unchanged. Custom-pattern CLI/schema, JSON/JSONL and GenBank readers, exporters and
 biological presets now exist in separate modules, not in this adapter.

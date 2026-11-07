@@ -8,7 +8,7 @@ import os
 import stat
 from pathlib import Path
 
-from sequence_records import ReadProvenance, SequenceRecord
+from seqlib.sequence_records import ReadProvenance, SequenceRecord
 
 __all__ = ["SequenceReadError", "read_sequences", "discover_sequences", "SEQUENCE_FORMATS"]
 _FORMATS = {".fa": "fasta", ".fas": "fasta", ".fasta": "fasta",
@@ -176,7 +176,7 @@ def _read(handle, format, source, compression, filename, columns, paths):
     if selected in ('json', 'jsonl'):
         if any(column is not None for column in columns):
             raise SequenceReadError('column options require csv or tsv', source)
-        from structured_readers import read_json
+        from seqlib.structured_readers import read_json
         yield from read_json(handle, source, compression, selected, *paths)
         return
     if any(path is not None for path in paths):
@@ -190,7 +190,7 @@ def _read(handle, format, source, compression, filename, columns, paths):
               if number == 1 else line.rstrip('\r\n'))
              for number, line in enumerate(handle, 1))
     if selected == 'genbank':
-        from structured_readers import read_genbank
+        from seqlib.structured_readers import read_genbank
         yield from read_genbank(iter(lines), source, compression)
         return
     parser = {'fasta': _fasta, 'fastq': _fastq, 'text': _text}[selected]

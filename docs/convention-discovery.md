@@ -50,7 +50,7 @@ replace `../xprobe/xprobe.py` with that checkout's path. They use Python's
 standard library and work with `python -S`.
 
 ```sh
-python -S ../xprobe/xprobe.py --symbols . --include sequence_readers.py --include structured_readers.py --include 'protein/*.py' --symbol-pattern 'read_*' --symbol-pattern '*validate*' --brief
+python -S ../xprobe/xprobe.py --symbols . --include seqlib/sequence_readers.py --include seqlib/structured_readers.py --include 'protein/*.py' --symbol-pattern 'read_*' --symbol-pattern '*validate*' --brief
 python -S ../xprobe/xprobe.py --discover --root . --include '*.yml' --include '*.toml' --include-hidden --brief
 ```
 
@@ -79,10 +79,10 @@ On 2026-10-21 at `725a3602327b083e60263a1eabc83a82436b84c3`, the first command p
 9 files and found 6 definitions with no errors, skips or
 truncation. Examples:
 
-- `sequence_readers.py`: `read_sequences`
-- `structured_readers.py`: `read_genbank`
-- `structured_readers.py`: `read_json`
-- `structured_readers.py`: `read_json.objects`
+- `seqlib/sequence_readers.py`: `read_sequences`
+- `seqlib/structured_readers.py`: `read_genbank`
+- `seqlib/structured_readers.py`: `read_json`
+- `seqlib/structured_readers.py`: `read_json.objects`
 
 The second command selected 6 YAML/TOML files at the same revision.
 These are observations for that snapshot, not future expected counts. Full

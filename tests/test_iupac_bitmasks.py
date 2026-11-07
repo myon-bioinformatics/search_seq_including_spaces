@@ -1,8 +1,8 @@
 """Check all ambiguity pairs against an independent set-based oracle."""
 import unittest
 
-from anchor_matcher import find_matches
-from streaming_matcher import match_chunks
+from seqlib.anchor_matcher import find_matches
+from seqlib.streaming_matcher import match_chunks
 
 BASES = dict(zip('ACGTRYSWKMBDHVN',
                  ('A', 'C', 'G', 'T', 'AG', 'CT', 'CG', 'AT', 'GT', 'AC',
