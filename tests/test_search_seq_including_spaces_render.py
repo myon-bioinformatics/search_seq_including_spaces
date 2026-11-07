@@ -1,5 +1,4 @@
-import pathlib
-import unittest
+import pathlib, unittest
 
 from protein.features import protein_profiles
 from protein.parse import prepare, read_fasta

@@ -1,7 +1,6 @@
 """Consumer integrity check; helper behavior tests belong to upstream xprobe."""
-import json
+import json, unittest
 from pathlib import Path
-import unittest
 
 
 def _lock_entry(root: Path, destination: str) -> dict:

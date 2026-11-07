@@ -1,11 +1,6 @@
 """Contracts for the experiment's use of public unittest APIs."""
-from pathlib import Path
-import sys
-import subprocess
-import copy
-import tempfile
-import unittest
-from unittest.mock import patch
+import copy, subprocess, sys, tempfile, unittest
+from pathlib import Path; from unittest.mock import patch
 
 with patch.object(sys, 'path', [str(Path(__file__).resolve().parents[1]), *sys.path]):
     from experiments import testloader_probe as probe

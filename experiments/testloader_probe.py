@@ -1,14 +1,6 @@
 """Reproducible experiment, not a replacement test runner. Run from repo root."""
-import contextlib
-import io
-import json
-from pathlib import Path
-import platform
-import subprocess
-import sys
-import time
-import unittest
-from unittest.mock import patch
+import contextlib, io, json, platform, subprocess, sys, time, unittest
+from pathlib import Path; from unittest.mock import patch
 
 ROOT = Path(__file__).resolve().parents[1]
 with patch.object(sys, 'path', [str(ROOT / 'tests'), *sys.path]):

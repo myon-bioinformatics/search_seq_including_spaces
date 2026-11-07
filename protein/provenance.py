@@ -6,10 +6,8 @@ documents copy their "field_classes" block from it, so a field that is not
 registered here cannot be emitted (field_classes() raises KeyError).
 """
 
-import hashlib
-import sys
-from collections.abc import Iterable, Mapping
-from types import MappingProxyType
+import hashlib, sys
+from collections.abc import Iterable, Mapping; from types import MappingProxyType
 
 SCHEMA = "protein-hints/1"
 TOOL_VERSION = "0.1.0"

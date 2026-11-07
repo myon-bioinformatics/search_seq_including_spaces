@@ -14,9 +14,7 @@ Every line fits in width + 8 characters. No colour and no escape codes;
 with charset "ascii" every character is ASCII.
 """
 
-import bisect
-import math
-import textwrap
+import bisect, math, textwrap
 
 CHARSETS = ("ascii",)
 MIN_WIDTH = 20

@@ -1,9 +1,5 @@
-import gzip
-import io
-import json
-import unittest
-from urllib.error import HTTPError
-from unittest.mock import patch
+import gzip, io, json, unittest
+from unittest.mock import patch; from urllib.error import HTTPError
 
 from acquisition import Client, FetchError, parse_pubmed, urllib_transport
 from sequence_service import McpSession, call_tool, serve_stdio, TOOLS

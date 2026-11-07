@@ -1,10 +1,6 @@
 """Exercise CLI parsing, real acquisition dispatch and output with offline I/O."""
-from contextlib import redirect_stderr, redirect_stdout
-import hashlib
-import io
-import json
-import unittest
-from unittest.mock import Mock, patch
+import hashlib, io, json, unittest
+from contextlib import redirect_stderr, redirect_stdout; from unittest.mock import Mock, patch
 
 from acquisition import Client
 from sequence_tool import main

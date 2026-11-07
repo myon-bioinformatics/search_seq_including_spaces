@@ -1,9 +1,6 @@
 """Downstream integration of the pinned shared pytest adapter."""
-import hashlib
-import json
-import os
+import hashlib, json, os, subprocess
 from pathlib import Path
-import subprocess
 
 from vendor.xprobe import pytest_receipt
 
