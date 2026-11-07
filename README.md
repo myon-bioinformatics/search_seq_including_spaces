@@ -15,7 +15,7 @@
 
 ![GitHub license](https://img.shields.io/github/license/myon-bioinformatics/search_seq_including_spaces)
 ![GitHub last commit](https://img.shields.io/github/last-commit/myon-bioinformatics/search_seq_including_spaces)
-[![Tests](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/tests.yml/badge.svg)](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/tests.yml)
+[![CI](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/ci.yml/badge.svg)](https://github.com/myon-bioinformatics/search_seq_including_spaces/actions/workflows/ci.yml)
 
 [![GitHub followers](https://img.shields.io/github/followers/myon-bioinformatics?style=social)](https://github.com/myon-bioinformatics)
 [![Reddit User Karma](https://img.shields.io/reddit/user-karma/combined/myon_reddit?style=social)](https://www.reddit.com/user/myon_reddit/)
