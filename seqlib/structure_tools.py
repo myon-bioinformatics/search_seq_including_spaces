@@ -6,7 +6,7 @@ import itertools
 import math
 import re
 
-from result_summary import integer
+from seqlib.result_summary import integer
 
 
 @dataclass(frozen=True)

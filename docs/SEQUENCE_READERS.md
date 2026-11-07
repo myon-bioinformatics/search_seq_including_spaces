@@ -6,7 +6,7 @@
 
 # Streaming sequence records (roadmap #2, FASTA/FASTQ foundation and text/tabular increment)
 
-`sequence_records.py` defines frozen stdlib dataclasses. `dataclasses.asdict()`
+`seqlib/sequence_records.py` defines frozen stdlib dataclasses. `dataclasses.asdict()`
 produces JSON-friendly fields; serialized envelopes may use schema
 `sequence-record/1`. There is no network, analysis or matcher dependency.
 
@@ -66,7 +66,7 @@ contract decision before implementation.
 ## Supported input subset
 
 ```python
-from sequence_readers import read_sequences
+from seqlib.sequence_readers import read_sequences
 
 for record in read_sequences('input.fasta.gz'):
     print(record.id, len(record.sequence))

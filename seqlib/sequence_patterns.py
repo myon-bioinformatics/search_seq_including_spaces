@@ -1,6 +1,6 @@
 """Versioned custom anchor/gap pattern packs; strict validation before I/O."""
-from anchor_matcher import find_matches
-from structured_readers import strict_json
+from seqlib.anchor_matcher import find_matches
+from seqlib.structured_readers import strict_json
 
 SCHEMA = 'sequence-patterns/1'
 

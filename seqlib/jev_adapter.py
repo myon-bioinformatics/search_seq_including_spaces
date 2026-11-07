@@ -8,9 +8,9 @@ import math
 from urllib.error import URLError, HTTPError
 from urllib.request import Request, build_opener, HTTPRedirectHandler
 
-from result_summary import integer
-from sequence_router import QUESTIONS
-from structured_readers import strict_json
+from seqlib.result_summary import integer
+from seqlib.sequence_router import QUESTIONS
+from seqlib.structured_readers import strict_json
 
 ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
 INSTRUCTIONS = {

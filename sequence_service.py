@@ -9,12 +9,12 @@ import json
 import math
 import sys
 
-from ambiguity_candidates import generate_candidates
-from anchor_matcher import find_matches
-from comparison import compare_aligned
-from protein_ionization import ionization
-from sequence_analysis import nucleotide_features, marker_clues, fold_rna
-from structured_readers import strict_json
+from seqlib.ambiguity_candidates import generate_candidates
+from seqlib.anchor_matcher import find_matches
+from seqlib.comparison import compare_aligned
+from seqlib.protein_ionization import ionization
+from seqlib.sequence_analysis import nucleotide_features, marker_clues, fold_rna
+from seqlib.structured_readers import strict_json
 
 MAX_REQUEST = 1024 * 1024
 MAX_RESPONSE = 2 * 1024 * 1024

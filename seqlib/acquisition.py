@@ -10,9 +10,9 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 import xml.etree.ElementTree as ET
 
-from result_summary import integer
-from sequence_readers import read_sequences
-from structured_readers import strict_json
+from seqlib.result_summary import integer
+from seqlib.sequence_readers import read_sequences
+from seqlib.structured_readers import strict_json
 
 
 class FetchError(ValueError):

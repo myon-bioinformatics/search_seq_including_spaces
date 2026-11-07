@@ -7,7 +7,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from sequence_readers import read_sequences, SequenceReadError
+from seqlib.sequence_readers import read_sequences, SequenceReadError
 from test_sequence_readers import NonSeek
 
 

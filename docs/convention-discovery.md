@@ -50,7 +50,7 @@ replace `../xprobe/xprobe.py` with that checkout's path. They use Python's
 standard library and work with `python -S`.
 
 ```sh
-python -S ../xprobe/xprobe.py --symbols . --include sequence_readers.py --include structured_readers.py --include 'protein/*.py' --symbol-pattern 'read_*' --symbol-pattern '*validate*' --brief
+python -S ../xprobe/xprobe.py --symbols . --include seqlib/sequence_readers.py --include seqlib/structured_readers.py --include 'protein/*.py' --symbol-pattern 'read_*' --symbol-pattern '*validate*' --brief
 python -S ../xprobe/xprobe.py --discover --root . --include '*.yml' --include '*.toml' --include-hidden --brief
 ```
 
@@ -75,7 +75,8 @@ without importing them. No `.gitignore` interpretation is implied.
 
 ## Observed trial
 
-On 2026-10-21 at `725a3602327b083e60263a1eabc83a82436b84c3`, the first command parsed
+On 2026-10-21 at `725a3602327b083e60263a1eabc83a82436b84c3`, the source-symbol query used the then-current root-level paths
+`sequence_readers.py` and `structured_readers.py`. It parsed
 9 files and found 6 definitions with no errors, skips or
 truncation. Examples:
 

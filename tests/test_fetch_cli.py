@@ -6,7 +6,7 @@ import json
 import unittest
 from unittest.mock import Mock, patch
 
-from acquisition import Client
+from seqlib.acquisition import Client
 from sequence_tool import main
 
 
@@ -18,7 +18,7 @@ class FetchCliTests(unittest.TestCase):
         buffer = io.BytesIO()
         stdout = io.TextIOWrapper(buffer, encoding='utf-8')
         stderr = io.StringIO()
-        with patch('sequence_commands.Client', side_effect=client), \
+        with patch('seqlib.sequence_commands.Client', side_effect=client), \
                 redirect_stdout(stdout), redirect_stderr(stderr):
             try:
                 code = main(['fetch', *args])

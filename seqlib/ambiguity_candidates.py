@@ -4,8 +4,8 @@ import math
 import random
 from itertools import combinations, product
 
-from anchor_matcher import _BASES, normalize_sequence
-from result_summary import integer
+from seqlib.anchor_matcher import _BASES, normalize_sequence
+from seqlib.result_summary import integer
 
 MODES = ('preserve', 'regex', 'exhaustive', 'sample', 'pairwise')
 

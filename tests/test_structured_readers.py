@@ -6,7 +6,7 @@ import tempfile
 import unittest
 from unittest.mock import patch
 
-from sequence_readers import read_sequences, SequenceReadError
+from seqlib.sequence_readers import read_sequences, SequenceReadError
 
 GB='''LOCUS       DEMO 8 bp DNA
 DEFINITION  demo sequence
@@ -43,7 +43,7 @@ class StructuredReadersTests(unittest.TestCase):
                      '{"sequence":"A","sequence":"T"}','{"sequence":"A","v":NaN}'):
             with self.assertRaises(SequenceReadError): self.read(text)
         for fmt in ('json','jsonl'):
-            with patch('structured_readers.MAX_JSON_CHARS',20):
+            with patch('seqlib.structured_readers.MAX_JSON_CHARS',20):
                 with self.assertRaises(SequenceReadError): self.read('{"sequence":"'+'A'*30+'"}',format=fmt)
         with self.assertRaises(SequenceReadError): self.read('{"sequence":"AC"}',id_path='missing')
         with self.assertRaises(SequenceReadError): self.read('>x\nAC\n',format='fasta',sequence_path='sequence')
