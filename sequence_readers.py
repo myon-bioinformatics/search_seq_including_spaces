@@ -1,4 +1,4 @@
-"""Streaming sequence readers. See docs/SEQUENCE_READERS.md for the subset."""
+"""Streaming sequence readers. See docs/sequence-readers.md for the subset."""
 import bz2, csv, fnmatch, gzip, lzma, os, stat
 from pathlib import Path
 

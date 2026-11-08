@@ -1,4 +1,4 @@
-"""Lazy reader-to-matcher adapter; see docs/SEQUENCE_MATCHER.md."""
+"""Lazy reader-to-matcher adapter; see docs/sequence-matcher.md."""
 from contextlib import closing; from dataclasses import asdict
 
 from anchor_matcher import find_matches
