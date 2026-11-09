@@ -56,7 +56,7 @@ xfail/XPASS/setup/teardown and corrupt-evidence coverage; the local nested smoke
 test runs a real reader assertion failure and checks the adapter/helper connection.
 FASTA/FASTQ domain regressions remain here. xprobe PR #5 was merged first;
 this pin references its squash merge commit. Before merging SearchSeq #24,
-verify Tests and workflow validation on the consumer's repinned current head.
+verify CI and workflow validation on the consumer's repinned current head.
 Future upstream revisions must refresh this pin and `vendor.lock.json` checks.
 Keep downloaded artifacts in separate job directories so identical filenames
 do not overwrite each other. Run IDs distinguish observations across jobs.
@@ -70,7 +70,7 @@ CodeQL is deliberately removed from this repository's CI. The behavior gates
 are `python -S -m unittest discover -s tests` plus the locked `uv run --locked pytest` suite on
 Python 3.10–3.14; a failed test retains its nonzero status. Workflow changes are
 checked separately by the existing shared actionlint workflow. Docs-only changes
-do not trigger the Tests workflow.
+do not trigger the CI workflow.
 
 | Coverage / evidence | Source and role |
 | --- | --- |
