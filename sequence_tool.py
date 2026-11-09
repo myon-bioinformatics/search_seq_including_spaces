@@ -21,11 +21,7 @@ bytes. --json writes one document and needs exactly one FASTA record;
 --jsonl writes one compact document per record.
 """
 
-import argparse
-import csv
-import json
-import math
-import sys
+import argparse, csv, json, math, sys
 
 from comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
                         GAP_POLICIES, ComparisonError, compare_aligned)

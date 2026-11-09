@@ -1,6 +1,4 @@
-import json
-import pathlib
-import unittest
+import json, pathlib, unittest
 
 from protein import roi as ROI
 from protein.features import protein_profiles

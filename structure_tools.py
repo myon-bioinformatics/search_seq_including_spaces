@@ -1,10 +1,6 @@
 """Bounded PDB/mmCIF atom-site subsets and geometry-based contact candidates."""
-from collections import Counter, defaultdict
-from dataclasses import asdict, dataclass
-import hashlib
-import itertools
-import math
-import re
+import hashlib, itertools, math, re
+from collections import Counter, defaultdict; from dataclasses import asdict, dataclass
 
 from result_summary import integer
 

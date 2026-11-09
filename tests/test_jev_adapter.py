@@ -1,5 +1,4 @@
-import json
-import unittest
+import json, unittest
 from jev_adapter import JevClassifier
 from sequence_router import route_item
 

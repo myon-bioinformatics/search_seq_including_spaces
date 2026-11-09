@@ -1,8 +1,6 @@
 """S3 bounded, count-preserving summaries; never rewrites the source results."""
+import csv, hashlib, math
 from collections import Counter
-import csv
-import hashlib
-import math
 
 
 def integer(value, name, minimum=0):

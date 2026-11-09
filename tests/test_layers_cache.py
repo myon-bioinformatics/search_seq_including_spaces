@@ -1,9 +1,6 @@
 """Keep the layer-test source snapshot bounded to one module-suite invocation."""
-import ast
-import importlib.util
+import ast, importlib.util, tempfile, unittest
 from pathlib import Path
-import tempfile
-import unittest
 
 
 class TestLayerSnapshot(unittest.TestCase):

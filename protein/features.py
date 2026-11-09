@@ -32,11 +32,7 @@ Floats are rounded to 4 decimal places.
 """
 
 import math
-from collections import Counter
-from collections.abc import Mapping, Sequence
-from fractions import Fraction
-from functools import lru_cache
-from itertools import accumulate
+from collections import Counter; from collections.abc import Mapping, Sequence; from fractions import Fraction; from functools import lru_cache; from itertools import accumulate
 
 from .parse import Prepared, SequenceError, prepare
 from .provenance import FIELD_CLASSES, SCHEMA, field_classes, provenance, sequence_sha256

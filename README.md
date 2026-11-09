@@ -37,7 +37,7 @@ Complementary view of sequence readers, matching/candidate tools, and result sum
 
 ## Search, summarize and analyze
 
-Runtime remains standard-library only. [Roadmap tools and contracts](docs/ROADMAP_TOOLS.md)
+Runtime remains standard-library only. [Roadmap tools and contracts](docs/roadmap-tools.md)
 cover the new CLI, limits, coordinate semantics and optional adapters.
 
 ```sh
@@ -67,7 +67,7 @@ python sequence_tool.py protein profile in.fasta --window 9  # per-residue TSV (
 python sequence_tool.py protein roi in.fasta --ascii         # regions of interest (heuristic)
 ```
 
-Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error. Details, thresholds and limitations: [docs/PROTEIN.md](docs/PROTEIN.md).
+Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error. Details, thresholds and limitations: [docs/protein.md](docs/protein.md).
 
 ## Streaming sequence readers
 
@@ -75,7 +75,7 @@ Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates
 FASTA, FASTQ, plain text, CSV, TSV, JSON, JSONL and the GenBank ORIGIN subset, including
 gzip/bz2/xz/lzma paths (CSV/TSV need an explicit sequence column). Runtime is
 stdlib-only. Contract, detection rules, supported subset and migration map:
-[docs/SEQUENCE_READERS.md](docs/SEQUENCE_READERS.md).
+[docs/sequence-readers.md](docs/sequence-readers.md).
 
 ## Aligned sequence comparison
 
@@ -91,7 +91,7 @@ python -S sequence_tool.py compare a.fasta b.fasta --alphabet protein --ascii --
 S1 reports exact identity and comparison coverage. S2 adds sliding-window
 identity/local divergence and an ASCII aligned diff while preserving the same
 gap and ambiguity policies. Details and scientific boundaries:
-[docs/COMPARISON.md](docs/COMPARISON.md).
+[docs/comparison.md](docs/comparison.md).
 
 ## SEARCH_SEQUENCE_IMAGE
 ![search_seq_including_spaces search illustration](docs/images/search_seq_including_spaces-search.jpg)
@@ -103,7 +103,7 @@ gap and ambiguity policies. Details and scientific boundaries:
 
 ## Test evidence
 
-The stdlib [anchor/gap matcher](docs/ANCHOR_MATCHER.md) supports exact/ranged
+The stdlib [anchor/gap matcher](docs/anchor-matcher.md) supports exact/ranged
 gaps, coordinate-preserving normalization, IUPAC DNA compatibility and reverse
 search as a separate importable module.
 

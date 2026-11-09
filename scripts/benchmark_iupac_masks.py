@@ -2,14 +2,7 @@
 
 Load a fixed pre-change reference using git; compare complete outputs before timing.
 """
-import json
-import platform
-import random
-import statistics
-import subprocess
-import sys
-import time
-import types
+import json, platform, random, statistics, subprocess, sys, time, types
 
 import anchor_matcher
 import streaming_matcher

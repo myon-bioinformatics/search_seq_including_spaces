@@ -27,9 +27,7 @@ residues) never triggers. Triggered positions are joined when at most
 """
 
 import math
-from dataclasses import dataclass
-from fractions import Fraction
-from types import MappingProxyType
+from dataclasses import dataclass; from fractions import Fraction; from types import MappingProxyType
 
 from .provenance import SCHEMA, field_classes
 from .residues import RESIDUES
