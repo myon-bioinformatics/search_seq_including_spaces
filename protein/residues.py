@@ -25,9 +25,7 @@ Sources (see SOURCES for the machine-readable form):
 Values that a cited source does not define are None, never a guess.
 """
 
-from collections.abc import Mapping
-from dataclasses import dataclass
-from types import MappingProxyType
+from collections.abc import Mapping; from dataclasses import dataclass; from types import MappingProxyType
 
 TABLE_VERSION = "aa-props/1"
 

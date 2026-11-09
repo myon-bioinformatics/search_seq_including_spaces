@@ -1,11 +1,5 @@
 """Streaming sequence readers. See docs/sequence-readers.md for the subset."""
-import bz2
-import csv
-import fnmatch
-import gzip
-import lzma
-import os
-import stat
+import bz2, csv, fnmatch, gzip, lzma, os, stat
 from pathlib import Path
 
 from sequence_records import ReadProvenance, SequenceRecord

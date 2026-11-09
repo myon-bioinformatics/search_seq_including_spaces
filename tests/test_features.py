@@ -1,10 +1,5 @@
-import json
-import math
-import pathlib
-import random
-import unittest
-from collections import Counter
-from fractions import Fraction
+import json, math, pathlib, random, unittest
+from collections import Counter; from fractions import Fraction
 
 from protein import residues as R
 from protein.features import (entropy_values, protein_features, protein_profiles,

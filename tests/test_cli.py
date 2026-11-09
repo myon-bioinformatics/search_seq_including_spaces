@@ -1,9 +1,4 @@
-import json
-import pathlib
-import subprocess
-import sys
-import tempfile
-import unittest
+import json, pathlib, subprocess, sys, tempfile, unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TOOL = ROOT / "sequence_tool.py"

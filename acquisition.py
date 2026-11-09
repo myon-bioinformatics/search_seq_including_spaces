@@ -1,14 +1,6 @@
 """Optional stdlib acquisition. No network access during import or core analysis."""
-import gzip
-import hashlib
-import io
-import math
-import re
-import time
-from urllib.error import HTTPError, URLError
-from urllib.parse import urlencode
-from urllib.request import Request, urlopen
-import xml.etree.ElementTree as ET
+import gzip, hashlib, io, math, re, time, xml.etree.ElementTree as ET
+from urllib.error import HTTPError, URLError; from urllib.parse import urlencode; from urllib.request import Request, urlopen
 
 from result_summary import integer
 from sequence_readers import read_sequences

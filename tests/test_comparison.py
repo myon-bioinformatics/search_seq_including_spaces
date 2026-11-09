@@ -1,5 +1,4 @@
-import json
-import unittest
+import json, unittest
 
 from comparison import ComparisonError, compare_aligned
 

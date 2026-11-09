@@ -1,8 +1,5 @@
 """Checked-in vendor bytes must match vendor.lock.json."""
-import hashlib
-import json
-import re
-import unittest
+import hashlib, json, re, unittest
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]

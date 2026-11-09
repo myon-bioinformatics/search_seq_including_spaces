@@ -1,8 +1,6 @@
 """CLI adapters for roadmap tools. Algorithms and I/O contracts stay importable."""
-from contextlib import closing
-from dataclasses import asdict
-import json
-import sys
+import json, sys
+from contextlib import closing; from dataclasses import asdict
 
 from ambiguity_candidates import MODES, generate_candidates, select_representatives
 from anchor_matcher import find_matches

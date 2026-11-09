@@ -1,5 +1,4 @@
-import io
-import unittest
+import io, unittest
 from protein_ionization import ionization
 from sequence_preprocess import preprocess, export_records
 from sequence_readers import read_sequences

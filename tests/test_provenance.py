@@ -1,6 +1,4 @@
-import hashlib
-import sys
-import unittest
+import hashlib, sys, unittest
 
 from protein import provenance as P
 

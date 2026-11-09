@@ -1,6 +1,5 @@
-import csv
+import csv, unittest
 from pathlib import Path
-import unittest
 
 from comparison_s2 import sliding_identity
 from result_summary import summarize_hits, summarize_csv, summarize_windows

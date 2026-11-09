@@ -1,11 +1,5 @@
-import bz2
-import csv
-import gzip
-import io
-import lzma
+import bz2, csv, gzip, io, lzma, tempfile, unittest
 from pathlib import Path
-import tempfile
-import unittest
 
 from sequence_readers import read_sequences, SequenceReadError
 from test_sequence_readers import NonSeek
