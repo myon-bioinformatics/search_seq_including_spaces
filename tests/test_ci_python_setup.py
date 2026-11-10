@@ -1,7 +1,6 @@
 """Keep Python setup effective before CI's stdlib checks (stdlib-only tests)."""
+import re, unittest
 from pathlib import Path
-import re
-import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -16,7 +15,7 @@ def job_text(path, name):
 
 class TestCIPythonSetup(unittest.TestCase):
     def test_setup_precedes_first_plain_python_command(self):
-        job = job_text(".github/workflows/tests.yml", "unittest")
+        job = job_text(".github/workflows/ci.yml", "test")
         setup = job.index("uses: astral-sh/setup-uv@")
         command = re.search(r"(?m)^\s+(?:-?\s*run:\s*)?python(?:3)?\s", job)
         self.assertIsNotNone(command)

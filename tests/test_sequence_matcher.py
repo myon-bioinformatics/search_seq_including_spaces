@@ -1,16 +1,5 @@
-import bz2
-from contextlib import closing
-from dataclasses import asdict
-import gc
-import gzip
-import io
-import json
-import lzma
-from pathlib import Path
-import tempfile
-import unittest
-from unittest.mock import patch
-import weakref
+import bz2, gc, gzip, io, json, lzma, tempfile, unittest, weakref
+from contextlib import closing; from dataclasses import asdict; from pathlib import Path; from unittest.mock import patch
 
 from seqlib.anchor_matcher import find_matches
 from seqlib.sequence_matcher import find_sequence_matches

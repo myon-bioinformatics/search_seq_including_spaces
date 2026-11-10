@@ -1,6 +1,5 @@
 """JSON/JSONL and GenBank ORIGIN subsets, shared SequenceRecord contract."""
-import json
-import re
+import json, re
 
 from seqlib.sequence_records import ReadProvenance, SequenceRecord
 

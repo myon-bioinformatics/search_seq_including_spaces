@@ -1,8 +1,4 @@
-import json
-import glob
-import os
-import csv
-import re
+import csv, glob, json, os, re
 
 #Load .json file
 with open("input_data.json","r") as f:

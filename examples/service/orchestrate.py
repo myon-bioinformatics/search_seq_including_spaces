@@ -21,7 +21,11 @@ def run_pipeline(item, *, classifier=None, threshold=None, local=None, pro=None)
         return {'decision':decision,'result':None,'fallback':'human','error_type':type(error).__name__}
 
 
-if __name__=='__main__':
+def main(argv=None):
     import json
     item={'kind':'literature','objective':'inspect evidence','title':'Example title'}
     print(json.dumps(run_pipeline(item,local=lambda item:{'queued_for_local_analysis':True}),sort_keys=True))
+
+
+if __name__ == '__main__':
+    raise SystemExit(main())

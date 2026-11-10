@@ -1,7 +1,7 @@
 > Current extension: JSON/JSONL and best-effort GenBank ORIGIN readers are now
 > implemented. `SequenceRecord` has trailing defaulted `metadata: dict[str, str]`.
 > JSON document ranges are enclosing spans; JSONL ranges are exact. New formats,
-> paths, limits and metadata are defined in [ROADMAP_TOOLS.md](ROADMAP_TOOLS.md).
+> paths, limits and metadata are defined in [roadmap-tools.md](roadmap-tools.md).
 > The original FASTA/FASTQ/text/table contract below remains unchanged.
 
 # Streaming sequence records (roadmap #2, FASTA/FASTQ foundation and text/tabular increment)
@@ -57,7 +57,7 @@ contract decision before implementation.
 | --- | --- |
 | anchor_matcher.NormalizedSequence | Uppercase letters plus original positions within the supplied sequence text; remains unchanged |
 | anchor_matcher.find_matches | `anchor-gap/1` dict; pass `record.sequence` explicitly; source spans refer to that concatenated string, not the file |
-| sequence_matcher.find_sequence_matches | Lazy record-level envelopes around unchanged `anchor-gap/1` results; see [SEQUENCE_MATCHER.md](SEQUENCE_MATCHER.md) |
+| sequence_matcher.find_sequence_matches | Lazy record-level envelopes around unchanged `anchor-gap/1` results; see [sequence-matcher.md](sequence-matcher.md) |
 | protein.parse.read_fasta | Existing list of `(header, raw)` tuples, including plain-text fallback; unchanged for CLI compatibility |
 | protein.parse.Prepared / protein features | Existing protein validation, transform positions and outputs; later adapter may consume SequenceRecord |
 | sequence_tool.py | Existing CLI and input behavior unchanged; this increment adds a library API only |
@@ -186,7 +186,7 @@ records = read_sequences(text_stream, format='tsv', sequence_column='sequence',
 
 The foundation was merged in #24 (`c9d5878a9c4601d38d654f836f9d474c92370709`).
 This follow-up adds text/tabular readers only; additional JSON/JSONL, GenBank and preprocessing/export contracts are
-documented in ROADMAP_TOOLS.md.
+documented in roadmap-tools.md.
 
 ## Reader-to-matcher adapter
 
@@ -195,6 +195,6 @@ documented in ROADMAP_TOOLS.md.
 `sequence-matches/1` envelope. It does not collect all records. Memory remains
 proportional to the current record plus its matches, not constant for a huge
 single FASTA record. Coordinate meanings above are unchanged. See
-[SEQUENCE_MATCHER.md](SEQUENCE_MATCHER.md) for examples, per-record match limits,
+[sequence-matcher.md](sequence-matcher.md) for examples, per-record match limits,
 lazy error propagation and early-close ownership. The adapter retains its record-level contract; the newer match CLI and
-chunk event API are documented in ROADMAP_TOOLS.md.
+chunk event API are documented in roadmap-tools.md.

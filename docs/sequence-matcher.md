@@ -1,5 +1,5 @@
 > CLI, JSON pattern packs, additional reader formats and a separate bounded
-> chunk-event API now exist; see [ROADMAP_TOOLS.md](ROADMAP_TOOLS.md).
+> chunk-event API now exist; see [roadmap-tools.md](roadmap-tools.md).
 > This document describes the unchanged whole-record envelope API, whose memory
 > contract is still proportional to one record.
 
@@ -35,7 +35,7 @@ with closing(find_sequence_matches(
 `input`, `format`, `source`, `sequence_column`, `id_column`, `name_column`, and
 `description_column` are passed to the existing reader. Format selection,
 compression, column validation and supported subsets remain as documented in
-[SEQUENCE_READERS.md](SEQUENCE_READERS.md). `left`, `right`, `min_gap`, `max_gap`,
+[sequence-readers.md](sequence-readers.md). `left`, `right`, `min_gap`, `max_gap`,
 `iupac`, `strand`, and `max_matches` are passed unchanged to the existing matcher.
 Its defaults and validation remain unchanged; `max_matches` defaults to 10000.
 

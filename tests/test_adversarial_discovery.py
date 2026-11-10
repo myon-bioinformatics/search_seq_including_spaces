@@ -5,10 +5,7 @@ its output or exact rejection; unexpected implementation exceptions propagate.
 The custom character map below is a caller-side simulation, not a reader codec.
 """
 
-import hashlib
-import io
-import os
-import unittest
+import hashlib, io, os, unittest
 from pathlib import Path
 
 from seqlib.comparison import compare_aligned, ComparisonError

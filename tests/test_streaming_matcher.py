@@ -1,7 +1,4 @@
-import io
-import itertools
-import random
-import unittest
+import io, itertools, random, unittest
 from seqlib.anchor_matcher import find_matches
 from seqlib.streaming_matcher import match_chunks, match_large_file
 

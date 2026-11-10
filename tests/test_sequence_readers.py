@@ -1,12 +1,5 @@
-import bz2
-from dataclasses import asdict, FrozenInstanceError
-import gzip
-import io
-import json
-import lzma
-from pathlib import Path
-import tempfile
-import unittest
+import bz2, gzip, io, json, lzma, tempfile, unittest
+from dataclasses import asdict, FrozenInstanceError; from pathlib import Path
 
 from seqlib.anchor_matcher import find_matches
 from seqlib.sequence_readers import read_sequences, SequenceReadError

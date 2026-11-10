@@ -1,11 +1,6 @@
 """Native discovery contracts run in both pytest and stdlib-only environments."""
-import json
-import subprocess
-import sys
-import tempfile
-import unittest
-from pathlib import Path
-from unittest.mock import patch
+import json, subprocess, sys, tempfile, unittest
+from pathlib import Path; from unittest.mock import patch
 
 from seqlib.sequence_readers import discover_sequences
 

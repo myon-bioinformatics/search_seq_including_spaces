@@ -1,9 +1,7 @@
 """Deterministic nucleotide features, marker clues and a bounded RNA baseline."""
-from collections import Counter
-import hashlib
-import math
+import hashlib, math
+from collections import Counter; from itertools import product
 
-from itertools import product
 from seqlib.anchor_matcher import normalize_sequence, _BASES
 from seqlib.comparison import compare_aligned, _alphabet_tables
 from seqlib.result_summary import integer

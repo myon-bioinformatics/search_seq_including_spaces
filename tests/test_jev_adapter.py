@@ -1,5 +1,4 @@
-import json
-import unittest
+import json, unittest
 from seqlib.jev_adapter import JevClassifier
 from seqlib.sequence_router import route_item
 

@@ -1,6 +1,5 @@
+import re, unittest
 from itertools import combinations, product
-import re
-import unittest
 
 from seqlib.ambiguity_candidates import generate_candidates, select_representatives, exact_hit_matrix
 from seqlib.anchor_matcher import _BASES

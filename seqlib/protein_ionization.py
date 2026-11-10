@@ -3,7 +3,7 @@ from collections import Counter
 import math
 from seqlib.anchor_matcher import normalize_sequence
 
-# Bjellqvist model constants; provenance and limits in docs/ROADMAP_TOOLS.md.
+# Bjellqvist model constants; provenance and limits in docs/roadmap-tools.md.
 POSITIVE = {'Nterm':7.5,'K':10.0,'R':12.0,'H':5.98}
 NEGATIVE = {'Cterm':3.55,'D':4.05,'E':4.45,'C':9.0,'Y':10.0}
 N_TERMINAL = {'A':7.59,'M':7.0,'S':6.93,'P':8.36,'T':6.82,'V':7.44,'E':7.7}

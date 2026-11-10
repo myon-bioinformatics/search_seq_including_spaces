@@ -165,7 +165,7 @@ functional equivalence, or evolutionary similarity.
 ## Next
 
 S3 now provides bounded conservation/divergence/unknown window-evidence
-regions and legacy hit summaries. See [ROADMAP_TOOLS.md](ROADMAP_TOOLS.md)
+regions and legacy hit summaries. See [roadmap-tools.md](roadmap-tools.md)
 for CLI, merging, count conservation and coordinate contracts. Dynamic alignment (Needleman-Wunsch /
 Smith-Waterman), substitution-matrix similarity (BLOSUM/PAM), and MSA remain
 outside S1/S2.

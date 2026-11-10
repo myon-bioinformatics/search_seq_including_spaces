@@ -8,11 +8,7 @@ may import only the standard library and package modules in a lower layer
 I/O or print at import time.
 """
 
-import ast
-import pathlib
-import subprocess
-import sys
-import unittest
+import ast, pathlib, subprocess, sys, unittest
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 PACKAGE = ROOT / "protein"

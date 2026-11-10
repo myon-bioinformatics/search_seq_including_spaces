@@ -3,11 +3,8 @@
 No local file paths, URLs, network acquisition or model credentials are accepted
 by tool calls. All protocols share the same explicit schemas and dispatcher.
 """
-import argparse
+import argparse, json, math, sys
 from http.server import BaseHTTPRequestHandler, HTTPServer
-import json
-import math
-import sys
 
 from seqlib.ambiguity_candidates import generate_candidates
 from seqlib.anchor_matcher import find_matches

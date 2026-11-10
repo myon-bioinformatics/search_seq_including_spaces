@@ -1,7 +1,5 @@
 """Bounded IUPAC candidate generation; pairwise coverage is separate from sampling."""
-import hashlib
-import math
-import random
+import hashlib, math, random
 from itertools import combinations, product
 
 from seqlib.anchor_matcher import _BASES, normalize_sequence

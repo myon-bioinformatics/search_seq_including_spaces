@@ -1,6 +1,5 @@
+import math, unittest
 from dataclasses import replace
-import math
-import unittest
 from seqlib.structure_tools import Atom, parse_structure, geometry
 
 CIF='''data_demo

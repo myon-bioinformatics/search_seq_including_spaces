@@ -1,5 +1,4 @@
-import json
-import unittest
+import json, unittest
 
 from seqlib.comparison import ComparisonError, compare_aligned
 

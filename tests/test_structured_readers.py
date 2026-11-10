@@ -1,10 +1,5 @@
-import gzip
-import io
-import json
-from pathlib import Path
-import tempfile
-import unittest
-from unittest.mock import patch
+import gzip, io, json, tempfile, unittest
+from pathlib import Path; from unittest.mock import patch
 
 from seqlib.sequence_readers import read_sequences, SequenceReadError
 

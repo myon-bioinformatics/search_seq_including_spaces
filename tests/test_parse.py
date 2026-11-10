@@ -1,6 +1,4 @@
-import hashlib
-import pathlib
-import unittest
+import hashlib, pathlib, unittest
 
 from protein.parse import Prepared, SequenceError, prepare, read_fasta
 

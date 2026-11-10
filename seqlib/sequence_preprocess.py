@@ -1,8 +1,6 @@
 """Auditable sequence normalization and FASTA/JSONL/MEGA export, no aligner."""
+import hashlib, json, re
 from dataclasses import asdict, replace
-import hashlib
-import json
-import re
 
 from seqlib.comparison import _alphabet_tables
 from seqlib.result_summary import integer

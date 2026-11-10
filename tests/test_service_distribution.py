@@ -35,8 +35,21 @@ class ServiceDistributionTests(unittest.TestCase):
             self.assertEqual(run.returncode, 0, run.stderr)
             self.assertIn('http', run.stdout)
 
+    def test_helper_package_imports_without_root_aliases(self):
+        modules = sorted(path.stem for path in (ROOT / 'seqlib').glob('*.py')
+                         if path.stem != '__init__')
+        self.assertEqual(len(modules), 19)
+        self.assertEqual({path.name for path in ROOT.glob('*.py')},
+                         {'sequence_tool.py', 'sequence_service.py', 'definition_main.py'})
+        code = 'import importlib\n' + '\n'.join(
+            'importlib.import_module(' + repr('seqlib.' + name) + ')'
+            for name in modules)
+        run = subprocess.run([sys.executable, '-S', '-c', code], cwd=ROOT,
+                             capture_output=True, text=True, timeout=20)
+        self.assertEqual(run.returncode, 0, run.stderr)
+
     def test_documented_library_imports_resolve(self):
-        for name in ('ANCHOR_MATCHER', 'SEQUENCE_READERS', 'SEQUENCE_MATCHER'):
+        for name in ('anchor-matcher', 'sequence-readers', 'sequence-matcher'):
             document = (ROOT / 'docs' / (name + '.md')).read_text()
             imports = []
             for block in re.findall(r'```python\n(.*?)```', document, re.S):

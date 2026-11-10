@@ -1,4 +1,4 @@
-name: Tests
+name: CI
 
 # Keep stdlib runtime isolation separate from test-only pytest tooling.
 # CodeQL is intentionally not used: behavior gates run pytest/unittest, with
@@ -15,7 +15,7 @@ on:
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
-      - ".github/workflows/tests.yml"
+      - ".github/workflows/ci.yml"
   push:
     branches: [main]
     paths:
@@ -26,7 +26,7 @@ on:
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
-      - ".github/workflows/tests.yml"
+      - ".github/workflows/ci.yml"
   workflow_dispatch:
 
 permissions:
@@ -43,7 +43,7 @@ concurrency:
 
 jobs:
   vendor-lock:
-    name: Verify vendor lock
+    name: Vendor lock
     runs-on: ubuntu-latest
     timeout-minutes: 5
     steps:
@@ -57,7 +57,10 @@ jobs:
           version: "latest"
           python-version: "3.15"
           activate-environment: true
-          enable-cache: false
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
 
       - name: Fetch pinned shared vendor tool
         uses: actions/checkout@v7
@@ -72,7 +75,7 @@ jobs:
       - name: Verify vendored bytes against lock
         run: python -S .vendor-sync-tools/vendor_sync.py check --manifest vendor.lock.json
 
-  unittest:
+  test:
     name: unittest (Python ${{ matrix.python-version }}, stdlib only)
     needs: vendor-lock
     runs-on: ubuntu-latest
@@ -98,7 +101,10 @@ jobs:
           version: "latest"
           python-version: "${{ matrix.python-version }}"
           activate-environment: true
-          enable-cache: false
+          enable-cache: true
+          # Pull requests restore the cache and never write it; only main saves it.
+          save-cache: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+          prune-cache: true
 
       - name: Show Python version and commit
         run: |
@@ -180,7 +186,7 @@ jobs:
           retention-days: 14
 
   failure-identity:
-    needs: unittest
+    needs: test
     if: always()
     permissions:
       contents: read

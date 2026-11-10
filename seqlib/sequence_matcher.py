@@ -1,6 +1,5 @@
-"""Lazy reader-to-matcher adapter; see docs/SEQUENCE_MATCHER.md."""
-from contextlib import closing
-from dataclasses import asdict
+"""Lazy reader-to-matcher adapter; see docs/sequence-matcher.md."""
+from contextlib import closing; from dataclasses import asdict
 
 from seqlib.anchor_matcher import find_matches
 from seqlib.sequence_readers import read_sequences

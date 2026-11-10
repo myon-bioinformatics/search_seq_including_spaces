@@ -1,8 +1,6 @@
 """Mismatch checks must remain active when Python removes assert statements."""
+import subprocess, sys, unittest
 from pathlib import Path
-import subprocess
-import sys
-import unittest
 
 ROOT = Path(__file__).resolve().parents[1]
 
