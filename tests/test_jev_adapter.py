@@ -1,6 +1,6 @@
 import json, unittest
-from jev_adapter import JevClassifier
-from sequence_router import route_item
+from seqlib.jev_adapter import JevClassifier
+from seqlib.sequence_router import route_item
 
 
 class JevTests(unittest.TestCase):

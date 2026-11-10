@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import hashlib
 
-from comparison import (
+from seqlib.comparison import (
     ComparisonError,
     _alphabet_tables,
     _candidate_set,

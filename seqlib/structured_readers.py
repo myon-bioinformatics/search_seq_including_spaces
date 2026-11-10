@@ -1,7 +1,7 @@
 """JSON/JSONL and GenBank ORIGIN subsets, shared SequenceRecord contract."""
 import json, re
 
-from sequence_records import ReadProvenance, SequenceRecord
+from seqlib.sequence_records import ReadProvenance, SequenceRecord
 
 MAX_JSON_CHARS = 16 * 1024 * 1024
 
@@ -38,7 +38,7 @@ def _path(value, path):
 
 
 def read_json(handle, source, compression, format, sequence_path, id_path, description_path):
-    from sequence_readers import SequenceReadError
+    from seqlib.sequence_readers import SequenceReadError
     sequence_path = 'sequence' if sequence_path is None else sequence_path
     for path in (sequence_path, id_path, description_path):
         if path is not None and (not isinstance(path, str) or not path):
@@ -96,7 +96,7 @@ def read_json(handle, source, compression, format, sequence_path, id_path, descr
 
 def read_genbank(lines, source, compression):
     """GenBank/GenPept LOCUS..ORIGIN..// subset. No FEATURES/CONTIG semantics."""
-    from sequence_readers import SequenceReadError
+    from seqlib.sequence_readers import SequenceReadError
     index, record, origin, definition = 0, None, False, False
     for number, line in lines:
         if line.startswith('LOCUS '):

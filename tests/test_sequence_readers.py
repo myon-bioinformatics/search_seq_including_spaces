@@ -1,9 +1,9 @@
 import bz2, gzip, io, json, lzma, tempfile, unittest
 from dataclasses import asdict, FrozenInstanceError; from pathlib import Path
 
-from anchor_matcher import find_matches
-from sequence_readers import read_sequences, SequenceReadError
-from sequence_records import SCHEMA
+from seqlib.anchor_matcher import find_matches
+from seqlib.sequence_readers import read_sequences, SequenceReadError
+from seqlib.sequence_records import SCHEMA
 
 
 class NonSeek(io.StringIO):

@@ -1,8 +1,8 @@
 import csv, unittest
 from pathlib import Path
 
-from comparison_s2 import sliding_identity
-from result_summary import summarize_hits, summarize_csv, summarize_windows
+from seqlib.comparison_s2 import sliding_identity
+from seqlib.result_summary import summarize_hits, summarize_csv, summarize_windows
 
 ROOT = Path(__file__).resolve().parents[1]
 

@@ -2,18 +2,18 @@
 import json, sys
 from contextlib import closing; from dataclasses import asdict
 
-from ambiguity_candidates import MODES, generate_candidates, select_representatives
-from anchor_matcher import find_matches
-from result_summary import summarize_csv
-from sequence_patterns import load_patterns
-from sequence_readers import read_sequences, discover_sequences, SEQUENCE_FORMATS
-from streaming_matcher import match_large_file
-from result_summary import integer
-from sequence_analysis import nucleotide_features, marker_clues, fold_rna, translate_nucleotide
-from sequence_preprocess import preprocess, export_records
-from protein_ionization import ionization
-from structure_tools import parse_structure, geometry
-from acquisition import Client
+from seqlib.ambiguity_candidates import MODES, generate_candidates, select_representatives
+from seqlib.anchor_matcher import find_matches
+from seqlib.result_summary import summarize_csv
+from seqlib.sequence_patterns import load_patterns
+from seqlib.sequence_readers import read_sequences, discover_sequences, SEQUENCE_FORMATS
+from seqlib.streaming_matcher import match_large_file
+from seqlib.result_summary import integer
+from seqlib.sequence_analysis import nucleotide_features, marker_clues, fold_rna, translate_nucleotide
+from seqlib.sequence_preprocess import preprocess, export_records
+from seqlib.protein_ionization import ionization
+from seqlib.structure_tools import parse_structure, geometry
+from seqlib.acquisition import Client
 
 
 def dump(value):

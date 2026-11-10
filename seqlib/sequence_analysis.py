@@ -2,9 +2,9 @@
 import hashlib, math
 from collections import Counter; from itertools import product
 
-from anchor_matcher import normalize_sequence, _BASES
-from comparison import compare_aligned, _alphabet_tables
-from result_summary import integer
+from seqlib.anchor_matcher import normalize_sequence, _BASES
+from seqlib.comparison import compare_aligned, _alphabet_tables
+from seqlib.result_summary import integer
 
 _COMPLEMENT = str.maketrans("ACGTRYSWKMBDHVN", "TGCAYRSWMKVHDBN")
 

@@ -2,9 +2,9 @@
 import gzip, hashlib, io, math, re, time, xml.etree.ElementTree as ET
 from urllib.error import HTTPError, URLError; from urllib.parse import urlencode; from urllib.request import Request, urlopen
 
-from result_summary import integer
-from sequence_readers import read_sequences
-from structured_readers import strict_json
+from seqlib.result_summary import integer
+from seqlib.sequence_readers import read_sequences
+from seqlib.structured_readers import strict_json
 
 
 class FetchError(ValueError):

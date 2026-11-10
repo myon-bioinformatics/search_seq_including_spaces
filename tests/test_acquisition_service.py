@@ -1,7 +1,7 @@
 import gzip, io, json, unittest
 from unittest.mock import patch; from urllib.error import HTTPError
 
-from acquisition import Client, FetchError, parse_pubmed, urllib_transport
+from seqlib.acquisition import Client, FetchError, parse_pubmed, urllib_transport
 from sequence_service import McpSession, call_tool, serve_stdio, TOOLS
 
 PUBMED='''<?xml version="1.0"?><!DOCTYPE PubmedArticleSet SYSTEM "https://example.invalid/pubmed.dtd"><PubmedArticleSet><PubmedArticle><MedlineCitation><PMID>123</PMID><Article><ArticleTitle>A <i>nested</i> title</ArticleTitle><Abstract><AbstractText Label="RESULTS">Some <b>evidence</b>.</AbstractText></Abstract></Article></MedlineCitation><PubmedData><ArticleIdList><ArticleId IdType="doi">10.0/example</ArticleId></ArticleIdList></PubmedData></PubmedArticle></PubmedArticleSet>'''
@@ -42,7 +42,7 @@ class AcquisitionTests(unittest.TestCase):
     def test_gzip_expansion_cap_and_closed_response(self):
         class Response(io.BytesIO): headers={'Content-Encoding':'gzip'}
         response=Response(gzip.compress(b'A'*5000))
-        with patch('acquisition.urlopen',return_value=response):
+        with patch('seqlib.acquisition.urlopen',return_value=response):
             with self.assertRaises(FetchError): urllib_transport('https://example.invalid',timeout=1,max_bytes=100)
         self.assertTrue(response.closed)
 

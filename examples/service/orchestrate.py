@@ -7,7 +7,7 @@ from pathlib import Path
 import sys
 sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 
-from sequence_router import route_item
+from seqlib.sequence_router import route_item
 
 
 def run_pipeline(item, *, classifier=None, threshold=None, local=None, pro=None):

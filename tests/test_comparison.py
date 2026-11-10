@@ -1,6 +1,6 @@
 import json, unittest
 
-from comparison import ComparisonError, compare_aligned
+from seqlib.comparison import ComparisonError, compare_aligned
 
 
 class TestIdentity(unittest.TestCase):

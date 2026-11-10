@@ -1,8 +1,8 @@
 """Lazy reader-to-matcher adapter; see docs/sequence-matcher.md."""
 from contextlib import closing; from dataclasses import asdict
 
-from anchor_matcher import find_matches
-from sequence_readers import read_sequences
+from seqlib.anchor_matcher import find_matches
+from seqlib.sequence_readers import read_sequences
 
 SCHEMA = "sequence-matches/1"
 __all__ = ["SCHEMA", "find_sequence_matches"]

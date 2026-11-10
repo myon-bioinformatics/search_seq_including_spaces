@@ -1,8 +1,8 @@
 import re, unittest
 from itertools import combinations, product
 
-from ambiguity_candidates import generate_candidates, select_representatives, exact_hit_matrix
-from anchor_matcher import _BASES
+from seqlib.ambiguity_candidates import generate_candidates, select_representatives, exact_hit_matrix
+from seqlib.anchor_matcher import _BASES
 
 
 class CandidateTests(unittest.TestCase):

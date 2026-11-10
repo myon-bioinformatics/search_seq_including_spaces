@@ -1,7 +1,7 @@
 import unittest
 
-from comparison import ComparisonError
-from comparison_s2 import render_ascii_diff, sliding_identity
+from seqlib.comparison import ComparisonError
+from seqlib.comparison_s2 import render_ascii_diff, sliding_identity
 
 
 class TestSlidingIdentity(unittest.TestCase):

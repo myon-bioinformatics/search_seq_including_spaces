@@ -1,6 +1,6 @@
 import unittest
 from functools import lru_cache; from itertools import product
-from sequence_analysis import nucleotide_features, nucleotide_pairwise, fold_rna, marker_clues, translate_nucleotide
+from seqlib.sequence_analysis import nucleotide_features, nucleotide_pairwise, fold_rna, marker_clues, translate_nucleotide
 
 
 class AnalysisTests(unittest.TestCase):

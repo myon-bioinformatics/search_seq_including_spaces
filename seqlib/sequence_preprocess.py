@@ -2,8 +2,8 @@
 import hashlib, json, re
 from dataclasses import asdict, replace
 
-from comparison import _alphabet_tables
-from result_summary import integer
+from seqlib.comparison import _alphabet_tables
+from seqlib.result_summary import integer
 
 
 def preprocess(records, *, alphabet='dna', normalize_ut=False, deduplicate='none',

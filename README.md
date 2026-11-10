@@ -35,6 +35,29 @@ Anchor sequences and gap constraints drive matching, with CSV/JSONL output and f
 
 Complementary view of sequence readers, matching/candidate tools, and result summaries. Formats and limits vary by command; the comparison tools use already-aligned sequences and do not perform alignment or infer homology.
 
+## Layout
+
+- Root: the entry points `sequence_tool.py`, `sequence_service.py` and the legacy `definition_main.py`.
+- `seqlib/`: the helper modules they use (readers, matchers, comparison, summaries). Import them as `from seqlib.sequence_readers import ...`.
+- `protein/`: the protein package. `tests/`, `docs/`, `scripts/`, `examples/` and `vendor/` hold the rest.
+
+### Migrating helper imports
+
+The helper-module move is an intentional Python import-path change. Replace
+`from sequence_readers import read_sequences` with
+`from seqlib.sequence_readers import read_sequences`, and replace
+`import anchor_matcher` with `from seqlib import anchor_matcher`. Apply the same
+`seqlib.` prefix to other helper imports and string-based mock/patch targets.
+There are no root-level compatibility aliases; CLI and service entry points
+remain unchanged. Copy the `seqlib/` directory alongside `protein/` and the
+entry-point scripts when distributing the source runtime.
+
+Previously pickled helper objects refer to the old module names and will not
+load unchanged. Before upgrading, export trusted stored objects to an explicit
+interchange format such as JSON and reconstruct them with the new API. New
+pickles refer to `seqlib` and cannot be loaded by older checkouts. Only load
+pickle data from trusted sources.
+
 ## Search, summarize and analyze
 
 Runtime remains standard-library only. [Roadmap tools and contracts](docs/roadmap-tools.md)

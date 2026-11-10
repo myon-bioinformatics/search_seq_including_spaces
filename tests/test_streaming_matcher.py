@@ -1,6 +1,6 @@
 import io, itertools, random, unittest
-from anchor_matcher import find_matches
-from streaming_matcher import match_chunks, match_large_file
+from seqlib.anchor_matcher import find_matches
+from seqlib.streaming_matcher import match_chunks, match_large_file
 
 
 def key(match):

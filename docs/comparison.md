@@ -173,6 +173,6 @@ outside S1/S2.
 ## Implementation contract
 
 The comparison modules remain standard-library only. Shared aligned-input
-preparation lives in `comparison.py`; S2 reuses that contract rather than
+preparation lives in `seqlib/comparison.py`; S2 reuses that contract rather than
 duplicating normalization or validation. S2-specific window aggregation and
-ASCII rendering stay isolated in `comparison_s2.py`.
+ASCII rendering stay isolated in `seqlib/comparison_s2.py`.

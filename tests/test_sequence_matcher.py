@@ -1,10 +1,10 @@
 import bz2, gc, gzip, io, json, lzma, tempfile, unittest, weakref
 from contextlib import closing; from dataclasses import asdict; from pathlib import Path; from unittest.mock import patch
 
-from anchor_matcher import find_matches
-from sequence_matcher import find_sequence_matches
-from sequence_readers import read_sequences, SequenceReadError
-from sequence_records import ReadProvenance, SequenceRecord
+from seqlib.anchor_matcher import find_matches
+from seqlib.sequence_matcher import find_sequence_matches
+from seqlib.sequence_readers import read_sequences, SequenceReadError
+from seqlib.sequence_records import ReadProvenance, SequenceRecord
 
 
 class GuardedStream:
@@ -253,7 +253,7 @@ class SequenceMatcherTests(unittest.TestCase):
                         handle = real_open(*args, **kwargs)
                         handles.append(handle)
                         return handle
-                    with patch('sequence_readers.open', tracked_open, create=True):
+                    with patch('seqlib.sequence_readers.open', tracked_open, create=True):
                         rows = find_sequence_matches(path, 'A', 'C')
                         self.assertEqual(handles, [])
                         next(rows)
@@ -297,7 +297,7 @@ class SequenceMatcherTests(unittest.TestCase):
             result = WeakResult(find_matches(*args, **kwargs))
             result_refs.append(weakref.ref(result))
             return result
-        with patch('sequence_matcher.read_sequences', reader), patch('sequence_matcher.find_matches', matcher):
+        with patch('seqlib.sequence_matcher.read_sequences', reader), patch('seqlib.sequence_matcher.find_matches', matcher):
             rows = find_sequence_matches(None, 'A', 'C')
             for index in range(1, 4):
                 envelope = next(rows)

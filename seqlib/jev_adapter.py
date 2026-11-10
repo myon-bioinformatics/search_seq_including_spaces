@@ -6,9 +6,9 @@ an explicit key for live requests. The router retains final routing authority.
 import json, math
 from urllib.error import HTTPError, URLError; from urllib.request import build_opener, HTTPRedirectHandler, Request
 
-from result_summary import integer
-from sequence_router import QUESTIONS
-from structured_readers import strict_json
+from seqlib.result_summary import integer
+from seqlib.sequence_router import QUESTIONS
+from seqlib.structured_readers import strict_json
 
 ENDPOINT = 'https://api.typesafe.ai/v1/systemone'
 INSTRUCTIONS = {

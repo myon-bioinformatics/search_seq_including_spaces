@@ -1,8 +1,8 @@
 import io, unittest
-from protein_ionization import ionization
-from sequence_preprocess import preprocess, export_records
-from sequence_readers import read_sequences
-from sequence_router import route_item
+from seqlib.protein_ionization import ionization
+from seqlib.sequence_preprocess import preprocess, export_records
+from seqlib.sequence_readers import read_sequences
+from seqlib.sequence_router import route_item
 
 
 class PreprocessRouterTests(unittest.TestCase):

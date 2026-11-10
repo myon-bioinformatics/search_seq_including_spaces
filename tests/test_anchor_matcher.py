@@ -1,6 +1,6 @@
 import itertools, json, random, unittest
 
-from anchor_matcher import find_matches, normalize_sequence, reverse_complement
+from seqlib.anchor_matcher import find_matches, normalize_sequence, reverse_complement
 
 
 class AnchorMatcherTests(unittest.TestCase):

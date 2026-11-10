@@ -2,7 +2,7 @@
 import hashlib, itertools, math, re
 from collections import Counter, defaultdict; from dataclasses import asdict, dataclass
 
-from result_summary import integer
+from seqlib.result_summary import integer
 
 
 @dataclass(frozen=True)

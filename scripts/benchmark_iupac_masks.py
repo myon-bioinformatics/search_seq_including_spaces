@@ -4,8 +4,8 @@ Load a fixed pre-change reference using git; compare complete outputs before tim
 """
 import json, platform, random, statistics, subprocess, sys, time, types
 
-import anchor_matcher
-import streaming_matcher
+from seqlib import anchor_matcher
+from seqlib import streaming_matcher
 
 BASELINE = '5ab1885919c52c46a255c7944ef475ae8061c46d'
 
@@ -15,14 +15,22 @@ def reference(name, anchor_reference=None):
     module.__file__ = name + '.py'
     sys.modules[module.__name__] = module
     code = subprocess.check_output(['git', 'show', BASELINE + ':' + name + '.py'])
-    # Streaming imports must resolve to the reference anchor module.
-    original = sys.modules['anchor_matcher']
+    # The pre-change code imports flat top-level modules; alias the seqlib.* ones under those names meanwhile.
+    missing = object()
+    aliases = {key.split('.', 1)[1]: value for key, value in sys.modules.items() if key.startswith('seqlib.')}
     if name == 'streaming_matcher':
-        sys.modules['anchor_matcher'] = anchor_reference
+        # Streaming imports must resolve to the reference anchor module.
+        aliases['anchor_matcher'] = anchor_reference
+    saved = {key: sys.modules.get(key, missing) for key in aliases}
+    sys.modules.update(aliases)
     try:
         exec(compile(code, module.__file__, 'exec'), module.__dict__)
     finally:
-        sys.modules['anchor_matcher'] = original
+        for key, value in saved.items():
+            if value is missing:
+                sys.modules.pop(key, None)
+            else:
+                sys.modules[key] = value
     return module
 
 
