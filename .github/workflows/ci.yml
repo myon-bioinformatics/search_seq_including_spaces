@@ -15,7 +15,7 @@ on:
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/**"
   push:
     branches: [main]
     paths:
@@ -26,7 +26,7 @@ on:
       - "vendor.lock.json"
       - "vendor/**"
       - ".gitattributes"
-      - ".github/workflows/ci.yml"
+      - ".github/workflows/**"
   workflow_dispatch:
 
 permissions:
@@ -42,6 +42,11 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  actionlint:
+    permissions:
+      contents: read
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@9e3da7ae1846e9604ebc24bb5178f7de094a4e77
+
   vendor-lock:
     name: Vendor lock
     runs-on: ubuntu-latest

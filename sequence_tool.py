@@ -21,13 +21,13 @@ bytes. --json writes one document and needs exactly one FASTA record;
 --jsonl writes one compact document per record.
 """
 
-import argparse, csv, json, math, sys
+import argparse, csv, math, sys
 
 from seqlib.comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
-                        GAP_POLICIES, ComparisonError, compare_aligned)
-from seqlib.comparison_s2 import render_ascii_diff, sliding_identity
+                        GAP_POLICIES, compare_aligned, render_ascii_diff,
+                        sliding_identity)
 from seqlib.result_summary import summarize_windows
-from seqlib.sequence_commands import add_commands
+from seqlib.sequence_commands import add_commands, dump
 from protein.features import AMBIGUITY_POLICIES, protein_features, protein_profiles
 from protein.parse import SequenceError, prepare, read_fasta
 from protein.search_seq_including_spaces_render import MIN_WIDTH, render_ascii
@@ -88,10 +88,8 @@ def _compare(args) -> tuple[str, int]:
             ambiguity_policy=args.ambiguity_policy, start=args.start, end=args.end,
             width=args.width
         )
-        record_a = header_a.split()[0] if header_a.split() else ""
-        record_b = header_b.split()[0] if header_b.split() else ""
         context = (
-            f"records: a={record_a} b={record_b}  alphabet={args.alphabet}  "
+            f"records: a={_record_id(header_a)} b={_record_id(header_b)}  alphabet={args.alphabet}  "
             f"gap={args.gap_policy}  ambiguity={args.ambiguity_policy}\n"
         )
         return context + body, EXIT_OK
@@ -109,17 +107,17 @@ def _compare(args) -> tuple[str, int]:
     if args.summary:
         doc = summarize_windows(doc, threshold=args.identity_threshold, min_coverage=args.min_coverage, top=args.top)
     doc["records"] = {
-        "a": {"id": header_a.split()[0] if header_a.split() else ""},
-        "b": {"id": header_b.split()[0] if header_b.split() else ""},
+        "a": {"id": _record_id(header_a)},
+        "b": {"id": _record_id(header_b)},
     }
-    return _dump(doc, indent=2) + "\n", EXIT_OK
+    return dump(doc, indent=2), EXIT_OK
 
 
 def _fasta_validate(args) -> tuple[str, int]:
     """Report every record; exit 2 if any is invalid (errors go to stderr)."""
     rows, reports, failed = [], [], False
     for header, raw in _read_records(args.file):
-        record_id = header.split()[0] if header.split() else ""
+        record_id = _record_id(header)
         try:
             p = prepare(header, raw, strip_gaps=args.strip_gaps,
                         allow_internal_stop=args.allow_internal_stop)
@@ -140,7 +138,7 @@ def _fasta_validate(args) -> tuple[str, int]:
                         "modifications": {"stripped_terminal_stop": p.stripped_terminal_stop,
                                           "stripped_gaps": p.stripped_gaps}})
     if args.json:
-        output = _dump({"valid": not failed, "records": reports}, indent=2)
+        output = dump({"valid": not failed, "records": reports}, indent=2)[:-1]  # unchanged: no final newline
     else:
         header = ["id", "length", "canonical", "rare_but_defined", "ambiguous", "stop",
                   "stripped_terminal_stop", "stripped_gaps"]
@@ -213,17 +211,17 @@ def _prepared(args) -> list:
 
 def _write_documents(docs: list[dict], fmt: str) -> str:
     if fmt == "jsonl":
-        return "".join(_dump(doc) + "\n" for doc in docs)
+        return "".join(dump(doc) for doc in docs)
     if len(docs) != 1:
         raise InputError(f"--json writes one document but the input has {len(docs)} "
                          "records; use --jsonl")
-    return _dump(docs[0], indent=2) + "\n"
+    return dump(docs[0], indent=2)
 
 
-def _dump(obj, indent: int | None = None) -> str:
-    separators = None if indent else (",", ":")
-    return json.dumps(obj, sort_keys=True, ensure_ascii=False, indent=indent,
-                      separators=separators, allow_nan=False)
+def _record_id(header: str) -> str:
+    """First whitespace-separated header token ("" for an empty header)."""
+    tokens = header.split()
+    return tokens[0] if tokens else ""
 
 
 def _tsv_cell(value) -> str:

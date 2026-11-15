@@ -16,8 +16,14 @@ from seqlib.structure_tools import parse_structure, geometry
 from seqlib.acquisition import Client
 
 
-def dump(value):
-    return json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False, separators=(',', ':')) + '\n'
+def dump(value, indent=None):
+    """Deterministic JSON line(s): sorted keys, UTF-8 text, no NaN; compact unless ``indent``."""
+    return json.dumps(value, sort_keys=True, ensure_ascii=False, allow_nan=False, indent=indent,
+                      separators=None if indent else (',', ':')) + '\n'
+
+
+def _record_ref(record):
+    return {'id': record.id, 'source': record.source, 'provenance': asdict(record.provenance)}
 
 
 def records(args):
@@ -84,11 +90,7 @@ def run_match(args):
                                   format=args.input_format, chunk_size=args.chunk_size,
                                   min_gap=args.min_gap or 0, max_gap=args.max_gap, iupac=args.iupac,
                                   strand=args.strand, max_matches=args.max_matches)
-        def output():
-            with closing(events):
-                for event in events:
-                    yield dump(event)
-        return output(), 0
+        return _output(events, True), 0
     return _output(match_documents(args), args.jsonl), 0
 
 
@@ -110,7 +112,7 @@ def run_candidates(args):
                 report = generate_candidates(record.sequence, mode=args.mode, limit=args.limit, seed=args.seed)
                 if targets is not None:
                     report['representatives'] = select_representatives(report['candidates'], targets, rank=8 if args.rank is None else args.rank, seed=args.seed)
-                report['record'] = {'id': record.id, 'source': record.source, 'provenance': asdict(record.provenance)}
+                report['record'] = _record_ref(record)
                 yield report
     return _output(documents(), args.jsonl), 0
 
@@ -256,9 +258,7 @@ def run_analysis(args):
                     report = fold_rna(record.sequence, min_loop=args.min_loop, max_length=args.max_length, wobble=not args.no_wobble)
                 elif args.operation == 'translate':
                     frame = args.frame
-                    if frame in ('0', '1', '2'):
-                        frame = int(frame)
-                    elif frame != 'all':
+                    if frame != 'all':
                         try:
                             frame = int(frame)
                         except ValueError:
@@ -269,7 +269,7 @@ def run_analysis(args):
                     report = marker_clues(record.sequence, kind=args.kind, motif=args.motif, min_length=args.min_length,
                                           position=args.position, allele=args.allele, repeat_length=args.repeat_length,
                                           min_gap=args.min_gap, max_gap=args.max_gap, max_results=args.max_results)
-                report['record'] = {'id': record.id, 'source': record.source, 'provenance': asdict(record.provenance)}
+                report['record'] = _record_ref(record)
                 yield report
     return _output(documents(), args.jsonl), 0
 

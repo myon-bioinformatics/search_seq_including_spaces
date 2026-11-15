@@ -1,17 +1,11 @@
-import json, pathlib, unittest
+import json, unittest
 
 from protein import roi as ROI
 from protein.features import protein_profiles
-from protein.parse import prepare, read_fasta
+from protein.parse import prepare
 from protein.provenance import FIELD_CLASSES
 from protein.roi import DEFAULT_THRESHOLDS, LABEL, regions_of_interest
-
-FIXTURES = pathlib.Path(__file__).parent / "fixtures"
-
-
-def load(name):
-    return prepare(*read_fasta((FIXTURES / name).read_text(encoding="utf-8"))[0])
-
+from test_features import load
 
 LYSOZYME = load("P00698_mature.fasta")
 SYNUCLEIN = load("P37840.fasta")

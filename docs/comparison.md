@@ -172,7 +172,7 @@ outside S1/S2.
 
 ## Implementation contract
 
-The comparison modules remain standard-library only. Shared aligned-input
-preparation lives in `seqlib/comparison.py`; S2 reuses that contract rather than
-duplicating normalization or validation. S2-specific window aggregation and
-ASCII rendering stay isolated in `seqlib/comparison_s2.py`.
+The comparison module remains standard-library only. S1 and S2 both live in
+`seqlib/comparison.py`: `compare_aligned()`, `sliding_identity()` and
+`render_ascii_diff()` share one aligned-input preparation instead of
+duplicating normalization or validation.

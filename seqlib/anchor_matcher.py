@@ -2,6 +2,8 @@
 from dataclasses import dataclass
 import hashlib
 
+from seqlib.result_summary import integer
+
 SCHEMA = "anchor-gap/1"
 __all__ = ["SCHEMA", "NormalizedSequence", "normalize_sequence", "reverse_complement", "find_matches"]
 
@@ -53,11 +55,6 @@ def reverse_complement(text):
     return sequence.translate(_COMPLEMENT)[::-1]
 
 
-def _integer(value, name, *, minimum=0):
-    if isinstance(value, bool) or not isinstance(value, int) or value < minimum:
-        raise ValueError(name + " must be an integer >= " + str(minimum))
-
-
 def find_matches(text, left, right, *, min_gap=0, max_gap=None, iupac=False,
                  strand="+", max_matches=10000):
     """Return deterministic overlapping anchor pairs and oriented middle strings.
@@ -72,10 +69,10 @@ def find_matches(text, left, right, *, min_gap=0, max_gap=None, iupac=False,
     prefix. Runtime is proportional to sequence length, feasible gap range and
     anchor lengths; this baseline is not a genome-scale indexed search engine.
     """
-    _integer(min_gap, "min_gap")
+    integer(min_gap, "min_gap")
     max_gap = min_gap if max_gap is None else max_gap
-    _integer(max_gap, "max_gap")
-    _integer(max_matches, "max_matches", minimum=1)
+    integer(max_gap, "max_gap")
+    integer(max_matches, "max_matches", minimum=1)
     if max_gap < min_gap:
         raise ValueError("max_gap must be >= min_gap")
     if not isinstance(iupac, bool) or strand not in ("+", "-", "both"):

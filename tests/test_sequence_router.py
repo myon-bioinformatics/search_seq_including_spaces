@@ -1,6 +1,24 @@
+"""Routing boundary (seqlib/sequence_router.py) and its optional Jev classifier (seqlib/jev_adapter.py)."""
 import json, unittest
 from seqlib.jev_adapter import JevClassifier
 from seqlib.sequence_router import route_item
+
+
+class RouterTests(unittest.TestCase):
+    def test_routing_failure_uncertainty_no_side_effect(self):
+        item={'kind':'analysis','features':{'score':4}}
+        self.assertEqual(route_item(item)['route'],'local')
+        def fail(request): raise TimeoutError('private transport details')
+        r=route_item(item,classifier=fail,threshold=0.8)
+        self.assertEqual(r['reason'],'classifier-failed')
+        self.assertNotIn('private',str(r))
+        good=lambda request:{'decision':'no','confidence':0.9}
+        self.assertEqual(route_item(item,classifier=good,threshold=0.8)['route'],'exclude')
+        self.assertEqual(route_item(item,classifier=good,threshold=0.95)['route'],'local')
+        self.assertEqual(route_item(item,classifier=fail,threshold=0.8,important=True)['route'],'pro')
+        with self.assertRaises(ValueError): route_item(item,classifier=good)
+        r=route_item({'kind':'sequence','sequence':'ACGT','alphabet':'dna'},question='sequence_type',classifier=fail,threshold=0.8)
+        self.assertEqual(r['route'],'deterministic')
 
 
 class JevTests(unittest.TestCase):
