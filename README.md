@@ -149,7 +149,7 @@ python -S -m unittest discover -s tests -p test_sequence_readers.py -v
 ```
 
 `pyproject.toml` is the canonical development dependency definition. pytest is
-declared there, and again in `tests/requirements.txt`, as a lower bound only.
+declared there as a lower bound only.
 The runtime has no third-party dependencies. Runtime metadata does not
 raise the source/vendoring floor to the development floor. CI pins setup-uv
 v10.3.3 by full commit SHA and selects uv version latest. Other actions from

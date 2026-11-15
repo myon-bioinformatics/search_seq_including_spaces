@@ -1,3 +1,0 @@
-# Test tooling only. Lower bound only, matching the pyproject dev group.
-# The locked lane runs this with: uv run --locked pytest
-pytest>=9.1.1
