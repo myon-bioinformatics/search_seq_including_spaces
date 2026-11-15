@@ -1,20 +1,12 @@
-import pathlib, unittest
+import unittest
 
 from protein.features import protein_profiles
-from protein.parse import prepare, read_fasta
+from protein.parse import prepare
 from protein.search_seq_including_spaces_render import render_ascii
 from protein.roi import regions_of_interest
+from test_roi import LYSOZYME, SYNUCLEIN
 
-FIXTURES = pathlib.Path(__file__).parent / "fixtures"
 MARGIN = 8
-
-
-def load(name):
-    return prepare(*read_fasta((FIXTURES / name).read_text(encoding="utf-8"))[0])
-
-
-LYSOZYME = load("P00698_mature.fasta")
-SYNUCLEIN = load("P37840.fasta")
 # 1161 residues: a length whose last ruler label ("1161") once got cut to "1".
 LONG = prepare("long", LYSOZYME.residues * 9)
 

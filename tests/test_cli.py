@@ -1,4 +1,10 @@
-import json, pathlib, subprocess, sys, tempfile, unittest
+"""sequence_tool.py CLI: protein/compare golden outputs and errors, the sequence
+subcommands (match, candidates, analysis, preprocess) and fetch with offline I/O."""
+import hashlib, io, json, pathlib, subprocess, sys, tempfile, unittest
+from contextlib import redirect_stderr, redirect_stdout; from pathlib import Path; from unittest.mock import Mock, patch
+
+from seqlib.acquisition import Client
+from sequence_tool import main
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 TOOL = ROOT / "sequence_tool.py"
@@ -283,3 +289,170 @@ class TestInputErrors(unittest.TestCase):
         self.assert_input_error("protein", "features", "--json", "--jsonl", "-",
                                 stdin=b"ACD", message="not allowed")
         self.assert_input_error(message="required")
+
+
+class SequenceCommandsCliTests(unittest.TestCase):
+    def test_match_jsonl_pack_stdin_and_errors(self):
+        code,out,err=run('match','-','--input-format','fasta','--left','AC','--right','GT','--min-gap',1,'--jsonl',stdin=b'>x\nACNGT\n>y\nTTTT\n')
+        self.assertEqual((code,err),(0,''))
+        docs=[json.loads(line) for line in out.splitlines()]
+        self.assertEqual(docs[0]['result']['matches'][0]['middle'],'N')
+        self.assertEqual(docs[1]['result']['matches'],[])
+        with tempfile.TemporaryDirectory() as d:
+            p=Path(d)/'patterns.json'
+            p.write_text(json.dumps({'schema':'sequence-patterns/1','patterns':[{'id':'p','left':'A','right':'T'}]}))
+            code,out,err=run('match','-','--input-format','jsonl','--patterns',p,'--sequence-path','/payload/seq',stdin=b'{"payload":{"seq":"AT"}}\n')
+            self.assertEqual((code,err),(0,''))
+            self.assertEqual(json.loads(out)['pattern_id'],'p')
+            code,out,err=run('match','-','--input-format','fasta','--patterns',p,'--left','A',stdin=b'')
+            self.assertEqual((code,out),(2,b''))
+        for opts in (('--min-gap','-1'),('--max-matches','0')):
+            code,out,err=run('match','-','--input-format','fasta','--left','A','--right','T',*opts,stdin=b'')
+            self.assertEqual((code,out),(2,b''))
+            self.assertNotIn('Traceback',err)
+
+    def test_chunk_jsonl_and_summary_cli(self):
+        code,out,err=run('match','-','--input-format','fasta','--left','A','--right','T','--chunk-size','4','--jsonl',stdin=b'>x\nCCCCAT\n')
+        self.assertEqual((code,err),(0,''))
+        self.assertEqual(json.loads(out.splitlines()[-1])['match_count'],1)
+        with tempfile.TemporaryDirectory() as d:
+            a,b=Path(d)/'a.fa',Path(d)/'b.fa'
+            a.write_text('>a\nAACC');b.write_text('>b\nAATT')
+            code,out,err=run('compare',a,b,'--alphabet','dna','--window','2','--step','2','--summary','--top','1')
+            self.assertEqual((code,err),(0,''))
+            self.assertEqual(json.loads(out)['omitted_items'],1)
+
+    def test_analysis_candidates_and_preprocess_receipt(self):
+        for args,data,schema in (
+            (('candidates','--mode','pairwise'),b'>x\nNNN\n','sequence-candidates/1'),
+            (('nucleotide-features',),b'>x\nACGTN\n','nucleotide-features/1'),
+            (('rna-fold',),b'>x\nGGGAAACCC\n','rna-nussinov/1'),
+            (('protein-ionization',),b'>x\nINGAR\n','protein-ionization/1'),
+            (('preset','--kind','poly-a'),b'>x\nAAAAAA\n','sequence-marker-clues/1'),
+            (('translate',),b'>x\nATGGCC\n','nucleotide-translation/1')):
+            code,out,err=run(*args,'-','--input-format','fasta',stdin=data)
+            self.assertEqual((code,err),(0,''))
+            self.assertEqual(json.loads(out)['schema'],schema)
+        with tempfile.TemporaryDirectory() as d:
+            receipt=Path(d)/'receipt.json'
+            args=('preprocess','-','--input-format','fasta','--export-format','mega','--receipt',receipt)
+            code,out,err=run(*args,stdin=b'>a\nACGT\n>b\nAC-T\n')
+            self.assertEqual((code,err),(0,''))
+            self.assertTrue(out.startswith(b'#MEGA'))
+            self.assertEqual(json.loads(receipt.read_text())['output_records'],2)
+            before=receipt.read_bytes()
+            code,out,err=run(*args,stdin=b'>a\nAAAA\n')
+            self.assertEqual((code,out),(2,b''))
+            self.assertEqual(receipt.read_bytes(),before)
+
+
+class FetchCliTests(unittest.TestCase):
+    def invoke(self, args, payload=b'', error=None):
+        transport = Mock(return_value=payload, side_effect=error)
+        def client(**kwargs):
+            return Client(transport=transport, retries=0, **kwargs)
+        buffer = io.BytesIO()
+        stdout = io.TextIOWrapper(buffer, encoding='utf-8')
+        stderr = io.StringIO()
+        with patch('seqlib.sequence_commands.Client', side_effect=client), \
+                redirect_stdout(stdout), redirect_stderr(stderr):
+            try:
+                code = main(['fetch', *args])
+            except SystemExit as exc:
+                code = exc.code
+        stdout.flush()
+        return code, buffer.getvalue(), stderr.getvalue(), transport
+
+    def test_structure_cif_pdb_and_default(self):
+        for fmt in (None, 'cif', 'pdb'):
+            with self.subTest(format=fmt):
+                expected = fmt or 'cif'
+                payload = b'data_1CRN\n#\n' if expected == 'cif' else b'HEADER    TEST\nEND\n'
+                args = ['--operation', 'records', '--database', 'structure',
+                        '--ids', '1crn', '--timeout', '2', '--max-bytes', '1000']
+                if fmt:
+                    args += ['--format', fmt]
+                code, out, err, transport = self.invoke(args, payload)
+                self.assertEqual((code, err), (0, ''))
+                result = json.loads(out)
+                url = f'https://files.rcsb.org/download/1CRN.{expected}'
+                transport.assert_called_once_with(url, timeout=2, max_bytes=1000)
+                self.assertEqual(result['schema'], 'structure-download/1')
+                self.assertEqual((result['id'], result['format']), ('1CRN', expected))
+                self.assertEqual(result['text'], payload.decode())
+                self.assertEqual(result['source'], url)
+                self.assertEqual(result['sha256'], hashlib.sha256(payload).hexdigest())
+                self.assertTrue(result['mmdb_lookup'].endswith('1CRN'))
+
+    def test_invalid_records_fail_before_transport(self):
+        cases = [
+            ('structure', []),
+            ('structure', ['--ids', '1CRN', '2ABC']),
+            ('structure', ['--ids', '../secret']),
+            ('structure', ['--ids', '1CRN', '--query', 'x']),
+            *[('structure', ['--ids', '1CRN', '--format', fmt])
+              for fmt in ('fasta', 'genbank', 'xml')],
+            *[(db, ['--ids', 'NM_1.2', '--format', fmt])
+              for db in ('nuccore', 'protein') for fmt in ('cif', 'pdb')],
+            ('pubmed', ['--ids', '123', '--format', 'fasta']),
+        ]
+        for db, extra in cases:
+            with self.subTest(database=db, args=extra):
+                code, out, err, transport = self.invoke(
+                    ['--operation', 'records', '--database', db, *extra])
+                self.assertEqual((code, out), (2, b''))
+                self.assertIn('error:', err)
+                self.assertNotIn('Traceback', err)
+                transport.assert_not_called()
+
+    def test_sequence_and_pubmed_records_unchanged(self):
+        for db in ('nuccore', 'protein'):
+            for fmt in (None, 'fasta', 'genbank'):
+                with self.subTest(database=db, format=fmt):
+                    payload = (b'LOCUS       TEST 4 bp DNA\nACCESSION   TEST\n'
+                               b'ORIGIN\n        1 acgt\n//\n'
+                               if fmt == 'genbank' else b'>TEST\nACGT\n')
+                    args = ['--operation', 'records', '--database', db, '--ids', 'TEST']
+                    if fmt:
+                        args += ['--format', fmt]
+                    code, out, err, transport = self.invoke(args, payload)
+                    self.assertEqual((code, err), (0, ''))
+                    result = json.loads(out)
+                    self.assertEqual(result['schema'], 'ncbi-sequences/1')
+                    self.assertEqual(result['records'][0]['sequence'],
+                                     'acgt' if fmt == 'genbank' else 'ACGT')
+                    rettype = ('gb' if db == 'nuccore' else 'gp') if fmt == 'genbank' else 'fasta'
+                    self.assertIn('rettype=' + rettype, transport.call_args.args[0])
+        code, out, err, transport = self.invoke(
+            ['--operation', 'records', '--database', 'pubmed', '--ids', '123'],
+            b'<PubmedArticleSet/>')
+        self.assertEqual((code, err), (0, ''))
+        self.assertEqual(json.loads(out)['articles'], [])
+        self.assertIn('efetch.fcgi?db=pubmed', transport.call_args.args[0])
+
+    def test_structure_search_summary_keep_ncbi_dispatch(self):
+        for operation, extra, payload in (
+            ('search', ['--query', 'crambin'],
+             b'{"esearchresult":{"count":"1","idlist":["123"]}}'),
+            ('summary', ['--ids', '123'], b'{"result":{"uids":["123"]}}'),
+        ):
+            with self.subTest(operation=operation):
+                args = ['--operation', operation, '--database', 'structure', *extra]
+                code, out, err, transport = self.invoke(args, payload)
+                self.assertEqual((code, err), (0, ''))
+                self.assertEqual(json.loads(out)['database'], 'structure')
+                self.assertIn(f'/e{operation}.fcgi?db=structure', transport.call_args.args[0])
+                code, out, err, transport = self.invoke(args + ['--format', 'cif'])
+                self.assertEqual((code, out), (2, b''))
+                transport.assert_not_called()
+
+    def test_structure_transport_failure_and_size_limit(self):
+        args = ['--operation', 'records', '--database', 'structure', '--ids', '1CRN']
+        code, out, err, transport = self.invoke(args, error=TimeoutError('private detail'))
+        self.assertEqual((code, out), (2, b''))
+        self.assertIn('fetch failed (TimeoutError)', err)
+        self.assertNotIn('private detail', err)
+        self.assertEqual(transport.call_count, 1)
+        code, out, err, transport = self.invoke(args + ['--max-bytes', '2'], b'abc')
+        self.assertEqual((code, out), (2, b''))
+        self.assertIn('oversized', err)

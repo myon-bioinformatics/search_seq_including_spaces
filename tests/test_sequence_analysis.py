@@ -1,5 +1,6 @@
 import unittest
 from functools import lru_cache; from itertools import product
+from seqlib.protein_ionization import ionization
 from seqlib.sequence_analysis import nucleotide_features, nucleotide_pairwise, fold_rna, marker_clues, translate_nucleotide
 
 
@@ -102,6 +103,15 @@ class AnalysisTests(unittest.TestCase):
         with self.assertRaises(ValueError): translate_nucleotide('ATGGCC', frame=5)
         with self.assertRaises(ValueError): translate_nucleotide('ATGGCC', strand='invalid')
         with self.assertRaises(ValueError): translate_nucleotide('1234')
+
+    def test_ionization_reference_and_monotonicity(self):
+        # Published Bio.SeqUtils.IsoelectricPoint example values, rounded there.
+        self.assertAlmostEqual(ionization('INGAR')['estimated_pi'],9.75,places=2)
+        self.assertAlmostEqual(ionization('INGAR')['net_charge'],0.76,places=2)
+        pi=ionization('PETER')['estimated_pi']
+        self.assertAlmostEqual(ionization('PETER',ph=pi)['net_charge'],0,places=10)
+        self.assertGreater(ionization('DKR',ph=3)['net_charge'],ionization('DKR',ph=10)['net_charge'])
+        with self.assertRaises(ValueError): ionization('X')
 
 
 class TranslationStopSymbolTests(unittest.TestCase):
