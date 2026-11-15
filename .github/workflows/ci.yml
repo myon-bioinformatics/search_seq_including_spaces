@@ -27,7 +27,6 @@ on:
       - "vendor/**"
       - ".gitattributes"
       - ".github/workflows/ci.yml"
-  workflow_dispatch:
 
 permissions:
   contents: read
