@@ -52,7 +52,7 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
@@ -67,7 +67,7 @@ jobs:
           prune-cache: true
 
       - name: Fetch pinned shared vendor tool
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/myon-bioinformatics
           ref: 9e3da7ae1846e9604ebc24bb5178f7de094a4e77
@@ -96,7 +96,7 @@ jobs:
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Check out repository
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
 
       - name: Set up uv
@@ -174,7 +174,7 @@ jobs:
         run: uv run --locked pytest tests -p vendor.xprobe_pytest --xprobe-jsonl=reports/pytest-events.jsonl --xprobe-repository=myon-bioinformatics/search_seq_including_spaces --junitxml=reports/pytest-${{ matrix.python-version }}.xml
       - name: Preserve native observations
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: pytest-events-py${{ matrix.python-version }}
           path: reports/pytest-events.jsonl
@@ -182,7 +182,7 @@ jobs:
           retention-days: 14
       - name: Preserve raw JUnit
         if: always()
-        uses: actions/upload-artifact@v7
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: junit-py${{ matrix.python-version }}
           path: reports/pytest-${{ matrix.python-version }}.xml

@@ -76,7 +76,7 @@ Docs-only changes do not trigger the CI workflow.
 | --- | --- |
 | Reader behavior | `tests/test_sequence_readers.py`: FASTA/FASTQ, malformed input, compression, stream ownership, record-boundary blanks, provenance and 8192-character sniff boundaries |
 | Existing domain regression | Anchor matcher, protein parser/features/rendering, CLI golden outputs and comparison tests in `tests/` |
-| Cross-repository adapter integrity | `tests/test_fleet.py` (`fleet_check.check_lock`, `test_pinned_runtime_helper`, `test_adapter_provenance`): lock entries and vendored xprobe helper/adapter bytes |
+| Cross-repository adapter integrity | `tests/test_fleet.py` (`fleet_check.check_lock` with `commits=` / `sources=`, `test_pinned_runtime_helper`): lock entries and vendored xprobe helper/adapter bytes |
 | Shared receipt validation | xprobe `tests/test_pytest_receipt.py` and `tests/test_pytest_adapter.py`: generic receipt corruption, all native outcomes, truncation/interruption and producer integration |
 | Reader evidence integration | `test_native_failure_evidence`: runs a real reader assertion failure through the vendored adapter, calls the shared receipt validator, checks preserved exit status and omitted private diagnostics |
 | Shared JUnit identity | `myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@1eda992aa6fa31a902e2c06428e53ab17e8fe3c1`: collects the five exact matrix report paths, runs even after test failure and preserves collection evidence |
