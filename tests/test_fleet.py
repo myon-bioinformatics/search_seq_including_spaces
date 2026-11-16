@@ -1,5 +1,5 @@
 """Fleet contracts through the parent's shared checks (vendor/fleet_check.py): vendor lock and
-xprobe provenance, parent pins, CI Python setup, benchmark guard; stdlib unittest, also under pytest.
+xprobe provenance, parent pins, action pins, CI Python setup, benchmark guard; stdlib unittest, also under pytest.
 
 Helper behavior tests belong to upstream xprobe; this repository checks provenance and consumer integration.
 """
@@ -38,6 +38,9 @@ class FleetTests(unittest.TestCase):
 
     def test_parent_workflow_references_use_reviewed_rollout_commit(self):
         self.assertEqual(set(fleet.parent_refs(ROOT)), {PARENT_WORKFLOW_PIN})
+
+    def test_every_action_is_pinned_by_full_sha_with_version_comment(self):
+        fleet.check_actions(ROOT)
 
     def test_setup_precedes_first_plain_python_command(self):
         fleet.workflow_job(ROOT, "test", setup="astral-sh/setup-uv@",
