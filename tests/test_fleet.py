@@ -20,13 +20,17 @@ ACCEPTED = {
 class FleetTests(unittest.TestCase):
     def test_vendor_lock_matches_checked_in_bytes_accepted_commits_and_sources(self):
         # check_lock verifies ref == commit, the placed bytes against blob_sha / sha256, and each row's origin.
-        fleet.check_lock(ROOT, commits=ACCEPTED, sources={
+        rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources={
             "vendor/xprobe.py": ("myon-bioinformatics/xprobe", "xprobe.py"),
             "vendor/xprobe_pytest.py": ("myon-bioinformatics/xprobe", "scripts/xprobe_pytest.py"),
             "vendor/xprobe-LICENSE": ("myon-bioinformatics/xprobe", "LICENSE"),
             "vendor/fleet_check.py": (fleet.PARENT, "fleet_check.py"),
             "vendor/myon-bioinformatics-LICENSE": (fleet.PARENT, "LICENSE"),
         })
+        adapter = rows["vendor/xprobe_pytest.py"]
+        self.assertEqual((adapter["sha256"], adapter["blob_sha"]),
+                         ("c0ea71f9d971bf47a9f5f1794ef8a7f641dd17694ea8e7f29795d326c5229285",
+                          "70fac53151e97f5f28d23f9961d3837b7a885ea8"))
 
     def test_pinned_runtime_helper(self):
         from vendor import xprobe
