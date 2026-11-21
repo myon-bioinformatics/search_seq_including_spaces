@@ -33,6 +33,9 @@ Anchor sequences and gap constraints drive matching, with CSV/JSONL output and f
 
 ![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
 
+To map a search hit or annotation onto an aligned second record, use the
+[`project` CLI or `project_interval` HTTP/MCP tool](docs/roadmap-tools.md#project-a-search-hit-or-annotation-across-an-alignment).
+
 Complementary view of sequence readers, matching/candidate tools, and result summaries. Formats and limits vary by command; the comparison tools use already-aligned sequences and do not perform alignment or infer homology.
 
 ## Layout

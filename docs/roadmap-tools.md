@@ -23,11 +23,30 @@ all existing protein golden files and the legacy `definition_main.py` are retain
 
 Implementation and fixture validation do not constitute deployment or scientific
 validation. The [NCBI/RCSB smoke record](https://github.com/myon-bioinformatics/search_seq_including_spaces/issues/2#issuecomment-6157072586)
-and the Service container run document bounded operational checks. Live Jev,
-model quality/calibration, MEGA GUI import and a running llama.cpp/Pro backend
-remain separate checks. The
-parent roadmap should remain open for these gates and advanced optional research
-rather than treating a merged prototype as proof that every future goal is done.
+and the Service container run document bounded operational checks. Live Jev calls and MEGA GUI import are optional interoperability checks.
+Search, annotations and alignment take priority. Scientific calibration remains
+open for claims about predictive quality.
+
+## Project a search hit or annotation across an alignment
+
+Use the start and end positions on the **ungapped source record**; both are
+1-based and inclusive. Supply one aligned record per file in the displayed
+orientation. For example, with source `AC-GT` and target `A-TGT`:
+
+```sh
+python -S sequence_tool.py project source.fa target.fa --alphabet dna --start 2 --end 4
+```
+
+Source positions 3–4 map to target positions 3–4 in alignment columns 4–5.
+Source position 2 is opposite a gap, and the target insertion in column 3 is
+outside the mapped blocks. A fully deleted interval produces an empty list.
+A mismatch still maps by position. The input alignment supplies the correspondence.
+To use a search hit, search the ungapped source first and pass the normalized
+`span` from the hit. The separate `source_span` counts original characters. RNA and protein use the same convention.
+
+The HTTP endpoint `POST /tools/call` and MCP stdio `tools/call` both accept
+the tool name `project_interval` and inline arguments `sequence_a`, `sequence_b`,
+`alphabet`, `start` and `end`. The CLI adds FASTA record IDs to the output.
 
 ## Search priority
 

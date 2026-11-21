@@ -24,7 +24,7 @@ bytes. --json writes one document and needs exactly one FASTA record;
 import argparse, csv, math, sys
 
 from seqlib.comparison import (ALPHABETS, AMBIGUITY_POLICIES as COMPARE_AMBIGUITY_POLICIES,
-                        GAP_POLICIES, compare_aligned, render_ascii_diff,
+                        GAP_POLICIES, compare_aligned, project_interval, render_ascii_diff,
                         sliding_identity)
 from seqlib.result_summary import summarize_windows
 from seqlib.sequence_commands import add_commands, dump
@@ -110,6 +110,16 @@ def _compare(args) -> tuple[str, int]:
         "a": {"id": _record_id(header_a)},
         "b": {"id": _record_id(header_b)},
     }
+    return dump(doc, indent=2), EXIT_OK
+
+
+def _project(args) -> tuple[str, int]:
+    if args.file_a == "-" and args.file_b == "-":
+        raise InputError("project cannot read both inputs from stdin")
+    header_a, raw_a = _one_raw_record(args.file_a)
+    header_b, raw_b = _one_raw_record(args.file_b)
+    doc = project_interval(raw_a, raw_b, alphabet=args.alphabet, start=args.start, end=args.end)
+    doc["records"] = {"a": {"id": _record_id(header_a)}, "b": {"id": _record_id(header_b)}}
     return dump(doc, indent=2), EXIT_OK
 
 
@@ -199,7 +209,7 @@ def _read_records(path: str) -> list[tuple[str, str]]:
 def _one_raw_record(path: str) -> tuple[str, str]:
     records = _read_records(path)
     if len(records) != 1:
-        raise InputError(f"compare expects exactly one record in {path}; found {len(records)}")
+        raise InputError(f"expected exactly one record in {path}; found {len(records)}")
     return records[0]
 
 
@@ -273,6 +283,14 @@ def _build_parser() -> argparse.ArgumentParser:
     groups = parser.add_subparsers(dest="group", required=True,
                                    metavar="COMMAND")
     add_commands(groups)
+
+    project = groups.add_parser("project", help="map a search hit or annotation across two aligned records")
+    project.add_argument("file_a", help="aligned source FASTA/plain record")
+    project.add_argument("file_b", help="aligned target FASTA/plain record")
+    project.add_argument("--alphabet", choices=ALPHABETS, required=True)
+    project.add_argument("--start", type=_int_at_least(1), required=True, help="ungapped source start (1-based)")
+    project.add_argument("--end", type=_int_at_least(1), required=True, help="ungapped source end (inclusive)")
+    project.set_defaults(handler=_project)
 
     compare = groups.add_parser(
         "compare", help="aligned pairwise identity/coverage (does not align sequences)")

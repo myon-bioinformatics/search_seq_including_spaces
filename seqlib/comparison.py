@@ -163,6 +163,42 @@ def compare_aligned(
     }
 
 
+def project_interval(sequence_a: str, sequence_b: str, *, alphabet: str,
+                     start: int, end: int) -> dict:
+    """Map an ungapped interval on A to paired residues on B in a supplied alignment.
+
+    Positions in A, B and alignment columns are 1-based inclusive. Each block
+    spans consecutive columns occupied by both sequences, including mismatches.
+    """
+    a, b, _ = _prepare_aligned(sequence_a, sequence_b, alphabet=alphabet,
+                               gap_policy="exclude", ambiguity_policy="strict",
+                               start=1, end=None)
+    length = len(a) - a.count("-")
+    if type(start) is not int or type(end) is not int or not 1 <= start <= end <= length:
+        raise ComparisonError(f"expected ungapped A coordinates 1 <= start <= end <= {length}")
+    pos_a = pos_b = mapped = 0
+    blocks = []
+    for column, (left, right) in enumerate(zip(a, b), 1):
+        pos_a += left != "-"
+        pos_b += right != "-"
+        if pos_a > end:
+            break
+        if pos_a < start or left == "-" or right == "-":
+            continue
+        mapped += 1
+        if blocks and blocks[-1]["columns"][1] == column - 1:
+            previous = blocks[-1]
+            previous["columns"][1] = column
+            previous["a"][1] = pos_a
+            previous["b"][1] = pos_b
+        else:
+            blocks.append({"a": [pos_a, pos_a], "b": [pos_b, pos_b],
+                           "columns": [column, column]})
+    return {"schema": "alignment-projection/1", "coordinate_convention": "1-based-inclusive",
+            "source_interval": [start, end], "mapped_residues": mapped,
+            "unmapped_residues": end - start + 1 - mapped, "blocks": blocks}
+
+
 def sliding_identity(
     sequence_a: str,
     sequence_b: str,
