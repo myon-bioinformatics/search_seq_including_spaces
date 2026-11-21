@@ -34,3 +34,14 @@ them as regression goldens.
   [PDB file](https://github.com/rdkit/rdkit-tutorials/blob/master/data/1CRN.pdb)
   (Git blob `e05c7c363fe90c17c19eb654c77d15defcdff478`). Trailing padding
   was removed. SSBOND records are labels for evaluating geometry.
+
+## RNA neighbourhood coordinates
+
+[1EHZ](https://www.rcsb.org/structure/1EHZ) is the yeast phenylalanine tRNA
+crystal structure. `1ehz-g19-c56.pdb` contains the named base nitrogen and oxygen
+ATOM records for chain A residues G19 and C56 from the
+[deposited PDB](https://files.rcsb.org/download/1EHZ.pdb), with trailing padding
+removed. After replacing modified residues in the SEQRES sequence with their
+MODRES parents, its first 73 residues match the ungapped Infernal tRNA1 row;
+the deposited chain also has a terminal CCA. The companion JSON explicitly
+maps just the two fixture residues. Distances are coordinate observations.

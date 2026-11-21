@@ -1,0 +1,7 @@
+{
+  "record": "tRNA1", "model": "1", "chain": "A",
+  "residues": [
+    {"position": 19, "residue_id": "19", "component": "G"},
+    {"position": 56, "residue_id": "56", "component": "C"}
+  ]
+}

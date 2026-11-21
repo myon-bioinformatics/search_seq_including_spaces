@@ -33,6 +33,9 @@ Anchor sequences and gap constraints drive matching, with CSV/JSONL output and f
 
 ![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
 
+Inspect one RNA residue's sequence neighbours, consensus partner and mapped 3D contacts with
+[`base-neighbors`](docs/roadmap-tools.md#rna-base-neighbours).
+
 To search an annotated Stockholm alignment, run
 `python -S sequence_tool.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA`.
 Each hit includes its ungapped positions, alignment columns and consensus annotation.

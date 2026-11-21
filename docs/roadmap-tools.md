@@ -51,6 +51,37 @@ agreement with this consensus. In PDB 1CRN the sulfur-coordinate check
 recovers all three deposited disulfide pairs with zero extra pairs.
 [Reference data and provenance](../tests/fixtures/SOURCE.md#reference-alignment-and-structural-records)
 
+## RNA base neighbours
+
+```sh
+python -S sequence_tool.py base-neighbors tests/fixtures/tRNA5.sto --record tRNA1 --position 31
+python -S sequence_tool.py base-neighbors tests/fixtures/tRNA5.sto --record tRNA1 --position 19 --structure tests/fixtures/1ehz-g19-c56.pdb --mapping tests/fixtures/1ehz-g19-c56-map.json
+```
+
+Positions count ungapped residues starting at one. Each node also gives its
+Stockholm column. In the first example A31 is between G30 and C32, and its
+consensus partner is U39 (columns 32 and 40). `next` follows the strand;
+`paired` and `spatial-contact` are symmetric relations represented once.
+`pair_status` distinguishes a missing SS_cons track, an unpaired column and
+a gap at the annotated partner. The parser handles nested WUSS bracket pairs
+and crossing pairs with separate bracket or letter families.
+
+The optional PDB or mmCIF overlay (`--structure-format cif` for mmCIF)
+uses one explicit record/model/chain mapping. Each entry supplies position,
+residue_id (a string including any insertion code), and component. A modified
+component also requires its source-supported parent_base. Only mapped positions
+are searched. The cutoff defaults to 4 Å. The result gives the closest
+altloc-compatible named base N/O atoms and distance, retaining their input IDs.
+The example reports G19 N2 to C56 O2 at 2.8174 Å. Missing 3D input gives
+`coordinates: null`; a supplied mapping with no qualifying neighbour produces
+coordinate metadata and zero contact edges. Distances alone do not assign bonds.
+
+The JSON can be passed directly to ONTO's
+[`knowledgegraph.graph_mermaid(result, focus=result["focus"])`](https://github.com/myon-bioinformatics/ONTO/blob/main/knowledgegraph.py).
+Node IDs are local to the selected record. The graph describes physical
+relationships and can contain cycles; topological ordering is suitable for
+dependencies between processing steps.
+
 ## Project a search hit or annotation across an alignment
 
 Use the start and end positions on the **ungapped source record**; both are
