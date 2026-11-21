@@ -59,19 +59,35 @@ def review(report, objective, judge):
             "omitted_matching_pairs": report["omitted_matching_pairs"], "results": rows}
 
 
-def evaluate(judge):
-    fixtures = json.loads((HERE / "cases.json").read_text())
+def threshold_counts(trials, threshold):
+    """Count accepted/rejected positives and negatives, retaining abstentions."""
+    counts = dict.fromkeys(("tp", "fp", "tn", "fn", "deferred_positive", "deferred_negative"), 0)
+    for trial in trials:
+        for row in trial["results"]:
+            positive = row["record_id"] == trial["expected"]
+            scores = row["nli"]
+            label = max(scores, key=scores.get)
+            if label == "neutral" or scores[label] < threshold:
+                key = "deferred_positive" if positive else "deferred_negative"
+            elif label == "entailment":
+                key = "tp" if positive else "fp"
+            else:
+                key = "fn" if positive else "tn"
+            counts[key] += 1
+    return counts
+
+
+def evaluate_cases(fixtures, judge):
     trials = []
     for case in fixtures:
         with tempfile.TemporaryDirectory() as tmp:
             fasta = Path(tmp) / "toy.fa"
             text = []
-            for record, count, length in case["records"]:
-                assert 0 < 2 * count <= length
-                text.append(f">{record}\n" + "AT" * count + "C" * (length - 2 * count))
+            for name, sequence in case["sequences"]:
+                text.append(f">{name}\n{sequence}")
             fasta.write_text("\n".join(text) + "\n")
             output = subprocess.check_output([sys.executable, "-S", str(ROOT / "sequence_tool.py"),
-                                              "match", str(fasta), "--left", "A", "--right", "T",
+                                              "match", str(fasta), "--left", case["left"], "--right", case["right"],
                                               "--top", str(len(text))])
         shortlist = json.loads(output)
         for objective, expected in case["objectives"]:
@@ -88,7 +104,30 @@ def evaluate(judge):
     metrics = {k: {"first": sum(t["rank"][k] == 1 for t in trials),
                    "mean_reciprocal_rank": math.fsum(1 / t["rank"][k] for t in trials) / len(trials)}
                for k in trials[0]["rank"]}
-    return {"objectives": len(trials), "metrics": metrics, "trials": trials}
+    return {"objectives": len(trials), "metrics": metrics, "trials": trials,
+            "threshold_counts": {str(t): threshold_counts(trials, t) for t in (0.5, 0.8, 0.95)}}
+
+
+def evaluate(judge):
+    fixtures = json.loads((HERE / "cases.json").read_text())
+    for case in fixtures:
+        case.update(left="A", right="T", sequences=[
+            (name, "AT" * count + "C" * (length - 2 * count))
+            for name, count, length in case["records"]
+        ])
+    report = evaluate_cases(fixtures, judge)
+
+    sys.path.insert(0, str(ROOT))
+    from seqlib.stockholm import read_stockholm
+
+    with (ROOT / "tests" / "fixtures" / "tRNA5.sto").open() as handle:
+        sequences, _ = read_stockholm(handle)
+    reference = {"name": "Infernal tRNA5", "left": "G", "right": "U",
+                 "sequences": [(name, seq.replace("-", "")) for name, seq in sequences.items()],
+                 "objectives": [["There are fewer than five matches.", "tRNA1"],
+                                ["一致箇所がちょうど6件ある。", "tRNA5"]]}
+    report["reference"] = evaluate_cases([reference], judge)
+    return report
 
 
 def main():

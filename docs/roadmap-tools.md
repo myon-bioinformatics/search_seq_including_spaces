@@ -27,6 +27,30 @@ and the Service container run document bounded operational checks. Live Jev call
 Search, annotations and alignment take priority. Scientific calibration remains
 open for claims about predictive quality.
 
+## Search annotated alignments
+
+```sh
+python -S sequence_tool.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA
+python -S -m unittest discover -s tests -p test_reference_alignment.py -v
+```
+
+The command searches each ungapped sequence for literal forward anchor pairs.
+`--min-gap` and `--max-gap` count intervening residues. The JSON reports each
+record ID, ungapped hit span, alignment columns and the `#=GC` track slice
+across those columns, including internal gaps. Coordinates are 1-based and
+inclusive. Select a column track with `--track` (default `SS_cons`).
+Supply one Stockholm 1.0 alignment, either one block or blank-separated
+blocks with the same sequence IDs and column tracks. Sequence gaps may be
+dots or dashes. Other metadata and per-sequence annotations are ignored.
+
+The pinned Infernal example has five rows. Four have the contiguous GUUC/GA
+hit at columns 54–59. A second case checks a hit spanning a gap and maps it
+onto a second aligned record. For the same five rows, RNA folding reproduces
+36 of 105 consensus pairs and proposes 101 additional pairs. This measures
+agreement with this consensus. In PDB 1CRN the sulfur-coordinate check
+recovers all three deposited disulfide pairs with zero extra pairs.
+[Reference data and provenance](../tests/fixtures/SOURCE.md#reference-alignment-and-structural-records)
+
 ## Project a search hit or annotation across an alignment
 
 Use the start and end positions on the **ungapped source record**; both are
@@ -98,7 +122,11 @@ The six fixed, synthetic English/Japanese objectives each have one matching
 record selected in advance. The artifact contains its rank under count,
 density, length and NLI ordering, the per-record scores and the model receipt.
 The benchmark measures numeric query interpretation on these examples only.
-Model downloads are needed on first setup. Review itself uses no service or key.
+The workflow additionally evaluates two fixed objectives across the five
+Infernal records. Synthetic and reference results have separate top-rank and
+threshold counts. At 0.5, 0.8 and 0.95, neutral or low-scoring decisions are
+deferred and counted by true label. These sample sizes support regression
+testing only. Model downloads are needed on first setup. Review itself uses no service or key.
 
 ## CLI examples
 
@@ -330,8 +358,7 @@ redirect refusal; a model name and API key must be supplied explicitly for live
 calls. No key is read or used by tests. Choice is used for route selection;
 Noul probabilities and Score rubrics are **not** converted into confidence.
 Thresholds must be chosen from downstream evaluation; no default quality claim.
-The example shows injected local/Pro handlers; actual llama.cpp/model deployment
-and a domain benchmark remain operational/evaluation work under #2.
+The example uses injected local/Pro handlers. Live llama.cpp and commercial service deployments are optional interoperability work.
 
 ## References
 

@@ -21,3 +21,16 @@ to 1 Da):
 The first two sequences are also the fixtures of the ROI threshold-sensitivity
 measurement in the design document, so keep them unchanged; later PRs use
 them as regression goldens.
+
+## Reference alignment and structural records
+
+- `tRNA5.sto` is the unmodified two-block, five-row Stockholm file from
+  [Infernal](https://github.com/EddyRivasLab/infernal/blob/f80cd7618636e44e3963f65625cea78c38a8d823/tutorial/tRNA5.sto).
+  The reference test verifies the file SHA-256. Its column annotation is a
+  consensus across the supplied alignment. The upstream notice accompanies
+  the fixture in [INFERNAL-LICENSE](INFERNAL-LICENSE).
+- `1crn-sulfur.pdb` retains the three SSBOND rows and six cysteine SG coordinates
+  from [PDB entry 1CRN](https://www.rcsb.org/structure/1CRN), using this
+  [PDB file](https://github.com/rdkit/rdkit-tutorials/blob/master/data/1CRN.pdb)
+  (Git blob `e05c7c363fe90c17c19eb654c77d15defcdff478`). Trailing padding
+  was removed. SSBOND records are labels for evaluating geometry.

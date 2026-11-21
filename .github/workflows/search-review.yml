@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - experiments/search_review/**
+      - tests/fixtures/tRNA5.sto
+      - seqlib/stockholm.py
       - .github/workflows/search-review.yml
 permissions:
   contents: read
@@ -34,7 +36,7 @@ jobs:
           uv sync --project .talkcompress --locked --only-group judge
           .talkcompress/.venv/bin/python experiments/search_review/review.py --model-dir "$RUNNER_TEMP/judge" evaluate > results/ranking.json
           cp "$RUNNER_TEMP/judge/provenance.json" results/
-          python3 -c 'import json; r=json.load(open("results/ranking.json")); print(json.dumps(r["metrics"], indent=2))'
+          python3 -c 'import json; r=json.load(open("results/ranking.json")); print(json.dumps({n: {k: v[k] for k in ("metrics", "threshold_counts")} for n,v in (("synthetic", r), ("reference", r["reference"]))}, indent=2))'
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: local-search-review
