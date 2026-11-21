@@ -73,6 +73,10 @@ python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl
 python -S sequence_tool.py rna-fold input.fa --jsonl
 ```
 
+To inspect the strongest hit counts first, add `--top 10` to `match` and omit
+`--jsonl`. Each result links back to its record, pattern and first match span.
+[Optional Jev review and ranking rules](docs/roadmap-tools.md#search-priority).
+
 Also available: JSON pattern packs; JSON/JSONL and GenBank ORIGIN readers;
 FASTA/FASTQ/text chunk search; poly-A/TSD/SNP/STR clues; pH charge/pI;
 preprocessing with receipts and MEGA export; NCBI acquisition; PDB/mmCIF

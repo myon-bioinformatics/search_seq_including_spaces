@@ -311,6 +311,51 @@ class SequenceCommandsCliTests(unittest.TestCase):
             self.assertEqual((code,out),(2,b''))
             self.assertNotIn('Traceback',err)
 
+    def test_match_shortlist_counts_and_stable_ties(self):
+        args = ('match', '-', '--input-format', 'fasta', '--left', 'A', '--right', 'T', '--top', 2)
+        sample = b'>first\nAT\n>second\nATAT\n>third\nAT\n>empty\nCC\n'
+        code, out, err = run(*args, stdin=sample)
+        self.assertEqual((code, err), (0, ''))
+        report = json.loads(out)
+        self.assertEqual((report['scanned_pairs'], report['matching_pairs'], report['omitted_matching_pairs']), (4, 3, 1))
+        self.assertEqual([(r['record_id'], r['match_count'], r['first_span']) for r in report['results']],
+                         [('second', 2, [1, 2]), ('first', 1, [1, 2])])
+        self.assertNotIn('review', report['results'][0])
+        self.assertEqual(json.loads(run(*args, stdin=b'>none\nCC\n')[1])['results'], [])
+        for extra in (('--jsonl',), ('--chunk-size', 3), ('--objective', 'review')):
+            self.assertEqual(run(*args, *extra, stdin=sample)[0], 2)
+
+    def test_jev_review_reranks_shortlist_and_retains_uncertain_hits(self):
+        from seqlib.jev_adapter import JevClassifier
+        from sequence_tool import _build_parser
+        payloads = []
+        answers = iter([('no', .99), ('yes', .6), None, ('unknown', .95), ('yes', .85), ('yes', .98)])
+        def transport(payload, **kwargs):
+            payloads.append(payload['state'])
+            answer = next(answers)
+            if answer is None:
+                raise TimeoutError('private transport detail')
+            choice, confidence = answer
+            scores = {k: float(k == choice) for k in ('yes', 'no', 'unknown')}
+            return json.dumps({'answers': {'needs_deeper_analysis': {
+                'type': 'choice', 'choice': choice, 'confidence': confidence, 'probabilities': scores}}}).encode()
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / 'private.fa'
+            path.write_text(''.join(f'>r{i} private description\nAT\n' for i in range(7)))
+            args = _build_parser().parse_args(['match', str(path), '--left', 'A', '--right', 'T',
+                                               '--top', '6', '--jev-model', 'test', '--objective', 'review',
+                                               '--min-confidence', '0.8'])
+            classifier = JevClassifier(model='test', transport=transport)
+            with patch('seqlib.sequence_commands.JevClassifier', return_value=classifier):
+                output, code = args.handler(args)
+        self.assertEqual(code, 0)
+        rows = json.loads(output)['results']
+        self.assertEqual([r['record_id'] for r in rows], ['r5', 'r4', 'r1', 'r2', 'r3', 'r0'])
+        self.assertEqual(rows[3]['review'], {'decision': 'unknown', 'confidence': None, 'reason': 'classifier-failed'})
+        self.assertEqual(len(payloads), 6)
+        self.assertTrue(all(set(item) == {'kind', 'objective', 'pattern_id', 'match_count', 'record_length'}
+                            for item in payloads))
+
     def test_chunk_jsonl_and_summary_cli(self):
         code,out,err=run('match','-','--input-format','fasta','--left','A','--right','T','--chunk-size','4','--jsonl',stdin=b'>x\nCCCCAT\n')
         self.assertEqual((code,err),(0,''))

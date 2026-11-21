@@ -29,6 +29,29 @@ remain separate checks. The
 parent roadmap should remain open for these gates and advanced optional research
 rather than treating a merged prototype as proof that every future goal is done.
 
+## Search priority
+
+`python -S sequence_tool.py match input.fa --left A --right T --top 10`
+scans the input once. It keeps up to ten matching record/pattern pairs by
+match count, breaking ties in input order. The JSON gives the total scanned,
+matched and omitted pairs and each result's source, record index and first
+1-based inclusive span. More hits can reflect a longer record. The count is
+an observation, not a probability. For every hit coordinate use the existing
+`--jsonl` output. Chunked event streams use that existing output as well.
+
+For optional Jev Choice review, provide `JEV_API_KEY` in the environment and
+add `--jev-model MODEL --objective "Review records with repeated hits" --min-confidence 0.8`.
+This example threshold is illustrative. The CLI sends at most one request per
+shortlisted pair with the objective, pattern ID, hit count and record length.
+Sequence text, source paths, record IDs and descriptions are omitted from the
+request (choose a shareable objective and pattern ID). Review changes only the
+order inside the count-based shortlist. Confident **yes** results come first,
+highest confidence first. Below-threshold, unknown and failed judgments keep
+their original relative order in the middle. Confident **no** results come
+last, strongest negative last. Each row retains the decision, confidence and
+routing reason. These scores express the model's judgment about the supplied
+objective, not calibrated accuracy. The default search runs offline.
+
 ## CLI examples
 
 ```sh
