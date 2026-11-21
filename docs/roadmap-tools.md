@@ -27,6 +27,64 @@ and the Service container run document bounded operational checks. Live Jev call
 Search, annotations and alignment take priority. Scientific calibration remains
 open for claims about predictive quality.
 
+## Generate an alignment from unaligned FASTA
+
+```sh
+python -S sequence_tool.py align transcripts.fa > aligned.sto
+python -S sequence_tool.py annotated-match aligned.sto --track coverage --left GUUC --right GA
+python -S sequence_tool.py align transcripts.fa --format fasta > aligned.fa
+python -S experiments/alignment/evaluate.py --check
+```
+
+Supply at least two ungapped, consistently oriented nucleotide sequences with unique FASTA IDs.
+The output preserves IDs, input order and ungapped residues (uppercase). Stockholm is the default.
+Its `coverage` track uses `*` for a column occupied in every row and `.` for one containing gaps.
+This track describes the generated alignment and carries no secondary-structure annotation.
+
+The aligner selects the lower median ungapped length and the lexicographically first ID of that
+length as an anchor. It aligns each row to the anchor globally with Needleman–Wunsch. Each
+canonical match scores +2 (T and U are equivalent), substitutions and ambiguity symbols score −1,
+and every gap residue scores −2. Ties prefer diagonal, then up, then left. Insertions at the same
+anchor boundary are left-justified. Two-row output is optimal for these scores. Multiple-row
+output is a heuristic and does not use a tree or secondary structure. The total DP budget and
+the output size are each limited to eight million cells.
+
+### Rfam reference evaluation
+
+Seven short RNA families from the [Rfam 15.0 seed release](https://ftp.ebi.ac.uk/pub/databases/Rfam/15.0/Rfam.seed.gz)
+supply 2,519 reference rows. Within each family, identical ungapped sequences count once
+(the lexicographically first ID represents them). Sorting the representatives by SHA-256 of ID
+before partitioning into disjoint groups of 16 makes the evaluation reproducible. The last group
+can be shorter, and a lone final row joins the preceding group. All 2,393 retained sequences were
+realigned from ungapped input in 153 groups. Reference gap positions and annotations are used
+only for scoring. For every pair of rows within a group, the unit of comparison is a pair of
+ungapped residue positions occupying the same column, including mismatched bases.
+The baseline left-aligns the same ungapped input and pads only the ends.
+
+| Family | Sequence pairs | Generated F1 | Left-justified F1 |
+| --- | ---: | ---: | ---: |
+| 5S rRNA | 5,283 | 0.604 | 0.436 |
+| U1 | 558 | 0.606 | 0.336 |
+| U2 | 1,441 | 0.605 | 0.245 |
+| tRNA | 7,116 | 0.437 | 0.358 |
+| U4 | 1,101 | 0.582 | 0.353 |
+| U5 | 1,221 | 0.528 | 0.278 |
+| U6 | 1,080 | 0.692 | 0.164 |
+| **Pooled** | **17,800** | **0.557** | **0.348** |
+
+Pooled counts are 999,395 recovered reference residue pairs, 754,232 extra pairs and
+835,085 missed pairs (precision 0.570, recall 0.545). These metrics describe agreement
+with the curated alignments. Related sequences and pairs from the same group share data.
+Protein alignment, long mRNAs, structural folding and functional prediction were not evaluated.
+
+The [recorded results](../experiments/alignment/results.json) include each family's counts.
+The test suite reruns the complete benchmark offline. The pinned fixture contains only the
+Stockholm sequence rows, family names and accessions for the selected families. To reproduce
+it, download the linked release and run
+`python -S experiments/alignment/evaluate.py --extract Rfam.seed.gz --check`.
+The script checks the compressed source SHA-256 and records the SHA-256 of the uncompressed
+fixture. [Rfam data licence (CC0)](https://docs.rfam.org/en/latest/license.html).
+
 ## Search annotated alignments
 
 ```sh

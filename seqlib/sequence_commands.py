@@ -2,6 +2,7 @@
 import heapq, json, math, os, sys
 from contextlib import closing, nullcontext; from dataclasses import asdict
 
+from seqlib.alignment import align_records
 from seqlib.ambiguity_candidates import MODES, generate_candidates, select_representatives
 from seqlib.anchor_matcher import find_matches, normalize_sequence
 from seqlib.result_summary import summarize_csv
@@ -188,6 +189,17 @@ def run_transcript_search(args):
                  'records_searched': len(results), 'results': results}), 0
 
 
+def run_align(args):
+    source = sys.stdin if args.file == '-' else args.file
+    with closing(read_sequences(source, format='fasta')) as inputs:
+        rows = align_records((record.id, record.sequence) for record in inputs)
+    if args.format == 'fasta':
+        return ''.join(f'>{name}\n{seq}\n' for name, seq in rows.items()), 0
+    body = ''.join(f'{name} {seq}\n' for name, seq in rows.items())
+    coverage = ''.join('.' if '-' in column else '*' for column in zip(*rows.values()))
+    return f'# STOCKHOLM 1.0\n{body}#=GC coverage {coverage}\n//\n', 0
+
+
 def run_annotated_match(args):
     source = nullcontext(sys.stdin) if args.file == '-' else open(args.file, encoding='utf-8')
     with source as handle:
@@ -345,6 +357,11 @@ def add_commands(groups):
     base.add_argument('--mapping', help='JSON mapping for the selected record, model and chain')
     base.add_argument('--cutoff', type=float, help='base N/O distance in angstrom (default: 4)')
     base.set_defaults(handler=run_base_neighbors)
+
+    align = groups.add_parser('align', help='generate a global alignment from unaligned nucleotide FASTA')
+    align.add_argument('file', help='multi-record FASTA, or - for stdin')
+    align.add_argument('--format', choices=('stockholm', 'fasta'), default='stockholm')
+    align.set_defaults(handler=run_align)
 
     annotated = groups.add_parser('annotated-match', help='search a Stockholm alignment with column annotations')
     annotated.add_argument('file', help='one Stockholm 1.0 alignment, or - for stdin')

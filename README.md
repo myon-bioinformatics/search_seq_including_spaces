@@ -40,6 +40,9 @@ Both orientations, local alignments, coordinates and short-query seed patterns a
 Inspect one RNA residue's sequence neighbours, consensus partner and mapped 3D contacts with
 [`base-neighbors`](docs/roadmap-tools.md#rna-base-neighbours).
 
+To align unaligned DNA/RNA records, run `python -S sequence_tool.py align transcripts.fa > aligned.sto`.
+Use `--format fasta` for aligned FASTA. [Algorithm and Rfam accuracy results](docs/roadmap-tools.md#generate-an-alignment-from-unaligned-fasta).
+
 To search an annotated Stockholm alignment, run
 `python -S sequence_tool.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA`.
 Each hit includes its ungapped positions, alignment columns and consensus annotation.
