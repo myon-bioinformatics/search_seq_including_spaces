@@ -8,7 +8,7 @@ from http.server import BaseHTTPRequestHandler, HTTPServer
 
 from seqlib.ambiguity_candidates import generate_candidates
 from seqlib.anchor_matcher import find_matches
-from seqlib.comparison import compare_aligned
+from seqlib.comparison import compare_aligned, project_interval
 from seqlib.protein_ionization import ionization
 from seqlib.sequence_analysis import nucleotide_features, marker_clues, fold_rna
 from seqlib.structured_readers import strict_json
@@ -48,6 +48,9 @@ _DEFINITIONS=[
     definition('compare',compare_aligned,['sequence_a','sequence_b','alphabet'],{
         'sequence_a':string(),'sequence_b':string(),'alphabet':string(enum=('dna','rna','protein')),
         'gap_policy':string(enum=('exclude','mismatch')),'ambiguity_policy':string(enum=('exclude','strict','compatible')),
+        'start':integer(1,100000),'end':integer(1,100000)}),
+    definition('project_interval',project_interval,['sequence_a','sequence_b','alphabet','start','end'],{
+        'sequence_a':string(),'sequence_b':string(),'alphabet':string(enum=('dna','rna','protein')),
         'start':integer(1,100000),'end':integer(1,100000)}),
     definition('protein_ionization',ionization,['text'],{
         'text':string(),'ph':{'type':'number','minimum':0,'maximum':14}}),

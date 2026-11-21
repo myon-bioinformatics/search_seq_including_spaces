@@ -1,7 +1,31 @@
 """Aligned comparison: S1 identity/coverage, S2 sliding windows and ASCII diff."""
 import json, unittest
 
-from seqlib.comparison import ComparisonError, compare_aligned, render_ascii_diff, sliding_identity
+from seqlib.comparison import ComparisonError, compare_aligned, project_interval, render_ascii_diff, sliding_identity
+
+
+class TestProjection(unittest.TestCase):
+    def test_gap_blocks_and_mismatch(self):
+        result = project_interval("-ac-gT", "ta-atC", alphabet="dna", start=1, end=4)
+        self.assertEqual(result["blocks"], [
+            {"a": [1, 1], "b": [2, 2], "columns": [2, 2]},
+            {"a": [3, 4], "b": [4, 5], "columns": [5, 6]},
+        ])
+        self.assertEqual((result["mapped_residues"], result["unmapped_residues"]), (3, 1))
+
+    def test_complete_deletion_and_singleton(self):
+        result = project_interval("MA", "-A", alphabet="protein", start=1, end=1)
+        self.assertEqual(result["blocks"], [])
+        self.assertEqual(result["unmapped_residues"], 1)
+        result = project_interval("U--G", "UACG", alphabet="rna", start=2, end=2)
+        self.assertEqual(result["blocks"], [{"a": [2, 2], "b": [4, 4], "columns": [4, 4]}])
+
+    def test_ungapped_bounds_and_alignment_validation(self):
+        for a, b, start, end in [("A-C", "ATC", 1, 3), ("A", "AT", 1, 1),
+                                 ("A?", "AT", 1, 1), ("AC", "AC", 2, 1),
+                                 ("AC", "AC", True, 1), ("--", "AC", 1, 1)]:
+            with self.subTest(a=a, b=b, start=start, end=end), self.assertRaises(ComparisonError):
+                project_interval(a, b, alphabet="dna", start=start, end=end)
 
 
 class TestIdentity(unittest.TestCase):
