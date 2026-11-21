@@ -52,6 +52,35 @@ last, strongest negative last. Each row retains the decision, confidence and
 routing reason. These scores express the model's judgment about the supplied
 objective, not calibrated accuracy. The default search runs offline.
 
+### Local CPU judge experiment
+
+The [Local search review workflow](../.github/workflows/search-review.yml)
+reuses the pinned TalkCompress model download, checksum verification and locked
+judge environment. It runs a pretrained multilingual MiniLM NLI model locally.
+The model reads an evidence sentence containing hit count, record length and
+hits per 1,000 characters. It scores whether that sentence entails the user's
+objective. Each candidate retains entailment, neutral and contradiction scores;
+a higher entailment score puts the candidate earlier. These scores have not been
+calibrated for SSIS. This experiment only reorders the supplied shortlist.
+
+To repeat the benchmark or review your own search in the two checked-out repos:
+
+```sh
+git clone https://github.com/myon-bioinformatics/TalkCompress.git .talkcompress
+git -C .talkcompress checkout 2826357e2fd378438a1bb39c1513b8fe9ef757d7
+python3 .talkcompress/scripts/ai_readability.py fetch minilm-l6-xnli-onnx --dest /tmp/ssis-judge
+uv sync --project .talkcompress --locked --only-group judge --python 3.12
+.talkcompress/.venv/bin/python experiments/search_review/review.py --model-dir /tmp/ssis-judge evaluate
+python -S sequence_tool.py match input.fa --left A --right T --top 10 > shortlist.json
+.talkcompress/.venv/bin/python experiments/search_review/review.py --model-dir /tmp/ssis-judge review shortlist.json --objective 'The record contains at least five matches.'
+```
+
+The six fixed, synthetic English/Japanese objectives each have one matching
+record selected in advance. The artifact contains its rank under count,
+density, length and NLI ordering, the per-record scores and the model receipt.
+The benchmark measures numeric query interpretation on these examples only.
+Model downloads are needed on first setup. Review itself uses no service or key.
+
 ## CLI examples
 
 ```sh
