@@ -1,0 +1,59 @@
+name: Service container
+on:
+  pull_request:
+    paths:
+      - "*.py"
+      - "seqlib/**"
+      - "protein/**"
+      - "examples/service/**"
+      - ".dockerignore"
+      - ".github/workflows/service-container.yml"
+  push:
+    branches: [main]
+    paths:
+      - "*.py"
+      - "seqlib/**"
+      - "protein/**"
+      - "examples/service/**"
+      - ".dockerignore"
+      - ".github/workflows/service-container.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  compose:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    env:
+      COMPOSE_FILE: examples/service/compose.yaml
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Build and start service
+        run: docker compose up --build --wait --wait-timeout 45
+      - name: Verify published port and HTTP contract
+        run: |
+          set -eu
+          test "$(docker compose port sequence 8765)" = "127.0.0.1:8765"
+          url=http://127.0.0.1:8765/tools/call
+          payload='{"name":"match","arguments":{"text":"AT","left":"A","right":"T"}}'
+          curl --silent --show-error --fail --max-time 5 \
+            --json "$payload" "$url" -o "$RUNNER_TEMP/service-response.json"
+          python3 -S - "$RUNNER_TEMP/service-response.json" <<'PY'
+          import json
+          import sys
+          from pathlib import Path
+          result = json.loads(Path(sys.argv[1]).read_text())
+          assert result["complete"] and [row["span"] for row in result["matches"]] == [[1, 2]], result
+          PY
+          status=$(curl --silent --show-error --max-time 5 --output /dev/null --write-out '%{http_code}' \
+            --header 'Origin: https://example.invalid' --json "$payload" "$url")
+          test "$status" = 403
+      - name: Show service logs on failure
+        if: failure()
+        run: docker compose logs --no-color
+      - name: Stop service
+        if: always()
+        run: docker compose down --volumes

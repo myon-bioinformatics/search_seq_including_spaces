@@ -16,14 +16,16 @@ all existing protein golden files and the legacy `definition_main.py` are retain
 | Former #7 | `rna-fold`, `fold_rna` | bounded Nussinov maximum-pair baseline, deterministic dot-bracket and loop descriptions |
 | Former #8 | `preprocess`, `export_records` | filtering, names, deduplication and transform receipts; FASTA/JSONL/MEGA |
 | Former #9 | `structure`, `Client.structure` | bounded coordinate subsets, spatial-bin contacts; RCSB acquisition / MMDB lookup link |
-| #2 Phases 5–6 | `sequence_service.py`, `examples/service` | HTTP/webhook call endpoint, MCP stdio, optional Docker definition |
+| #2 Phases 5–6 | `sequence_service.py`, `examples/service` | HTTP/webhook call endpoint, MCP stdio, Docker Compose build and loopback HTTP smoke |
 | #2 Phase 7 / former #10 | `sequence_router`, `jev_adapter`, offline orchestration example | deterministic-first routing, official Jev Choice wire contract, explicit thresholds, failure fallback |
 | #29 | `summarize-hits`, `compare --window ... --summary` | bounded S3 output with counts, provenance and source-row references |
 | #30 | `candidates`, `select_representatives` | pairwise is a **separate fifth mode**; representative selection is an independent opt-in |
 
 Implementation and fixture validation do not constitute deployment or scientific
-validation. Live NCBI/RCSB/Jev, model quality/calibration, Docker execution, MEGA GUI
-import and a running llama.cpp/Pro backend are separate operational checks. The
+validation. The [NCBI/RCSB smoke record](https://github.com/myon-bioinformatics/search_seq_including_spaces/issues/2#issuecomment-6157072586)
+and the Service container run document bounded operational checks. Live Jev,
+model quality/calibration, MEGA GUI import and a running llama.cpp/Pro backend
+remain separate checks. The
 parent roadmap should remain open for these gates and advanced optional research
 rather than treating a merged prototype as proof that every future goal is done.
 
@@ -238,7 +240,15 @@ rejected. MCP: `python -S sequence_service.py stdio` supports protocol 2025-11-2
 initialize/initialized, ping, tools/list and tools/call, no unsolicited messages.
 Both share strict schemas and computation/input/output caps, accept inline data,
 and cannot read files or fetch URLs. Tool execution errors are structured;
-notifications produce no replies. Docker is an optional example, not deployment.
+notifications produce no replies.
+
+To run the container locally, use
+`docker compose -f examples/service/compose.yaml up --build --detach`.
+The service publishes port 8765 on loopback. Stop it with
+`docker compose -f examples/service/compose.yaml down`.
+The [Service container workflow](../.github/workflows/service-container.yml)
+builds this image, calls the published endpoint, checks the returned coordinates
+and the browser-origin rejection, then removes the temporary deployment.
 
 `route_item` uses an explicit known alphabet hint when deterministic validation
 suffices. Otherwise an optional classifier gets one atomic question. Important
