@@ -32,14 +32,14 @@ jobs:
         with:
           persist-credentials: false
       - name: Build and start service
-        run: docker compose up --build --detach
+        run: docker compose up --build --wait --wait-timeout 45
       - name: Verify published port and HTTP contract
         run: |
           set -eu
           test "$(docker compose port sequence 8765)" = "127.0.0.1:8765"
           url=http://127.0.0.1:8765/tools/call
           payload='{"name":"match","arguments":{"text":"AT","left":"A","right":"T"}}'
-          curl --silent --show-error --fail --retry-connrefused --retry 5 --retry-max-time 30 --max-time 5 \
+          curl --silent --show-error --fail --max-time 5 \
             --json "$payload" "$url" -o "$RUNNER_TEMP/service-response.json"
           python3 -S - "$RUNNER_TEMP/service-response.json" <<'PY'
           import json
