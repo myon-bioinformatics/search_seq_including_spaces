@@ -1,0 +1,189 @@
+{
+  "families": {
+    "RF00001": {
+      "aligned": {
+        "f1": 0.603651,
+        "fn": 243329,
+        "fp": 218965,
+        "precision": 0.61653,
+        "recall": 0.5913,
+        "tp": 352044
+      },
+      "groups": 45,
+      "left_justified": {
+        "f1": 0.436341,
+        "fn": 333258,
+        "fp": 343934,
+        "precision": 0.432498,
+        "recall": 0.440253,
+        "tp": 262115
+      },
+      "name": "5S_rRNA",
+      "sequence_pairs": 5283,
+      "source_rows": 712,
+      "unique_sequences": 707
+    },
+    "RF00003": {
+      "aligned": {
+        "f1": 0.60559,
+        "fn": 35366,
+        "fp": 32577,
+        "precision": 0.615556,
+        "recall": 0.595942,
+        "tp": 52161
+      },
+      "groups": 5,
+      "left_justified": {
+        "f1": 0.335636,
+        "fn": 57839,
+        "fp": 59691,
+        "precision": 0.332159,
+        "recall": 0.339187,
+        "tp": 29688
+      },
+      "name": "U1",
+      "sequence_pairs": 558,
+      "source_rows": 100,
+      "unique_sequences": 77
+    },
+    "RF00004": {
+      "aligned": {
+        "f1": 0.604855,
+        "fn": 106730,
+        "fp": 97235,
+        "precision": 0.616189,
+        "recall": 0.593929,
+        "tp": 156106
+      },
+      "groups": 13,
+      "left_justified": {
+        "f1": 0.245293,
+        "fn": 197791,
+        "fp": 202465,
+        "precision": 0.24315,
+        "recall": 0.247474,
+        "tp": 65045
+      },
+      "name": "U2",
+      "sequence_pairs": 1441,
+      "source_rows": 208,
+      "unique_sequences": 194
+    },
+    "RF00005": {
+      "aligned": {
+        "f1": 0.436864,
+        "fn": 287447,
+        "fp": 255499,
+        "precision": 0.451837,
+        "recall": 0.422853,
+        "tp": 210601
+      },
+      "groups": 60,
+      "left_justified": {
+        "f1": 0.357555,
+        "fn": 318857,
+        "fp": 325074,
+        "precision": 0.355351,
+        "recall": 0.359787,
+        "tp": 179191
+      },
+      "name": "tRNA",
+      "sequence_pairs": 7116,
+      "source_rows": 954,
+      "unique_sequences": 953
+    },
+    "RF00015": {
+      "aligned": {
+        "f1": 0.581856,
+        "fn": 60770,
+        "fp": 58406,
+        "precision": 0.586723,
+        "recall": 0.57707,
+        "tp": 82918
+      },
+      "groups": 10,
+      "left_justified": {
+        "f1": 0.353022,
+        "fn": 91975,
+        "fp": 97572,
+        "precision": 0.346405,
+        "recall": 0.359898,
+        "tp": 51713
+      },
+      "name": "U4",
+      "sequence_pairs": 1101,
+      "source_rows": 177,
+      "unique_sequences": 151
+    },
+    "RF00020": {
+      "aligned": {
+        "f1": 0.528132,
+        "fn": 66740,
+        "fp": 59855,
+        "precision": 0.542043,
+        "recall": 0.514918,
+        "tp": 70845
+      },
+      "groups": 11,
+      "left_justified": {
+        "f1": 0.278426,
+        "fn": 98912,
+        "fp": 101539,
+        "precision": 0.275818,
+        "recall": 0.281084,
+        "tp": 38673
+      },
+      "name": "U5",
+      "sequence_pairs": 1221,
+      "source_rows": 180,
+      "unique_sequences": 167
+    },
+    "RF00026": {
+      "aligned": {
+        "f1": 0.692371,
+        "fn": 34703,
+        "fp": 31695,
+        "precision": 0.702157,
+        "recall": 0.682855,
+        "tp": 74720
+      },
+      "groups": 9,
+      "left_justified": {
+        "f1": 0.164347,
+        "fn": 91294,
+        "fp": 93066,
+        "precision": 0.163038,
+        "recall": 0.165678,
+        "tp": 18129
+      },
+      "name": "U6",
+      "sequence_pairs": 1080,
+      "source_rows": 188,
+      "unique_sequences": 144
+    }
+  },
+  "groups": 153,
+  "micro": {
+    "aligned": {
+      "f1": 0.55706,
+      "fn": 835085,
+      "fp": 754232,
+      "precision": 0.569902,
+      "recall": 0.544784,
+      "tp": 999395
+    },
+    "left_justified": {
+      "f1": 0.348184,
+      "fn": 1189926,
+      "fp": 1223341,
+      "precision": 0.34507,
+      "recall": 0.351355,
+      "tp": 644554
+    }
+  },
+  "reference_sha256": "e146ac7ee97d050cb39113acaf70bdaf218b40d5f925aacf7e10826d820c8ec2",
+  "release": "Rfam 15.0",
+  "sequence_pairs": 17800,
+  "source_rows": 2519,
+  "unique_sequences": 2393
+}
