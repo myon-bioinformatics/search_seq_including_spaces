@@ -1,0 +1,20 @@
+[
+  {
+    "name": "A",
+    "records": [["a", 20, 1000], ["b", 8, 40], ["c", 2, 20], ["d", 5, 80]],
+    "objectives": [
+      ["The record has at least 15 matches.", "a"],
+      ["There are more than 150 matches per 1000 characters.", "b"],
+      ["This record is less than 30 characters long.", "c"]
+    ]
+  },
+  {
+    "name": "B",
+    "records": [["w", 5, 60], ["x", 3, 30], ["y", 14, 70], ["z", 22, 550]],
+    "objectives": [
+      ["一致箇所が20件以上ある。", "z"],
+      ["1000文字当たりの一致件数が150件を超える。", "y"],
+      ["レコードの長さが40文字未満である。", "x"]
+    ]
+  }
+]
