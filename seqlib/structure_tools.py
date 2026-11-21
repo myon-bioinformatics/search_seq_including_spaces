@@ -215,3 +215,35 @@ def geometry(structure, *, cutoff=4.0, top=100, max_contacts=100000):
             'alternate_location_atoms':sum(bool(a.altloc) for a in atoms),
             'missing_coordinates':'not inferred from absent records',
             'interpretation':'geometry-based candidates only; hydrogen subset uses explicit H on N/O and oxygen acceptors; no proven bonds'}
+
+
+def structure_graph(structure, *, model=None, cutoff=4.0, top=100):
+    atoms = structure['atoms']
+    models = sorted({atom.model for atom in atoms})
+    if model is None and len(models) != 1:
+        raise ValueError('select --model from: ' + ', '.join(models))
+    model = models[0] if model is None else model
+    selected = [atom for atom in atoms if atom.model == model]
+    if not selected:
+        raise ValueError('unknown coordinate model: ' + model)
+    report = geometry({**structure, 'atoms': selected}, cutoff=cutoff, top=top)
+    nodes = [{'id': 'm', 'type': 'Model', 'name': model}]
+    edges = []
+    residues = {}
+    for i, atom in enumerate(selected):
+        if atom.residue_key not in residues:
+            residue_id = residues[atom.residue_key] = f'r{len(residues)}'
+            label = f'{atom.chain or "_"}/{atom.residue}{atom.residue_id}'
+            nodes.append({'id': residue_id, 'type': 'Residue', 'name': label, 'chain': atom.chain,
+                          'residue': atom.residue, 'residue_id': atom.residue_id})
+            edges.append({'source': 'm', 'relation': 'hasResidue', 'target': residue_id})
+        atom_id = f'a{i}'
+        nodes.append({**asdict(atom), 'source_atom_id': atom.id, 'id': atom_id, 'type': 'Atom'})
+        edges.append({'source': residues[atom.residue_key], 'relation': 'hasAtom', 'target': atom_id})
+    for contact in report['contacts']:
+        a, b = contact['atoms']
+        edges.append({'source': f'a{a}', 'relation': 'nearAtom', 'target': f'a{b}', 'symmetric': True,
+                      'distance_angstrom': contact['distance_angstrom'], 'labels': contact['labels']})
+    return {'schema': 'structure-graph/1', 'source_sha256': structure['source_sha256'], 'model': model,
+            'unit': 'angstrom', 'cutoff_angstrom': cutoff, 'contact_count': report['contact_count'],
+            'omitted_contacts': report['omitted_contacts'], 'nodes': nodes, 'edges': edges}

@@ -92,3 +92,24 @@ class TestReferenceAlignment(unittest.TestCase):
         observed = {tuple(sorted(int(refs[str(i)]['residue_id']) for i in contact['atoms']))
                     for contact in report['contacts'] if 'disulfide-candidate' in contact['labels']}
         self.assertEqual(observed, expected)
+
+    def test_coordinate_graph_and_model_selection(self):
+        from seqlib.structure_tools import structure_graph
+        for fixture, expected in [('1crn-sulfur.pdb', 2.003), ('1ehz-g19-c56.pdb', 2.817)]:
+            raw = (FIXTURES / fixture).read_text()
+            parsed = parse_structure(raw, format='pdb')
+            graph = structure_graph(parsed)
+            atoms = [n for n in graph['nodes'] if n['type'] == 'Atom']
+            self.assertEqual([(n['x'], n['y'], n['z']) for n in atoms],
+                             [(a.x, a.y, a.z) for a in parsed['atoms']])
+            contacts = [e for e in graph['edges'] if e['relation'] == 'nearAtom']
+            self.assertTrue(all(e['symmetric'] for e in contacts))
+            self.assertAlmostEqual(contacts[0]['distance_angstrom'], expected, delta=.01)
+            small = structure_graph(parsed, top=1)
+            self.assertEqual(small['nodes'], graph['nodes'])
+            self.assertEqual(small['omitted_contacts'], len(contacts) - 1)
+        two = parse_structure('MODEL        1\n' + raw + 'ENDMDL\nMODEL        2\n' + raw, format='pdb')
+        with self.assertRaisesRegex(ValueError, 'select --model'):
+            structure_graph(two)
+        selected = structure_graph(two, model='2')
+        self.assertTrue(all(n['model'] == '2' for n in selected['nodes'] if n['type'] == 'Atom'))

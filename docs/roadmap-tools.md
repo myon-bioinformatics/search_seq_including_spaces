@@ -506,3 +506,26 @@ The example uses injected local/Pro handlers. Live llama.cpp and commercial serv
 - [MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle)
 - [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
 - [Official TypeSafe API](https://docs.typesafe.ai/api)
+
+## Inspect deposited 3D coordinates
+
+Export PDB or mmCIF coordinates for one model. With sibling checkouts the same
+JSON can be drawn by DRAgoWing and classified by TaxOntOy using ONTO.
+
+```sh
+python -S sequence_tool.py structure tests/fixtures/1ehz-g19-c56.pdb --input-format pdb --output graph > model.json
+python -S ../DRAgoWing/dragowing.py --structure-graph model.json --embed > model.html
+python -S ../TaxOntOy/taxontoy.py structure model.json --onto-root ../ONTO
+```
+
+The fixture contains a tRNA residue pair. Try `tests/fixtures/1crn-sulfur.pdb`
+for crambin sulfur atoms or supply a complete coordinate file. Choose
+`--model ID` for a multi-model file. All selected atoms retain the input XYZ
+coordinates in ångströms. `--cutoff` and `--top` control the candidate contacts
+between residues. The report includes total and omitted contact counts.
+
+In `structure-graph/1`, a model contains residues and each residue contains atoms.
+A symmetric `nearAtom` pair appears once. Its distance and labels describe a
+geometric candidate. Node IDs are local to the export. Use source SHA-256,
+model, chain, residue ID and atom identity (including alternate location) to
+trace a measurement to its input. This workflow requires existing coordinates.

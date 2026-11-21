@@ -38,7 +38,7 @@ Both orientations, local alignments, coordinates and short-query seed patterns a
 [Transcript search examples](docs/roadmap-tools.md#transcript-region-search)
 
 Inspect one RNA residue's sequence neighbours, consensus partner and mapped 3D contacts with
-[`base-neighbors`](docs/roadmap-tools.md#rna-base-neighbours).
+[`base-neighbors`](docs/roadmap-tools.md#rna-base-neighbours). Export an entire deposited model for [3D inspection and classification](docs/roadmap-tools.md#inspect-deposited-3d-coordinates).
 
 To align unaligned DNA/RNA records, run `python -S sequence_tool.py align transcripts.fa > aligned.sto`.
 Use `--format fasta` for aligned FASTA. [Algorithm and Rfam accuracy results](docs/roadmap-tools.md#generate-an-alignment-from-unaligned-fasta).

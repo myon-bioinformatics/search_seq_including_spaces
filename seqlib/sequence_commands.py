@@ -17,7 +17,7 @@ from seqlib.result_summary import integer
 from seqlib.sequence_analysis import nucleotide_features, marker_clues, fold_rna, translate_nucleotide
 from seqlib.sequence_preprocess import preprocess, export_records
 from seqlib.protein_ionization import ionization
-from seqlib.structure_tools import parse_structure, geometry
+from seqlib.structure_tools import parse_structure, geometry, structure_graph
 from seqlib.acquisition import Client
 from seqlib.jev_adapter import JevClassifier
 from seqlib.sequence_router import route_item
@@ -404,6 +404,8 @@ def add_commands(groups):
     structure.add_argument('--max-atoms', type=int, default=20000)
     structure.add_argument('--cutoff', type=float, default=4.0)
     structure.add_argument('--top', type=int, default=100)
+    structure.add_argument('--output', choices=('geometry', 'graph'), default='geometry')
+    structure.add_argument('--model', help='coordinate model to inspect (required for multi-model graph output)')
     structure.set_defaults(handler=run_structure)
     fetch = groups.add_parser('fetch', help='explicit optional NCBI/RCSB acquisition (uses network)')
     fetch.add_argument('--operation', choices=('search', 'summary', 'records'), required=True)
@@ -479,7 +481,16 @@ def run_structure(args):
     with open(args.file, encoding='utf-8') as handle:
         text=handle.read(16*1024*1024+1)
     if len(text)>16*1024*1024: raise ValueError('structure text exceeds 16 Mi characters')
-    return dump(geometry(parse_structure(text,format=args.input_format,max_atoms=args.max_atoms),cutoff=args.cutoff,top=args.top)),0
+    structure = parse_structure(text, format=args.input_format, max_atoms=args.max_atoms)
+    if args.output == 'geometry' and args.model is None:
+        return dump(geometry(structure, cutoff=args.cutoff, top=args.top)), 0
+    if args.output == 'geometry':
+        atoms = [atom for atom in structure['atoms'] if atom.model == args.model]
+        if not atoms:
+            raise ValueError('unknown coordinate model: ' + args.model)
+        return dump(geometry({**structure, 'atoms': atoms}, cutoff=args.cutoff, top=args.top)), 0
+    graph = structure_graph(structure, model=args.model, cutoff=args.cutoff, top=args.top)
+    return dump(graph), 0
 
 
 def run_fetch(args):
