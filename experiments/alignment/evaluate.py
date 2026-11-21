@@ -13,6 +13,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1]))
 from seqlib.alignment import align_records
 from seqlib.stockholm import read_stockholm
+from vendor.pythdragoras import classification_metrics
 
 FAMILIES = {'RF00001', 'RF00003', 'RF00004', 'RF00005', 'RF00015', 'RF00020', 'RF00026'}
 RELEASE_SHA256 = 'b06ac74d772609e863c5e1906eb491d699e9d325c5f22f4fc78126a808ad0bed'
@@ -53,9 +54,13 @@ def residue_pairs(a, b):
 
 
 def metrics(counts):
-    tp, fp, fn = (counts[key] for key in ('tp', 'fp', 'fn'))
-    return {'tp': tp, 'fp': fp, 'fn': fn, 'precision': round(tp / (tp + fp), 6),
-            'recall': round(tp / (tp + fn), 6), 'f1': round(2 * tp / (2 * tp + fp + fn), 6)}
+    counts = {key: counts[key] for key in ('tp', 'fp', 'fn')}
+    # The scoring universe is the union of predicted and reference pairs.
+    scores = classification_metrics(**counts, tn=0)
+    for key in ('precision', 'recall', 'f1'):
+        value = scores[key]
+        counts[key] = round(value, 6) if value is not None else None
+    return counts
 
 
 def evaluate():

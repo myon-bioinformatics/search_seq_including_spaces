@@ -78,6 +78,8 @@ with the curated alignments. Related sequences and pairs from the same group sha
 Protein alignment, long mRNAs, structural folding and functional prediction were not evaluated.
 
 The [recorded results](../experiments/alignment/results.json) include each family's counts.
+The benchmark uses [PythDRagoras' classification metrics](https://github.com/myon-bioinformatics/PythDRagoras/blob/0effb65a3c132b876336cc249bca5cb42d99159d/pythdragoras.py#L33) for precision, recall and F1. Its revision is pinned in
+[the vendor lock](../vendor.lock.json).
 The test suite reruns the complete benchmark offline. The pinned fixture contains only the
 Stockholm sequence rows, family names and accessions for the selected families. To reproduce
 it, download the linked release and run

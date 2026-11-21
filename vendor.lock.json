@@ -45,6 +45,24 @@
       "destination": "vendor/myon-bioinformatics-LICENSE",
       "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
       "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
+    },
+    {
+      "repository": "myon-bioinformatics/PythDRagoras",
+      "ref": "0effb65a3c132b876336cc249bca5cb42d99159d",
+      "commit": "0effb65a3c132b876336cc249bca5cb42d99159d",
+      "source": "pythdragoras.py",
+      "destination": "vendor/pythdragoras.py",
+      "blob_sha": "2ea02982e606212eda027c91cbf24c3e4ea0f0fa",
+      "sha256": "e9070752956a1902ae95595cdbc5cfd4652c8e43c3ac302060b2e33a8cda324c"
+    },
+    {
+      "repository": "myon-bioinformatics/PythDRagoras",
+      "ref": "0effb65a3c132b876336cc249bca5cb42d99159d",
+      "commit": "0effb65a3c132b876336cc249bca5cb42d99159d",
+      "source": "LICENSE",
+      "destination": "vendor/pythdragoras-LICENSE",
+      "blob_sha": "4ec4989b801bf1a3df6184d21f79e6e7ed5931f6",
+      "sha256": "15f66204c4a6a1ce0c94f0ed4319ff9400f872e85fd32c95f21695c2f231af59"
     }
   ]
 }
