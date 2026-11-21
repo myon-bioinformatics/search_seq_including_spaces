@@ -1,5 +1,5 @@
 """CLI adapters for roadmap tools. Algorithms and I/O contracts stay importable."""
-import json, sys
+import heapq, json, math, os, sys
 from contextlib import closing; from dataclasses import asdict
 
 from seqlib.ambiguity_candidates import MODES, generate_candidates, select_representatives
@@ -14,6 +14,8 @@ from seqlib.sequence_preprocess import preprocess, export_records
 from seqlib.protein_ionization import ionization
 from seqlib.structure_tools import parse_structure, geometry
 from seqlib.acquisition import Client
+from seqlib.jev_adapter import JevClassifier
+from seqlib.sequence_router import route_item
 
 
 def dump(value, indent=None):
@@ -78,7 +80,72 @@ def _output(documents, jsonl):
         return dump(first)
 
 
+def ranked_matches(documents, top, *, classifier=None, objective=None, threshold=None):
+    """Shortlist matching record/pattern pairs, retaining only top summaries."""
+    integer(top, 'top', 1)
+    if classifier is not None:
+        if not isinstance(objective, str) or not objective.strip():
+            raise ValueError('Jev review requires a nonempty --objective')
+        if type(threshold) not in (float, int) or not math.isfinite(threshold) or not 0 <= threshold <= 1:
+            raise ValueError('Jev review requires --min-confidence in [0, 1]')
+
+    scanned = matched = 0
+
+    def summaries():
+        nonlocal scanned, matched
+        for doc in documents:
+            scanned += 1
+            hits = doc['result']['matches']
+            if not hits:
+                continue
+            matched += 1
+            record = doc['record']
+            yield {'record_id': record['id'], 'source': record['source'],
+                   'record_index': record['provenance']['record_index'],
+                   'pattern_id': doc['pattern_id'], 'match_count': len(hits),
+                   'record_length': doc['result']['sequence_length'],
+                   'first_span': hits[0]['span']}
+
+    rows = heapq.nlargest(top, summaries(), key=lambda row: row['match_count'])
+    if classifier is not None:
+        for row in rows:
+            item = {'kind': 'analysis', 'objective': objective, 'pattern_id': row['pattern_id'],
+                    'match_count': row['match_count'], 'record_length': row['record_length']}
+            decision = route_item(item, classifier=classifier, threshold=threshold)
+            row['review'] = {key: decision[key] for key in ('decision', 'confidence', 'reason')}
+
+        def priority(row):
+            review = row['review']
+            if review['reason'] == 'threshold-met':
+                if review['decision'] == 'yes':
+                    return (0, -review['confidence'])
+                return (2, review['confidence'])
+            return (1, 0)
+
+        rows.sort(key=priority)
+    return {'schema': 'match-shortlist/1', 'scanned_pairs': scanned, 'matching_pairs': matched,
+            'omitted_matching_pairs': matched - len(rows), 'results': rows}
+
+
 def run_match(args):
+    if args.jev_model is None and (args.objective is not None or args.min_confidence is not None):
+        raise ValueError('--objective and --min-confidence require --jev-model')
+    if args.jev_model is not None and args.top is None:
+        raise ValueError('--jev-model requires --top')
+    if args.top is not None:
+        if args.chunk_size is not None or args.jsonl:
+            raise ValueError('--top produces one JSON report; omit --jsonl and --chunk-size')
+        classifier = None
+        if args.jev_model is not None:
+            classifier = JevClassifier(model=args.jev_model, api_key=os.environ.get('JEV_API_KEY'))
+        with closing(match_documents(args)) as docs:
+            report = ranked_matches(docs, args.top, classifier=classifier,
+                                    objective=args.objective, threshold=args.min_confidence)
+        if classifier is not None:
+            report['model'] = args.jev_model
+            report['min_confidence'] = args.min_confidence
+            report['objective'] = args.objective
+        return dump(report), 0
     if args.chunk_size is not None:
         if args.patterns or not args.jsonl or args.input_format not in ("fasta", "fastq", "text"):
             raise ValueError("--chunk-size requires inline anchors, --jsonl and explicit fasta/fastq/text --input-format")
@@ -200,6 +267,10 @@ def add_commands(groups):
     match.add_argument('--iupac', action='store_true')
     match.add_argument('--strand', choices=('+', '-', 'both'), default='+')
     match.add_argument('--max-matches', type=int, default=10000)
+    match.add_argument('--top', type=int, help='show up to N matching record/pattern pairs, most hits first')
+    match.add_argument('--jev-model', help='opt in to Jev review of shortlisted summaries using JEV_API_KEY')
+    match.add_argument('--objective', help='review question context sent with shortlisted summaries')
+    match.add_argument('--min-confidence', type=float, help='minimum Choice confidence to move a yes/no result')
     match.set_defaults(handler=run_match)
     candidates = groups.add_parser('candidates', help='preserve, regex, exhaustive, sample or pairwise IUPAC candidates')
     reader_arguments(candidates)
