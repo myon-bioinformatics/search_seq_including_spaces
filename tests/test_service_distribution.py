@@ -38,7 +38,7 @@ class ServiceDistributionTests(unittest.TestCase):
     def test_helper_package_imports_without_root_aliases(self):
         modules = sorted(path.stem for path in (ROOT / 'seqlib').glob('*.py')
                          if path.stem != '__init__')
-        self.assertEqual(len(modules), 20)
+        self.assertEqual(len(modules), 21)
         self.assertEqual({path.name for path in ROOT.glob('*.py')},
                          {'sequence_tool.py', 'sequence_service.py', 'definition_main.py'})
         code = 'import importlib\n' + '\n'.join(

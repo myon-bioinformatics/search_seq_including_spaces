@@ -45,3 +45,18 @@ removed. After replacing modified residues in the SEQRES sequence with their
 MODRES parents, its first 73 residues match the ungapped Infernal tRNA1 row;
 the deposited chain also has a terminal CCA. The companion JSON explicitly
 maps just the two fixture residues. Distances are coordinate observations.
+
+## Transcript search
+
+`lin-utr.fa` contains the sequence following the annotated CDS in two
+C. elegans RefSeq records, in their deposited 5′→3′ orientation. All coordinates
+here are 1-based and inclusive:
+
+| Record | CDS | Stored interval | Length |
+|---|---|---|---:|
+| [lin-14 NM_077515.5](https://www.ncbi.nlm.nih.gov/nuccore/NM_077515.5) | 123–1742 | 1743–3346 | 1604 |
+| [lin-28 NM_001025914.6](https://www.ncbi.nlm.nih.gov/nuccore/NM_001025914.6) | 2–685 | 686–1214 | 529 |
+
+The test query is the mature [cel-lin-4-5p, MIMAT0000002](https://mirbase.org/mature/MIMAT0000002).
+The two mRNAs were chosen from the [lin-28/lin-4 study](https://pubmed.ncbi.nlm.nih.gov/9054503/).
+The tests verify sequence occurrences using the canonical [seed classes](https://elifesciences.org/articles/05005).

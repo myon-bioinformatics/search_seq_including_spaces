@@ -3,10 +3,11 @@ import heapq, json, math, os, sys
 from contextlib import closing, nullcontext; from dataclasses import asdict
 
 from seqlib.ambiguity_candidates import MODES, generate_candidates, select_representatives
-from seqlib.anchor_matcher import find_matches
+from seqlib.anchor_matcher import find_matches, normalize_sequence
 from seqlib.result_summary import summarize_csv
 from seqlib.rna_neighbors import neighbors
 from seqlib.structured_readers import strict_json
+from seqlib.transcript_regions import transcript_regions
 from seqlib.stockholm import annotated_matches
 from seqlib.sequence_patterns import load_patterns
 from seqlib.sequence_readers import read_sequences, discover_sequences, SEQUENCE_FORMATS
@@ -148,6 +149,45 @@ def run_base_neighbors(args):
     return dump(result), 0
 
 
+def run_transcript_search(args):
+    query = args.query
+    query_id = None
+    if args.query_record and not args.query_file:
+        raise ValueError('--query-record requires --query-file')
+    if args.query_file:
+        with closing(read_sequences(args.query_file)) as inputs:
+            selected = (r for r in inputs if args.query_record is None or r.id == args.query_record)
+            record = next(selected, None)
+            if record is None or next(selected, None) is not None:
+                raise ValueError('--query-file must select exactly one record; use --query-record ID')
+            query, query_id = record.sequence, record.id
+    query = normalize_sequence(query).sequence
+    start, end = args.query_span or (1, len(query))
+    if not 1 <= start <= end <= len(query):
+        raise ValueError('--query-span must be within the ungapped query (1-based inclusive)')
+    query = query[start - 1:end]
+    results = []
+    with closing(records(args)) as inputs:
+        for record in inputs:
+            result = transcript_regions(query, record.sequence, min_score=args.min_score, top=args.top)
+            for direction in ('similar', 'reverse_complement'):
+                for hit in result[direction]['hits']:
+                    hit['query_record_span'] = [p + start - 1 for p in hit['query_span']]
+            result['record'] = {**_record_ref(record), 'description': record.description,
+                                'metadata': record.metadata}
+            results.append(result)
+    if not results:
+        raise ValueError('no target records')
+    # Stable on ties, preserving the input order (and each record's provenance).
+    def best_score(result):
+        return max((group['hits'][0]['score'] for group in
+                    (result['similar'], result['reverse_complement']) if group['hits']), default=0)
+    results.sort(key=best_score, reverse=True)
+    return dump({'schema': 'transcript-search/1', 'coordinate_convention': '1-based-inclusive',
+                 'query_id': query_id, 'query_region': [start, end], 'query_sequence': query.replace('T', 'U'),
+                 'records_searched': len(results), 'results': results}), 0
+
+
 def run_annotated_match(args):
     source = nullcontext(sys.stdin) if args.file == '-' else open(args.file, encoding='utf-8')
     with source as handle:
@@ -284,6 +324,18 @@ def add_commands(groups):
     prep.add_argument('--export-format', choices=('fasta', 'jsonl', 'mega'), default='fasta')
     prep.add_argument('--receipt', required=True, help='new JSON file for transformation evidence')
     prep.set_defaults(handler=run_preprocess)
+    transcripts = groups.add_parser('transcript-search', help='find similar and complementary local RNA regions')
+    reader_arguments(transcripts)
+    query_source = transcripts.add_mutually_exclusive_group(required=True)
+    query_source.add_argument('--query', help='5-prime to 3-prime query sequence')
+    query_source.add_argument('--query-file', help='one sequence record to use as the query')
+    transcripts.add_argument('--query-record', help='select a unique record ID from --query-file')
+    transcripts.add_argument('--query-span', type=int, nargs=2, metavar=('START', 'END'),
+                             help='select a region of the query, 1-based inclusive')
+    transcripts.add_argument('--min-score', type=int, help='minimum local alignment score (default up to 12)')
+    transcripts.add_argument('--top', type=int, default=10, help='local regions per direction per target')
+    transcripts.set_defaults(handler=run_transcript_search)
+
     base = groups.add_parser('base-neighbors', help='inspect the neighbours of one aligned RNA residue')
     base.add_argument('file', help='one Stockholm alignment, or - for stdin')
     base.add_argument('--record', required=True)

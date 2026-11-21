@@ -11,6 +11,7 @@ from seqlib.anchor_matcher import find_matches
 from seqlib.comparison import compare_aligned, project_interval
 from seqlib.protein_ionization import ionization
 from seqlib.sequence_analysis import nucleotide_features, marker_clues, fold_rna
+from seqlib.transcript_regions import transcript_regions
 from seqlib.structured_readers import strict_json
 
 MAX_REQUEST = 1024 * 1024
@@ -49,6 +50,9 @@ _DEFINITIONS=[
         'sequence_a':string(),'sequence_b':string(),'alphabet':string(enum=('dna','rna','protein')),
         'gap_policy':string(enum=('exclude','mismatch')),'ambiguity_policy':string(enum=('exclude','strict','compatible')),
         'start':integer(1,100000),'end':integer(1,100000)}),
+    definition('transcript_regions',transcript_regions,['query','target'],{
+        'query':string(max_length=512),'target':string(max_length=5000),
+        'min_score':integer(1,1024),'top':integer(1,100)}),
     definition('project_interval',project_interval,['sequence_a','sequence_b','alphabet','start','end'],{
         'sequence_a':string(),'sequence_b':string(),'alphabet':string(enum=('dna','rna','protein')),
         'start':integer(1,100000),'end':integer(1,100000)}),
