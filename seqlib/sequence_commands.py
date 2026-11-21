@@ -5,6 +5,7 @@ from contextlib import closing; from dataclasses import asdict
 from seqlib.ambiguity_candidates import MODES, generate_candidates, select_representatives
 from seqlib.anchor_matcher import find_matches
 from seqlib.result_summary import summarize_csv
+from seqlib.stockholm import annotated_matches
 from seqlib.sequence_patterns import load_patterns
 from seqlib.sequence_readers import read_sequences, discover_sequences, SEQUENCE_FORMATS
 from seqlib.streaming_matcher import match_large_file
@@ -125,6 +126,15 @@ def ranked_matches(documents, top, *, classifier=None, objective=None, threshold
         rows.sort(key=priority)
     return {'schema': 'match-shortlist/1', 'scanned_pairs': scanned, 'matching_pairs': matched,
             'omitted_matching_pairs': matched - len(rows), 'results': rows}
+
+
+def run_annotated_match(args):
+    from contextlib import nullcontext
+    source = nullcontext(sys.stdin) if args.file == '-' else open(args.file, encoding='utf-8')
+    with source as handle:
+        result = annotated_matches(handle, track=args.track, left=args.left, right=args.right,
+                                   min_gap=args.min_gap, max_gap=args.max_gap)
+    return dump(result), 0
 
 
 def run_match(args):
@@ -255,6 +265,15 @@ def add_commands(groups):
     prep.add_argument('--export-format', choices=('fasta', 'jsonl', 'mega'), default='fasta')
     prep.add_argument('--receipt', required=True, help='new JSON file for transformation evidence')
     prep.set_defaults(handler=run_preprocess)
+    annotated = groups.add_parser('annotated-match', help='search a Stockholm alignment with column annotations')
+    annotated.add_argument('file', help='one Stockholm 1.0 alignment, or - for stdin')
+    annotated.add_argument('--track', default='SS_cons', help='column annotation name (default: SS_cons)')
+    annotated.add_argument('--left', required=True)
+    annotated.add_argument('--right', required=True)
+    annotated.add_argument('--min-gap', type=int, default=0)
+    annotated.add_argument('--max-gap', type=int)
+    annotated.set_defaults(handler=run_annotated_match)
+
     match = groups.add_parser('match', help='search sequence records using anchors or a JSON pattern pack')
     reader_arguments(match)
     output_arguments(match)

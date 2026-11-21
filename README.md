@@ -33,6 +33,10 @@ Anchor sequences and gap constraints drive matching, with CSV/JSONL output and f
 
 ![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
 
+To search an annotated Stockholm alignment, run
+`python -S sequence_tool.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA`.
+Each hit includes its ungapped positions, alignment columns and consensus annotation.
+
 To map a search hit or annotation onto an aligned second record, use the
 [`project` CLI or `project_interval` HTTP/MCP tool](docs/roadmap-tools.md#project-a-search-hit-or-annotation-across-an-alignment).
 
