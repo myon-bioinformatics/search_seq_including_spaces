@@ -51,6 +51,50 @@ agreement with this consensus. In PDB 1CRN the sulfur-coordinate check
 recovers all three deposited disulfide pairs with zero extra pairs.
 [Reference data and provenance](../tests/fixtures/SOURCE.md#reference-alignment-and-structural-records)
 
+## Transcript region search
+
+Supply the target records and a query. Outputs cover both orientations of every
+target, including records without hits. No translation, ORF or CDS annotation is
+required. RNA and DNA use the same search after U/T normalization.
+
+```sh
+python -S sequence_tool.py transcript-search tests/fixtures/lin-utr.fa --query UCCCUGAGACCUCAAGUGUGA
+python -S sequence_tool.py transcript-search tests/fixtures/lin-utr.fa --query-file tests/fixtures/lin-utr.fa --query-record NM_077515.5 --query-span 825 846
+```
+
+The first example finds three 8mer seed patterns in the lin-14 3′ UTR and one
+in the lin-28 3′ UTR. The second selects a 22-base region in lin-14 and finds
+eight identical consecutive bases in lin-28 (335–342 in this UTR). The match
+covers 8/22 of the query. Coordinates start at 1 and include both ends, on the
+supplied record; FASTA headers give the offset for these UTR slices.
+
+- `similar` aligns the query as supplied. `reverse_complement` aligns its
+  reverse complement against the same forward target. Aligned strings are shown
+  in target orientation with U. Both spans always refer to the original
+  orientation. The CLI includes the query span relative to the selected region
+  and the span in the original query record.
+- Smith–Waterman local scoring uses +2 per canonical match, −2 per substitution
+  (including ambiguous symbols) and −3 per gap column. The default minimum is
+  the smaller of 12 and twice the query length. Scores measure sequence
+  alignment. Each hit includes aligned strings, matches, substitutions, gaps,
+  identity (matches/alignment columns) and coverage (query bases used/query length).
+- The highest-scoring traceback per target endpoint is considered. Ties choose
+  the earliest query endpoint and prefer diagonal, up, then left within traceback.
+  Hits are selected by descending score, then earlier target end, keeping
+  disjoint target spans within each direction. `--top` defaults to ten per
+  direction per target; `more_hits` signals another qualifying disjoint site.
+  Target records are sorted by their highest reported score. Self-hits are included.
+  The implementation handles up to 8 million matrix cells per sequence pair.
+- For queries of 18–26 bases with canonical positions 2–8, `seed_patterns`
+  independently counts exact 8mer, 7mer-m8, 7mer-A1 and 6mer motifs. Each
+  2–7 core site receives its most specific class. Results include up to
+  `--top` coordinates per class, complete counts and the omitted count.
+  A length-qualified query may simply be an mRNA fragment. These patterns
+  do not establish miRNA identity, binding, regulation or expression.
+- HTTP and MCP expose the same single-target calculation as `transcript_regions`
+  with inline `query` and `target`. The CLI handles multi-record files and
+  query selection. [Reference inputs](../tests/fixtures/SOURCE.md#transcript-search)
+
 ## RNA base neighbours
 
 ```sh

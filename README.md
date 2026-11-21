@@ -33,6 +33,10 @@ Anchor sequences and gap constraints drive matching, with CSV/JSONL output and f
 
 ![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
 
+Search multiple mRNAs for a similar or reverse-complementary region with one command.
+Both orientations, local alignments, coordinates and short-query seed patterns are included by default.
+[Transcript search examples](docs/roadmap-tools.md#transcript-region-search)
+
 Inspect one RNA residue's sequence neighbours, consensus partner and mapped 3D contacts with
 [`base-neighbors`](docs/roadmap-tools.md#rna-base-neighbours).
 
