@@ -1,10 +1,12 @@
 """CLI adapters for roadmap tools. Algorithms and I/O contracts stay importable."""
 import heapq, json, math, os, sys
-from contextlib import closing; from dataclasses import asdict
+from contextlib import closing, nullcontext; from dataclasses import asdict
 
 from seqlib.ambiguity_candidates import MODES, generate_candidates, select_representatives
 from seqlib.anchor_matcher import find_matches
 from seqlib.result_summary import summarize_csv
+from seqlib.rna_neighbors import neighbors
+from seqlib.structured_readers import strict_json
 from seqlib.stockholm import annotated_matches
 from seqlib.sequence_patterns import load_patterns
 from seqlib.sequence_readers import read_sequences, discover_sequences, SEQUENCE_FORMATS
@@ -128,8 +130,25 @@ def ranked_matches(documents, top, *, classifier=None, objective=None, threshold
             'omitted_matching_pairs': matched - len(rows), 'results': rows}
 
 
+def run_base_neighbors(args):
+    if bool(args.structure) != bool(args.mapping):
+        raise ValueError('--structure and --mapping are required together')
+    if not args.structure and (args.structure_format or args.cutoff is not None):
+        raise ValueError('--structure-format and --cutoff require coordinates')
+    structure = mapping = None
+    if args.structure:
+        with open(args.structure, encoding='utf-8') as handle:
+            structure = parse_structure(handle.read(), format=args.structure_format or 'pdb')
+        with open(args.mapping, encoding='utf-8') as handle:
+            mapping = strict_json(handle.read())
+    source = nullcontext(sys.stdin) if args.file == '-' else open(args.file, encoding='utf-8')
+    with source as handle:
+        result = neighbors(handle, args.record, args.position, structure=structure, mapping=mapping,
+                           cutoff=4.0 if args.cutoff is None else args.cutoff)
+    return dump(result), 0
+
+
 def run_annotated_match(args):
-    from contextlib import nullcontext
     source = nullcontext(sys.stdin) if args.file == '-' else open(args.file, encoding='utf-8')
     with source as handle:
         result = annotated_matches(handle, track=args.track, left=args.left, right=args.right,
@@ -265,6 +284,16 @@ def add_commands(groups):
     prep.add_argument('--export-format', choices=('fasta', 'jsonl', 'mega'), default='fasta')
     prep.add_argument('--receipt', required=True, help='new JSON file for transformation evidence')
     prep.set_defaults(handler=run_preprocess)
+    base = groups.add_parser('base-neighbors', help='inspect the neighbours of one aligned RNA residue')
+    base.add_argument('file', help='one Stockholm alignment, or - for stdin')
+    base.add_argument('--record', required=True)
+    base.add_argument('--position', type=int, required=True, help='1-based ungapped position')
+    base.add_argument('--structure', help='coordinate file')
+    base.add_argument('--structure-format', choices=('pdb', 'cif'), help='default: pdb')
+    base.add_argument('--mapping', help='JSON mapping for the selected record, model and chain')
+    base.add_argument('--cutoff', type=float, help='base N/O distance in angstrom (default: 4)')
+    base.set_defaults(handler=run_base_neighbors)
+
     annotated = groups.add_parser('annotated-match', help='search a Stockholm alignment with column annotations')
     annotated.add_argument('file', help='one Stockholm 1.0 alignment, or - for stdin')
     annotated.add_argument('--track', default='SS_cons', help='column annotation name (default: SS_cons)')
