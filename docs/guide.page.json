@@ -1,0 +1,108 @@
+{
+  "schema": "web-ui-page/1",
+  "title": "search_seq_including_spaces 利用ガイド",
+  "theme": "auto",
+  "description": "前後の配列を指定し、間の配列を無視して該当箇所を探すツール。塩基やアミノ酸のスペースを含む配列を見つけ、CSV / JSONL に出力します。",
+  "icon": "./icon.png",
+  "favicon": "./favicon.png",
+  "blocks": [
+    {
+      "type": "badges",
+      "items": [
+        "🧬 配列検索",
+        "🐍 Python 3.10+"
+      ]
+    },
+    {
+      "type": "section",
+      "title": "📥 取得",
+      "blocks": [
+        {
+          "type": "text",
+          "text": "Python 3.10+ と git が必要です。以下の例はリポジトリ全体を取得して実行します。"
+        },
+        {
+          "type": "output",
+          "text": "git clone https://github.com/myon-bioinformatics/search_seq_including_spaces.git\ncd search_seq_including_spaces"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "▶️ 実行",
+      "blocks": [
+        {
+          "type": "card",
+          "title": "🔎 前後の配列で探す",
+          "text": "左右のアンカーと、間の長さの下限を渡します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python -S sequence_tool.py match input.fa --left AC --right GT --min-gap 1 --jsonl"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "↔️ 2つの配列を比べる",
+          "text": "窓幅を決めて比較します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python -S sequence_tool.py compare a.fa b.fa --alphabet dna --window 21 --summary"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "🔤 翻訳",
+          "text": "読み枠と鎖を指定します。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl"
+            }
+          ]
+        },
+        {
+          "type": "card",
+          "title": "❓ ヘルプ",
+          "text": "サブコマンドの一覧です。",
+          "blocks": [
+            {
+              "type": "output",
+              "text": "$ python -S sequence_tool.py --help"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "title": "🔗 リンク",
+      "blocks": [
+        {
+          "type": "links",
+          "items": [
+            {
+              "label": "📦 リポジトリ",
+              "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces"
+            },
+            {
+              "label": "📖 README",
+              "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces#readme"
+            },
+            {
+              "label": "📄 sequence_tool.py",
+              "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces/blob/main/sequence_tool.py"
+            },
+            {
+              "label": "📚 Wiki",
+              "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces/wiki"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
