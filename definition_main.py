@@ -1,3 +1,4 @@
+"""Legacy batch search: read input_data.json (front/back elements, spaces, alignment, paths) and write the matches per sequence."""
 import csv, glob, json, os, re
 
 #Load .json file
