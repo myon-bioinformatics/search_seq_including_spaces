@@ -173,8 +173,9 @@ python -S -m unittest discover -s tests -p test_sequence_readers.py -v
 declared there as a lower bound only.
 The runtime has no third-party dependencies. Runtime metadata does not
 raise the source/vendoring floor to the development floor. CI pins setup-uv
-v10.3.3 by full commit SHA and selects uv version latest. Other actions from
-the actions organization use major tags. Setup actions
+v10.3.3 by full commit SHA and selects uv version latest. Every other action,
+including those from the actions organization, is also pinned to a full commit
+SHA with its release tag as a comment. Setup actions
 using Node 24 require runner 2.327.1 or newer (GitHub-hosted runners are used).
 
 CI also exercises the stdlib runtime floor and Python 3.14 on Windows and macOS.
