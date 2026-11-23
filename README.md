@@ -1,5 +1,7 @@
 # search_seq_including_spaces
 
+🌐 [GitHub Pages](https://myon-bioinformatics.github.io/search_seq_including_spaces/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
+
 <p align="center">
   <img src="docs/brand/icon.png" alt="search_seq_including_spaces icon" width="160" />
 </p>
