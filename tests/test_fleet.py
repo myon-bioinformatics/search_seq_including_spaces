@@ -8,7 +8,7 @@ import unittest
 from vendor import fleet_check as fleet
 
 ROOT = fleet.repo_root(__file__)
-PARENT_WORKFLOW_PIN = "af3711daed6544122cacc5d38fa6cc89ed35c937"
+PARENT_WORKFLOW_PIN = "98a0e611cc879fde2d047da806de5a2121a65524"
 # Node sources and the shared checks stay on accepted upstream commits with exact bytes.
 ACCEPTED = {
     "vendor/xprobe.py": "1ffbb7b984075c683690bbe4e9deb06199cdfe94",
