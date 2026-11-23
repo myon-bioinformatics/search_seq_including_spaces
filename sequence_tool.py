@@ -287,7 +287,7 @@ def _build_parser() -> argparse.ArgumentParser:
     project = groups.add_parser("project", help="map a search hit or annotation across two aligned records")
     project.add_argument("file_a", help="aligned source FASTA/plain record")
     project.add_argument("file_b", help="aligned target FASTA/plain record")
-    project.add_argument("--alphabet", choices=ALPHABETS, required=True)
+    project.add_argument("--alphabet", choices=ALPHABETS, required=True,help="sequence alphabet; no auto-detection")
     project.add_argument("--start", type=_int_at_least(1), required=True, help="ungapped source start (1-based)")
     project.add_argument("--end", type=_int_at_least(1), required=True, help="ungapped source end (inclusive)")
     project.set_defaults(handler=_project)
@@ -318,9 +318,9 @@ def _build_parser() -> argparse.ArgumentParser:
     compare.add_argument("--json", action="store_true",
                          help="JSON output (default unless --ascii)")
     compare.add_argument("--summary", action="store_true", help="S3 bounded window-region summary")
-    compare.add_argument("--identity-threshold", type=float, default=90)
-    compare.add_argument("--min-coverage", type=float, default=0)
-    compare.add_argument("--top", type=int, default=10)
+    compare.add_argument("--identity-threshold", type=float, default=90,help="--summary: percent identity at or above which a window is conserved (default: %(default)s)")
+    compare.add_argument("--min-coverage", type=float, default=0,help="--summary: windows below this percent coverage are unknown (default: %(default)s)")
+    compare.add_argument("--top", type=int, default=10,help="--summary: regions listed (default: %(default)s)")
     compare.set_defaults(handler=_compare)
 
     input_options = argparse.ArgumentParser(add_help=False)

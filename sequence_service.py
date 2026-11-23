@@ -187,9 +187,9 @@ class Handler(BaseHTTPRequestHandler):
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('transport',choices=('stdio','http'))
-    parser.add_argument('--host',default='127.0.0.1')
-    parser.add_argument('--port',type=int,default=8765)
+    parser.add_argument('transport',choices=('stdio','http'),help="MCP over stdio, or HTTP/webhook")
+    parser.add_argument('--host',default='127.0.0.1',help="HTTP bind address (default: %(default)s)")
+    parser.add_argument('--port',type=int,default=8765,help="HTTP port (default: %(default)s)")
     args=parser.parse_args(argv)
     if args.transport=='stdio': serve_stdio()
     else:
