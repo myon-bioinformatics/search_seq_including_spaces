@@ -44,7 +44,7 @@ jobs:
   actionlint:
     permissions:
       contents: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@af3711daed6544122cacc5d38fa6cc89ed35c937
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-actionlint.yml@98a0e611cc879fde2d047da806de5a2121a65524
 
   vendor-lock:
     name: Vendor lock
@@ -70,7 +70,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           repository: myon-bioinformatics/myon-bioinformatics
-          ref: af3711daed6544122cacc5d38fa6cc89ed35c937
+          ref: 98a0e611cc879fde2d047da806de5a2121a65524
           path: .vendor-sync-tools
           persist-credentials: false
           sparse-checkout: |
@@ -195,7 +195,7 @@ jobs:
     permissions:
       contents: read
       actions: read
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@af3711daed6544122cacc5d38fa6cc89ed35c937
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@98a0e611cc879fde2d047da806de5a2121a65524
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
       expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
