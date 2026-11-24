@@ -88,10 +88,12 @@ jobs:
       fail-fast: false
       matrix:
         # Minimum supported version and the current stable release.
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
+        # Pull requests run the current stable only; push runs the full matrix.
+        python-version: ${{ github.event_name == 'pull_request' && fromJSON('["3.14"]') || fromJSON('["3.11", "3.12", "3.13", "3.14"]') }}
     env:
       PYTHONDONTWRITEBYTECODE: "1"
       # On pull_request events GITHUB_SHA is the test merge commit; also
+      
       # report the branch head so results map to the pushed commit.
       HEAD_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
@@ -198,6 +200,6 @@ jobs:
     uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-junit-identity.yml@0778ede0c872d609bb2dc590f9f9898a39a18668
     with:
       commit-sha: ${{ github.event.pull_request.head.sha || github.sha }}
-      expected-reports: '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]'
+      expected-reports: ${{ github.event_name == 'pull_request' && '["junit-py3.14/pytest-3.14.xml"]' || '["junit-py3.11/pytest-3.11.xml","junit-py3.12/pytest-3.12.xml","junit-py3.13/pytest-3.13.xml","junit-py3.14/pytest-3.14.xml"]' }}
       artifact-pattern: "junit-py*"
       output-artifact: "failure-identity"
