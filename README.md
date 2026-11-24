@@ -3,10 +3,10 @@
 🌐 [GitHub Pages](https://myon-bioinformatics.github.io/search_seq_including_spaces/) · 🏠 [Portfolio](https://myon-bioinformatics.github.io/)
 
 <p align="center">
-  <img src="docs/brand/icon.png" alt="search_seq_including_spaces icon" width="160" />
+  <img src="https://myon-bioinformatics.github.io/search_seq_including_spaces/icon.png" alt="search_seq_including_spaces icon" width="160" />
 </p>
 
-[Icon](docs/brand/icon.png) · [Favicon](docs/brand/favicon.png)
+[Icon](https://myon-bioinformatics.github.io/search_seq_including_spaces/icon.png) · [Favicon](https://myon-bioinformatics.github.io/search_seq_including_spaces/favicon.png)
 ## Summary
 ![DNA_IMAGE](line_dna_short.webp)
 
