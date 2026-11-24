@@ -60,8 +60,8 @@ contract decision before implementation.
 | sequence_matcher.find_sequence_matches | Lazy record-level envelopes around unchanged `anchor-gap/1` results; see [sequence-matcher.md](sequence-matcher.md) |
 | protein.parse.read_fasta | Existing list of `(header, raw)` tuples, including plain-text fallback; unchanged for CLI compatibility |
 | protein.parse.Prepared / protein features | Existing protein validation, transform positions and outputs; later adapter may consume SequenceRecord |
-| sequence_tool.py | Existing CLI and input behavior unchanged; this increment adds a library API only |
-| definition_main.py | Legacy script and CSV behavior unchanged |
+| ssis.py | Existing CLI and input behavior unchanged; this increment adds a library API only |
+| legacy/definition_main.py | Legacy script and CSV behavior unchanged |
 
 ## Supported input subset
 

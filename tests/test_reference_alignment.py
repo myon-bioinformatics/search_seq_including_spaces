@@ -43,7 +43,7 @@ class TestReferenceAlignment(unittest.TestCase):
     def test_annotated_search_cli(self):
         self.assertEqual(hashlib.sha256(STOCKHOLM.read_bytes()).hexdigest(),
                          'c495d7d4c1b6c0851b9d0f51b43899158b2d52969214e26bc7757742e32f15d8')
-        output = subprocess.check_output([sys.executable, '-S', str(FIXTURES.parents[1] / 'sequence_tool.py'),
+        output = subprocess.check_output([sys.executable, '-S', str(FIXTURES.parents[1] / 'ssis.py'),
                                           'annotated-match', str(STOCKHOLM), '--left', 'GUUC', '--right', 'GA'])
         report = json.loads(output)
         self.assertEqual(report['records_searched'], 5)

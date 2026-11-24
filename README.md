@@ -42,11 +42,11 @@ Both orientations, local alignments, coordinates and short-query seed patterns a
 Inspect one RNA residue's sequence neighbours, consensus partner and mapped 3D contacts with
 [`base-neighbors`](docs/roadmap-tools.md#rna-base-neighbours). Export an entire deposited model for [3D inspection and classification](docs/roadmap-tools.md#inspect-deposited-3d-coordinates).
 
-To align unaligned DNA/RNA records, run `python -S sequence_tool.py align transcripts.fa > aligned.sto`.
+To align unaligned DNA/RNA records, run `python -S ssis.py align transcripts.fa > aligned.sto`.
 Use `--format fasta` for aligned FASTA. [Algorithm and Rfam accuracy results](docs/roadmap-tools.md#generate-an-alignment-from-unaligned-fasta).
 
 To search an annotated Stockholm alignment, run
-`python -S sequence_tool.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA`.
+`python -S ssis.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA`.
 Each hit includes its ungapped positions, alignment columns and consensus annotation.
 
 To map a search hit or annotation onto an aligned second record, use the
@@ -56,7 +56,7 @@ Complementary view of sequence readers, matching/candidate tools, and result sum
 
 ## Layout
 
-- Root: the entry points `sequence_tool.py`, `sequence_service.py` and the legacy `definition_main.py`.
+- Root: the entry points `ssis.py` (the CLI) and `sequence_service.py`. The old batch script `definition_main.py` and its `input_data.json`, `input_folder/` and `output_folder/` live in `legacy/` (run it there: `cd legacy && python definition_main.py`).
 - `seqlib/`: the helper modules they use (readers, matchers, comparison, summaries). Import them as `from seqlib.sequence_readers import ...`.
 - `protein/`: the protein package. `tests/`, `docs/`, `scripts/`, `examples/` and `vendor/` hold the rest.
 
@@ -83,13 +83,13 @@ Runtime remains standard-library only. [Roadmap tools and contracts](docs/roadma
 cover the new CLI, limits, coordinate semantics and optional adapters.
 
 ```sh
-python -S sequence_tool.py match input.fa --left AC --right GT --min-gap 1 --jsonl
-python -S sequence_tool.py candidates input.fa --mode pairwise --seed 42 --limit 1000
-python -S sequence_tool.py summarize-hits hits.csv --gap-merge 10000 --top 10
-python -S sequence_tool.py compare a.fa b.fa --alphabet dna --window 21 --summary
-python -S sequence_tool.py nucleotide-features input.fa --alphabet dna --jsonl
-python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl
-python -S sequence_tool.py rna-fold input.fa --jsonl
+python -S ssis.py match input.fa --left AC --right GT --min-gap 1 --jsonl
+python -S ssis.py candidates input.fa --mode pairwise --seed 42 --limit 1000
+python -S ssis.py summarize-hits hits.csv --gap-merge 10000 --top 10
+python -S ssis.py compare a.fa b.fa --alphabet dna --window 21 --summary
+python -S ssis.py nucleotide-features input.fa --alphabet dna --jsonl
+python -S ssis.py translate input.fa --frame 0 --strand + --jsonl
+python -S ssis.py rna-fold input.fa --jsonl
 ```
 
 To inspect the strongest hit counts first, add `--top 10` to `match` and omit
@@ -107,10 +107,10 @@ own operational validation. FASTA↔TSV conversion remains out of scope.
 Standard library only. CI-tested on Python 3.10–3.14. Values are sequence-derived hints, not structure.
 
 ```sh
-python sequence_tool.py fasta validate in.fasta
-python sequence_tool.py protein features in.fasta            # JSON (protein-hints/1)
-python sequence_tool.py protein profile in.fasta --window 9  # per-residue TSV (or --json / --jsonl)
-python sequence_tool.py protein roi in.fasta --ascii         # regions of interest (heuristic)
+python ssis.py fasta validate in.fasta
+python ssis.py protein features in.fasta            # JSON (protein-hints/1)
+python ssis.py protein profile in.fasta --window 9  # per-residue TSV (or --json / --jsonl)
+python ssis.py protein roi in.fasta --ascii         # regions of interest (heuristic)
 ```
 
 Ambiguity codes B/Z/J/X are excluded by default (`--ambiguity mean-of-candidates` to opt in). Exit code 2 means an input error. Details, thresholds and limitations: [docs/protein.md](docs/protein.md).
@@ -129,9 +129,9 @@ The stdlib-only comparison tools accept already-aligned DNA, RNA, or protein
 pairs. They do not perform alignment or infer homology.
 
 ```sh
-python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna
-python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
-python -S sequence_tool.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
+python -S ssis.py compare a.fasta b.fasta --alphabet dna
+python -S ssis.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
+python -S ssis.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
 ```
 
 S1 reports exact identity and comparison coverage. S2 adds sliding-window
@@ -187,7 +187,7 @@ raw JUnit reports from both operating systems are required by the identity colle
 ## Discover production entry points
 
 ```sh
-python -S sequence_tool.py discover ./data --format fasta --format fastq --pattern 'sample*'
+python -S ssis.py discover ./data --format fasta --format fastq --pattern 'sample*'
 ```
 
 The native command lists sequence input candidates using the existing reader format/compression rules. [Discovery usage and optional source inspection](docs/convention-discovery.md).

@@ -40,7 +40,7 @@ class ServiceDistributionTests(unittest.TestCase):
                          if path.stem != '__init__')
         self.assertEqual(len(modules), 22)
         self.assertEqual({path.name for path in ROOT.glob('*.py')},
-                         {'sequence_tool.py', 'sequence_service.py', 'definition_main.py'})
+                         {'ssis.py', 'sequence_service.py'})
         code = 'import importlib\n' + '\n'.join(
             'importlib.import_module(' + repr('seqlib.' + name) + ')'
             for name in modules)

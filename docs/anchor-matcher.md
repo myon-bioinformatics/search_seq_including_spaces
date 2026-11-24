@@ -1,7 +1,7 @@
 # Anchor/gap matcher — Phase 1
 
 `seqlib/anchor_matcher.py` is one stdlib-only importable module. It does not read files,
-configuration or the network at import time. The legacy `definition_main.py`
+configuration or the network at import time. The legacy `legacy/definition_main.py`
 remains intact. CLI, readers and TSD clue presets now live in sibling adapters; see
 [roadmap-tools.md](roadmap-tools.md). The core contract below is unchanged.
 

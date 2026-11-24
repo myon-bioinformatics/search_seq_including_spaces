@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class SummaryTests(unittest.TestCase):
     def test_real_csv_conserves_all_5966_hits_and_original(self):
-        path = next((ROOT / 'output_folder/example').glob('semi*'))
+        path = next((ROOT / 'legacy/output_folder/example').glob('semi*'))
         before = path.read_bytes()
         doc = summarize_csv(path, top=3)
         self.assertEqual(doc['total_hits'], 5966)

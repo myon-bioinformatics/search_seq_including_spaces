@@ -11,7 +11,7 @@ local divergence, and an ASCII diff for already-aligned inputs.
 ## CLI
 
 ```bash
-python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna
+python -S ssis.py compare a.fasta b.fasta --alphabet dna
 ```
 
 Optional controls:
@@ -119,7 +119,7 @@ region validation, so the two modes cannot silently drift on input handling.
 ### Sliding-window identity
 
 ```bash
-python -S sequence_tool.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
+python -S ssis.py compare a.fasta b.fasta --alphabet dna --window 21 --step 5
 ```
 
 Only complete windows are emitted. Coordinates remain 1-based inclusive
@@ -138,7 +138,7 @@ rather than a partial-window fallback.
 ### ASCII diff
 
 ```bash
-python -S sequence_tool.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
+python -S ssis.py compare a.fasta b.fasta --alphabet protein --ascii --width 60
 ```
 
 The marker line is evidence-oriented rather than a similarity score:

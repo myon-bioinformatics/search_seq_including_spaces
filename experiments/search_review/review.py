@@ -86,7 +86,7 @@ def evaluate_cases(fixtures, judge):
             for name, sequence in case["sequences"]:
                 text.append(f">{name}\n{sequence}")
             fasta.write_text("\n".join(text) + "\n")
-            output = subprocess.check_output([sys.executable, "-S", str(ROOT / "sequence_tool.py"),
+            output = subprocess.check_output([sys.executable, "-S", str(ROOT / "ssis.py"),
                                               "match", str(fasta), "--left", case["left"], "--right", case["right"],
                                               "--top", str(len(text))])
         shortlist = json.loads(output)

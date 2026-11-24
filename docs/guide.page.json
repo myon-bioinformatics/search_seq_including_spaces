@@ -45,7 +45,7 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "$ python -S sequence_tool.py match input.fa --left AC --right GT --min-gap 1 --jsonl"
+                      "text": "$ python -S ssis.py match input.fa --left AC --right GT --min-gap 1 --jsonl"
                     }
                   ]
                 },
@@ -56,7 +56,7 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "$ python -S sequence_tool.py compare a.fa b.fa --alphabet dna --window 21 --summary"
+                      "text": "$ python -S ssis.py compare a.fa b.fa --alphabet dna --window 21 --summary"
                     }
                   ]
                 },
@@ -67,7 +67,7 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "$ python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl"
+                      "text": "$ python -S ssis.py translate input.fa --frame 0 --strand + --jsonl"
                     }
                   ]
                 },
@@ -78,7 +78,7 @@
                   "blocks": [
                     {
                       "type": "output",
-                      "text": "$ python -S sequence_tool.py --help"
+                      "text": "$ python -S ssis.py --help"
                     }
                   ]
                 }
@@ -114,8 +114,8 @@
               "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces#readme"
             },
             {
-              "label": "📄 sequence_tool.py",
-              "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces/blob/main/sequence_tool.py"
+              "label": "📄 ssis.py",
+              "href": "https://github.com/myon-bioinformatics/search_seq_including_spaces/blob/main/ssis.py"
             },
             {
               "label": "📚 Wiki",

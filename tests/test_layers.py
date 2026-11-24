@@ -261,17 +261,17 @@ class TestLayers(unittest.TestCase):
 
 
 class TestCommandLineEntryPoint(unittest.TestCase):
-    """sequence_tool.py is the only place that combines package modules with I/O."""
+    """ssis.py is the only place that combines package modules with I/O."""
 
     def test_imports_only_stdlib_and_protein(self):
-        path = ROOT / "sequence_tool.py"
+        path = ROOT / "ssis.py"
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         imported = set()
         for node in ast.walk(tree):
             if isinstance(node, ast.Import):
                 imported.update(alias.name.split(".")[0] for alias in node.names)
             elif isinstance(node, ast.ImportFrom):
-                self.assertEqual(node.level, 0, "sequence_tool.py uses a relative import")
+                self.assertEqual(node.level, 0, "ssis.py uses a relative import")
                 imported.add(node.module.split(".")[0])
         project_modules = {"protein", "seqlib"}
         third_party = {m for m in imported
@@ -282,7 +282,7 @@ class TestCommandLineEntryPoint(unittest.TestCase):
     def test_package_does_not_import_the_entry_point(self):
         for name in package_modules():
             external, _ = collect_imports(parse_module(name), name)
-            self.assertNotIn("sequence_tool", external, f"protein module {name!r}")
+            self.assertNotIn("ssis", external, f"protein module {name!r}")
 
 
 class TestRuntimeWithoutSitePackages(unittest.TestCase):

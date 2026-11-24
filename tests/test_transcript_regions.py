@@ -13,7 +13,7 @@ UTRS = ROOT / 'tests' / 'fixtures' / 'lin-utr.fa'
 
 def search(*args):
     return json.loads(subprocess.check_output(
-        [sys.executable, '-S', str(ROOT / 'sequence_tool.py'), 'transcript-search', str(UTRS), *args]))
+        [sys.executable, '-S', str(ROOT / 'ssis.py'), 'transcript-search', str(UTRS), *args]))
 
 
 class TestTranscriptRegions(unittest.TestCase):

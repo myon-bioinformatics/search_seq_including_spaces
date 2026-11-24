@@ -65,7 +65,7 @@ class SequenceDiscoveryTests(unittest.TestCase):
         report = discover_sequences(self.root, exclude=(last,), max_files=len(everything) - 1)
         self.assertFalse(report['truncated'])
         self.assertEqual(report['files'], everything[:-1])
-        args = [sys.executable, '-S', str(ROOT / 'sequence_tool.py'), 'discover', str(self.root), '--exclude', 'nested/*']
+        args = [sys.executable, '-S', str(ROOT / 'ssis.py'), 'discover', str(self.root), '--exclude', 'nested/*']
         result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', timeout=20)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)['files'],
@@ -97,7 +97,7 @@ class SequenceDiscoveryTests(unittest.TestCase):
 
     def test_native_cli_without_site_packages_and_truncated_status(self):
         self.inputs()
-        args = [sys.executable, '-S', str(ROOT / 'sequence_tool.py'), 'discover', str(self.root),
+        args = [sys.executable, '-S', str(ROOT / 'ssis.py'), 'discover', str(self.root),
                 '--format', 'fasta', '--pattern', 'sample*', '--pattern', 'other*']
         result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', timeout=20)
         self.assertEqual(result.returncode, 0, result.stderr)

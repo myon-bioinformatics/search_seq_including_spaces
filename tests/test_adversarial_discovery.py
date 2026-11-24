@@ -55,7 +55,7 @@ class TestAdversarialDiscovery(unittest.TestCase):
             ".fq", ".fastq", ".gb", ".gbk", ".genbank", ".gp",
         }
         # Skip generated/tool trees, so local environments and CI reports do not
-        # become sample inputs. Root, input_folder/, examples/ and tests/ are
+        # become sample inputs. Root, legacy/input_folder/, examples/ and tests/ are
         # all covered by this single traversal without duplicate visits.
         excluded_dirs = {
             ".git", ".venv", "venv", "__pycache__", ".pytest_cache",
