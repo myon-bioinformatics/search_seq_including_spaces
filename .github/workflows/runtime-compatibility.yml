@@ -27,7 +27,7 @@ jobs:
         run: python -S -m unittest discover -s tests -p test_sequence_readers.py -v
 
   portability:
-  if: github.event_name != 'pull_request'
+    if: github.event_name != 'pull_request'
     name: Locked development (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     timeout-minutes: 15
