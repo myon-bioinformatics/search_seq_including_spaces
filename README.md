@@ -27,13 +27,13 @@
 
 ## Concept overview
 
-![Sequence inputs and anchor pairs pass through matching and analysis tools to CSV or JSONL results and hit summaries.](docs/images/search_seq_including_spaces-concept.png)
+![Sequence inputs and anchor pairs pass through matching and analysis tools to CSV or JSONL results and hit summaries.](docs/images/repository-concept.png)
 
 Anchor sequences and gap constraints drive matching, with CSV/JSONL output and follow-on sequence summaries. Command-specific formats, supported inputs, and scientific limits are documented below.
 
 ### Challenges, roles, and outcomes
 
-![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/search_seq_including_spaces-concept-v2.png)
+![Challenges, roles, and outcomes for sequence reading, anchor-gap matching, candidate analysis, and result summaries.](docs/images/repository-concept-v2.png)
 
 Search multiple mRNAs for a similar or reverse-complementary region with one command.
 Both orientations, local alignments, coordinates and short-query seed patterns are included by default.
