@@ -9,7 +9,7 @@ from vendor import fleet_check as fleet
 
 ROOT = fleet.repo_root(__file__)
 PARENT_WORKFLOW_PIN = "0778ede0c872d609bb2dc590f9f9898a39a18668"
-PARENT_PAGES_PIN = "def72acfe886769fef417afd832028f66193f5d0"
+PARENT_PAGES_PIN = "a6996161eb1e8509a1673f68dd66f0e83efbada0"
 # Node sources and the shared checks stay on accepted upstream commits with exact bytes.
 ACCEPTED = {
     "vendor/xprobe.py": "1ffbb7b984075c683690bbe4e9deb06199cdfe94",
