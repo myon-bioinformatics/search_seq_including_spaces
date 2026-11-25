@@ -1,7 +1,7 @@
 {
   "schema": "web-ui-page/1",
   "title": "search_seq_including_spaces 利用ガイド",
-  "theme": "auto",
+  "theme": "modern",
   "description": "前後の配列を指定し、間の配列を無視して該当箇所を探すツール。塩基やアミノ酸のスペースを含む配列を見つけ、CSV / JSONL に出力します。",
   "icon": "./icon.png",
   "favicon": "./favicon.png",
