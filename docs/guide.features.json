@@ -1,0 +1,10 @@
+[
+  {"source": "ssis.py", "cli": [[]]},
+  {"source": "sequence_service.py", "cli": [[]]},
+  {"source": "seqlib/sequence_records.py"},
+  {"source": "seqlib/sequence_readers.py"},
+  {"source": "seqlib/sequence_matcher.py"},
+  {"source": "seqlib/anchor_matcher.py"},
+  {"source": "seqlib/streaming_matcher.py"},
+  {"source": "seqlib/comparison.py"}
+]
