@@ -87,6 +87,71 @@
           ]
         },
         {
+          "label": "🔬 検証ガイド",
+          "blocks": [
+            {
+              "type": "runbook",
+              "id": "verify",
+              "books": [
+                {
+                  "label": "🐍 python",
+                  "intro": "🤖 のついた手順は CI で実際に動かし、出た結果をそのまま載せています。",
+                  "runbook": {
+                    "key": "search-seq-including-spa/python",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/search_seq_including_spaces/main/ssis.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "help",
+                        "title": "❓ ヘルプ",
+                        "command": "python -S ssis.py --help",
+                        "run": true
+                      },
+                      {
+                        "id": "match",
+                        "title": "🔎 前後の配列で探す",
+                        "command": "printf '>s1\\nTTACAGTTT\\n' > demo.fa\npython -S ssis.py match demo.fa --left AC --right GT --min-gap 1 --jsonl",
+                        "run": true
+                      },
+                      {
+                        "id": "translate",
+                        "title": "🔤 翻訳",
+                        "command": "printf '>s1\\nATGGCCTAA\\n' > demo.fa\npython -S ssis.py translate demo.fa --frame 0 --strand + --jsonl",
+                        "run": true
+                      }
+                    ]
+                  }
+                },
+                {
+                  "label": "⚡ uv",
+                  "intro": "uv があれば Python の版を気にせず動きます。",
+                  "runbook": {
+                    "key": "search-seq-including-spa/uv",
+                    "steps": [
+                      {
+                        "id": "get",
+                        "title": "📥 ファイルを置く",
+                        "command": "curl -fsSLO https://raw.githubusercontent.com/myon-bioinformatics/search_seq_including_spaces/main/ssis.py",
+                        "needs": "🌐 ネットワーク"
+                      },
+                      {
+                        "id": "help",
+                        "title": "❓ ヘルプ",
+                        "command": "uv run --no-project python -S ssis.py --help",
+                        "run": true
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
           "label": "🎞 GIF デモ",
           "blocks": [
             {
