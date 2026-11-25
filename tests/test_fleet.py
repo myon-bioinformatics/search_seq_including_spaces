@@ -9,6 +9,7 @@ from vendor import fleet_check as fleet
 
 ROOT = fleet.repo_root(__file__)
 PARENT_WORKFLOW_PIN = "0778ede0c872d609bb2dc590f9f9898a39a18668"
+PARENT_PAGES_PIN = "a6996161eb1e8509a1673f68dd66f0e83efbada0"
 # Node sources and the shared checks stay on accepted upstream commits with exact bytes.
 ACCEPTED = {
     "vendor/xprobe.py": "1ffbb7b984075c683690bbe4e9deb06199cdfe94",
@@ -37,7 +38,11 @@ class FleetTests(unittest.TestCase):
         self.assertTrue(callable(xprobe.pytest_receipt))
 
     def test_parent_workflow_references_use_reviewed_rollout_commit(self):
-        self.assertEqual(set(fleet.parent_refs(ROOT)), {PARENT_WORKFLOW_PIN})
+        pages = fleet.PARENT + "/.github/workflows/reusable-pages-static.yml"
+        self.assertIn((pages, PARENT_PAGES_PIN, None), fleet.check_actions(ROOT, workflow="pages.yml"))
+        pins = fleet.parent_refs(ROOT)
+        pins.remove(PARENT_PAGES_PIN)
+        self.assertEqual(set(pins), {PARENT_WORKFLOW_PIN})
 
     def test_every_action_is_pinned_by_full_sha_with_version_comment(self):
         fleet.check_actions(ROOT)

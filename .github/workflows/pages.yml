@@ -8,13 +8,25 @@ on:
     branches: [main]
     paths:
       - "docs/guide.page.json"
+      - "docs/guide.features.json"
       - "docs/brand/**"
       - ".github/workflows/pages.yml"
+      - "ssis.py"
+      - "sequence_service.py"
+      - "seqlib/**"
+      - "protein/**"
+      - "vendor/cli_args.py"
   pull_request:
     paths:
       - "docs/guide.page.json"
+      - "docs/guide.features.json"
       - "docs/brand/**"
       - ".github/workflows/pages.yml"
+      - "ssis.py"
+      - "sequence_service.py"
+      - "seqlib/**"
+      - "protein/**"
+      - "vendor/cli_args.py"
 
 permissions:
   contents: read
@@ -23,8 +35,9 @@ permissions:
 
 jobs:
   pages:
-    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@0778ede0c872d609bb2dc590f9f9898a39a18668
+    uses: myon-bioinformatics/myon-bioinformatics/.github/workflows/reusable-pages-static.yml@a6996161eb1e8509a1673f68dd66f0e83efbada0
     with:
       artifact_path: _site
       guide_page: docs/guide.page.json
+      guide_features_config: docs/guide.features.json
       guide_brand: search_seq_including_spaces   # ♻️ icon and favicon from CaChereCyCle (search_seq_including_spaces.icon / search_seq_including_spaces.favicon)
