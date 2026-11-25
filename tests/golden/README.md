@@ -6,9 +6,9 @@ is stored as `<python>` and substituted before the comparison.
 
 | File | Command |
 | --- | --- |
-| `<name>.features.json` | `python -S sequence_tool.py protein features tests/fixtures/<name>.fasta` |
-| `<name>.profile.tsv` | `python -S sequence_tool.py protein profile tests/fixtures/<name>.fasta` |
-| `<name>.roi.txt` | `python -S sequence_tool.py protein roi --ascii tests/fixtures/<name>.fasta` |
+| `<name>.features.json` | `python -S ssis.py protein features tests/fixtures/<name>.fasta` |
+| `<name>.profile.tsv` | `python -S ssis.py protein profile tests/fixtures/<name>.fasta` |
+| `<name>.roi.txt` | `python -S ssis.py protein roi --ascii tests/fixtures/<name>.fasta` |
 
 Checked against independent values when the files were created (2026-09-27):
 

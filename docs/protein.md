@@ -6,10 +6,10 @@ value is labelled with where it comes from. Nothing here predicts
 structure, binding or function.
 
 ```sh
-python sequence_tool.py fasta validate in.fasta
-python sequence_tool.py protein features in.fasta              # JSON
-python sequence_tool.py protein profile in.fasta --window 9    # TSV (--json, --jsonl)
-python sequence_tool.py protein roi in.fasta --ascii           # JSON by default
+python ssis.py fasta validate in.fasta
+python ssis.py protein features in.fasta              # JSON
+python ssis.py protein profile in.fasta --window 9    # TSV (--json, --jsonl)
+python ssis.py protein roi in.fasta --ascii           # JSON by default
 ```
 
 `FILE` may be `-` for standard input. Exit code 0 means success and 2 means

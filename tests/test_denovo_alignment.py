@@ -43,7 +43,7 @@ class TestDeNovoAlignment(unittest.TestCase):
                 align_records(records)
 
     def test_cli_round_trip(self):
-        cmd = [sys.executable, '-S', str(ROOT / 'sequence_tool.py'), 'align', '-']
+        cmd = [sys.executable, '-S', str(ROOT / 'ssis.py'), 'align', '-']
         seqs = '>a\nACGU\n>b\nAGU\n'
         sto = subprocess.check_output(cmd, input=seqs, text=True)
         rows, tracks = read_stockholm(StringIO(sto))

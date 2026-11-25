@@ -31,7 +31,7 @@ class TestNeighbors(unittest.TestCase):
                 inspect('ACG', track, 1)
 
     def test_real_contact_via_cli(self):
-        command = [sys.executable, '-S', str(FIX.parents[1] / 'sequence_tool.py'), 'base-neighbors',
+        command = [sys.executable, '-S', str(FIX.parents[1] / 'ssis.py'), 'base-neighbors',
                    str(FIX / 'tRNA5.sto'), '--record', 'tRNA1', '--position', '19',
                    '--structure', str(FIX / '1ehz-g19-c56.pdb'), '--mapping', str(FIX / '1ehz-g19-c56-map.json')]
         result = json.loads(subprocess.check_output(command))

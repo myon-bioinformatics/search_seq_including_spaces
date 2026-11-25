@@ -3,8 +3,8 @@
 ## Built-in sequence input discovery
 
 ```sh
-python -S sequence_tool.py discover ./data --format fasta --format fastq --pattern 'sample*'
-python -S sequence_tool.py discover tests --format fasta --format fastq --pattern '*.fa*'
+python -S ssis.py discover ./data --format fasta --format fastq --pattern 'sample*'
+python -S ssis.py discover tests --format fasta --format fastq --pattern '*.fa*'
 ```
 
 This native command uses `sequence_readers.discover_sequences()`. It reuses the

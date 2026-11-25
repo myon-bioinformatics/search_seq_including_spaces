@@ -2,7 +2,7 @@
 
 This increment addresses open issues #29 and #30 and implements the executable
 baseline across roadmap #2. Runtime remains Python 3.10+ standard library only;
-all existing protein golden files and the legacy `definition_main.py` are retained.
+all existing protein golden files and the legacy script (now `legacy/definition_main.py`) are retained.
 
 ## Delivery map
 
@@ -30,9 +30,9 @@ open for claims about predictive quality.
 ## Generate an alignment from unaligned FASTA
 
 ```sh
-python -S sequence_tool.py align transcripts.fa > aligned.sto
-python -S sequence_tool.py annotated-match aligned.sto --track coverage --left GUUC --right GA
-python -S sequence_tool.py align transcripts.fa --format fasta > aligned.fa
+python -S ssis.py align transcripts.fa > aligned.sto
+python -S ssis.py annotated-match aligned.sto --track coverage --left GUUC --right GA
+python -S ssis.py align transcripts.fa --format fasta > aligned.fa
 python -S experiments/alignment/evaluate.py --check
 ```
 
@@ -90,7 +90,7 @@ fixture. [Rfam data licence (CC0)](https://docs.rfam.org/en/latest/license.html)
 ## Search annotated alignments
 
 ```sh
-python -S sequence_tool.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA
+python -S ssis.py annotated-match tests/fixtures/tRNA5.sto --left GUUC --right GA
 python -S -m unittest discover -s tests -p test_reference_alignment.py -v
 ```
 
@@ -118,8 +118,8 @@ target, including records without hits. No translation, ORF or CDS annotation is
 required. RNA and DNA use the same search after U/T normalization.
 
 ```sh
-python -S sequence_tool.py transcript-search tests/fixtures/lin-utr.fa --query UCCCUGAGACCUCAAGUGUGA
-python -S sequence_tool.py transcript-search tests/fixtures/lin-utr.fa --query-file tests/fixtures/lin-utr.fa --query-record NM_077515.5 --query-span 825 846
+python -S ssis.py transcript-search tests/fixtures/lin-utr.fa --query UCCCUGAGACCUCAAGUGUGA
+python -S ssis.py transcript-search tests/fixtures/lin-utr.fa --query-file tests/fixtures/lin-utr.fa --query-record NM_077515.5 --query-span 825 846
 ```
 
 The first example finds three 8mer seed patterns in the lin-14 3′ UTR and one
@@ -158,8 +158,8 @@ supplied record; FASTA headers give the offset for these UTR slices.
 ## RNA base neighbours
 
 ```sh
-python -S sequence_tool.py base-neighbors tests/fixtures/tRNA5.sto --record tRNA1 --position 31
-python -S sequence_tool.py base-neighbors tests/fixtures/tRNA5.sto --record tRNA1 --position 19 --structure tests/fixtures/1ehz-g19-c56.pdb --mapping tests/fixtures/1ehz-g19-c56-map.json
+python -S ssis.py base-neighbors tests/fixtures/tRNA5.sto --record tRNA1 --position 31
+python -S ssis.py base-neighbors tests/fixtures/tRNA5.sto --record tRNA1 --position 19 --structure tests/fixtures/1ehz-g19-c56.pdb --mapping tests/fixtures/1ehz-g19-c56-map.json
 ```
 
 Positions count ungapped residues starting at one. Each node also gives its
@@ -193,7 +193,7 @@ Use the start and end positions on the **ungapped source record**; both are
 orientation. For example, with source `AC-GT` and target `A-TGT`:
 
 ```sh
-python -S sequence_tool.py project source.fa target.fa --alphabet dna --start 2 --end 4
+python -S ssis.py project source.fa target.fa --alphabet dna --start 2 --end 4
 ```
 
 Source positions 3–4 map to target positions 3–4 in alignment columns 4–5.
@@ -209,7 +209,7 @@ the tool name `project_interval` and inline arguments `sequence_a`, `sequence_b`
 
 ## Search priority
 
-`python -S sequence_tool.py match input.fa --left A --right T --top 10`
+`python -S ssis.py match input.fa --left A --right T --top 10`
 scans the input once. It keeps up to ten matching record/pattern pairs by
 match count, breaking ties in input order. The JSON gives the total scanned,
 matched and omitted pairs and each result's source, record index and first
@@ -249,7 +249,7 @@ git -C .talkcompress checkout 2826357e2fd378438a1bb39c1513b8fe9ef757d7
 python3 .talkcompress/scripts/ai_readability.py fetch minilm-l6-xnli-onnx --dest /tmp/ssis-judge
 uv sync --project .talkcompress --locked --only-group judge --python 3.12
 .talkcompress/.venv/bin/python experiments/search_review/review.py --model-dir /tmp/ssis-judge evaluate
-python -S sequence_tool.py match input.fa --left A --right T --top 10 > shortlist.json
+python -S ssis.py match input.fa --left A --right T --top 10 > shortlist.json
 .talkcompress/.venv/bin/python experiments/search_review/review.py --model-dir /tmp/ssis-judge review shortlist.json --objective 'The record contains at least five matches.'
 ```
 
@@ -266,20 +266,20 @@ testing only. Model downloads are needed on first setup. Review itself uses no s
 ## CLI examples
 
 ```sh
-python -S sequence_tool.py match input.fa --left AC --right GT --min-gap 1 --jsonl
-python -S sequence_tool.py match input.jsonl --sequence-path /payload/sequence --id-path id --patterns examples/patterns.json --jsonl
-python -S sequence_tool.py match genome.fa.gz --input-format fasta --chunk-size 65536 --left AC --right GT --min-gap 1 --jsonl
-python -S sequence_tool.py nucleotide-features input.fa --alphabet dna --k 3 --codon-frame 0 --jsonl
-python -S sequence_tool.py translate input.fa --frame 0 --strand + --jsonl
-python -S sequence_tool.py preset input.fa --kind poly-a --min-length 6 --jsonl
-python -S sequence_tool.py preset input.fa --kind tsd --repeat-length 4 --min-gap 5 --max-gap 50 --jsonl
-python -S sequence_tool.py rna-fold input.fa --min-loop 3 --jsonl
-python -S sequence_tool.py protein-ionization input.fa --ph 7 --jsonl
-python -S sequence_tool.py preprocess input.fa --alphabet dna --deduplicate sequence --aligned --export-format mega --receipt new-receipt.json > output.meg
-python -S sequence_tool.py structure input.cif --input-format cif --cutoff 4 --top 20
-python -S sequence_tool.py fetch --operation search --database pubmed --query 'RNA folding' --limit 20
-python -S sequence_tool.py fetch --operation records --database structure --ids 1CRN --format cif
-python -S sequence_tool.py fetch --operation records --database structure --ids 1CRN --format pdb
+python -S ssis.py match input.fa --left AC --right GT --min-gap 1 --jsonl
+python -S ssis.py match input.jsonl --sequence-path /payload/sequence --id-path id --patterns examples/patterns.json --jsonl
+python -S ssis.py match genome.fa.gz --input-format fasta --chunk-size 65536 --left AC --right GT --min-gap 1 --jsonl
+python -S ssis.py nucleotide-features input.fa --alphabet dna --k 3 --codon-frame 0 --jsonl
+python -S ssis.py translate input.fa --frame 0 --strand + --jsonl
+python -S ssis.py preset input.fa --kind poly-a --min-length 6 --jsonl
+python -S ssis.py preset input.fa --kind tsd --repeat-length 4 --min-gap 5 --max-gap 50 --jsonl
+python -S ssis.py rna-fold input.fa --min-loop 3 --jsonl
+python -S ssis.py protein-ionization input.fa --ph 7 --jsonl
+python -S ssis.py preprocess input.fa --alphabet dna --deduplicate sequence --aligned --export-format mega --receipt new-receipt.json > output.meg
+python -S ssis.py structure input.cif --input-format cif --cutoff 4 --top 20
+python -S ssis.py fetch --operation search --database pubmed --query 'RNA folding' --limit 20
+python -S ssis.py fetch --operation records --database structure --ids 1CRN --format cif
+python -S ssis.py fetch --operation records --database structure --ids 1CRN --format pdb
 ```
 
 New record commands use `--input-format` plus the common reader's column/path
@@ -341,8 +341,8 @@ must exhaust successfully to establish success for the entire file.
 ## S3 summaries (#29)
 
 ```sh
-python -S sequence_tool.py summarize-hits hits.csv --gap-merge 10000 --top 3
-python -S sequence_tool.py compare a.fa b.fa --alphabet dna --window 21 --step 5 --summary --identity-threshold 90 --min-coverage 50 --top 10
+python -S ssis.py summarize-hits hits.csv --gap-merge 10000 --top 3
+python -S ssis.py compare a.fa b.fa --alphabet dna --window 21 --step 5 --summary --identity-threshold 90 --min-coverage 50 --top 10
 ```
 
 CSV clustering uses **distance between consecutive sorted start coordinates**,
@@ -373,9 +373,9 @@ to the exact contiguous S2 window range; original sequence hashes are retained.
 ## Ambiguity candidates and approximation (#30)
 
 ```sh
-python -S sequence_tool.py candidates input.fa --mode pairwise --limit 1000 --seed 42
-python -S sequence_tool.py candidates input.fa --mode sample --limit 100 --seed 42
-python -S sequence_tool.py candidates input.fa --mode pairwise --targets targets.fa --rank 4 --seed 42
+python -S ssis.py candidates input.fa --mode pairwise --limit 1000 --seed 42
+python -S ssis.py candidates input.fa --mode sample --limit 100 --seed 42
+python -S ssis.py candidates input.fa --mode pairwise --targets targets.fa --rank 4 --seed 42
 ```
 
 `preserve` keeps IUPAC text; `regex` emits a safe concrete-DNA pattern (no claim
@@ -513,7 +513,7 @@ Export PDB or mmCIF coordinates for one model. With sibling checkouts the same
 JSON can be drawn by DRAgoWing and classified by TaxOntOy using ONTO.
 
 ```sh
-python -S sequence_tool.py structure tests/fixtures/1ehz-g19-c56.pdb --input-format pdb --output graph > model.json
+python -S ssis.py structure tests/fixtures/1ehz-g19-c56.pdb --input-format pdb --output graph > model.json
 python -S ../DRAgoWing/dragowing.py --structure-graph model.json --embed > model.html
 python -S ../TaxOntOy/taxontoy.py structure model.json --onto-root ../ONTO
 ```

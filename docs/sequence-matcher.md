@@ -115,5 +115,5 @@ size of the sequence. There is no new per-record byte cap, genome-scale indexing
 or incremental matching within a record. Phase 4 therefore remains partial.
 
 `seqlib/anchor_matcher.py`, `seqlib/sequence_readers.py`, `seqlib/sequence_records.py`,
-`definition_main.py`, and `sequence_tool.py` behavior is unchanged. Custom-pattern CLI/schema, JSON/JSONL and GenBank readers, exporters and
+`legacy/definition_main.py`, and `ssis.py` behavior is unchanged. Custom-pattern CLI/schema, JSON/JSONL and GenBank readers, exporters and
 biological presets now exist in separate modules, not in this adapter.

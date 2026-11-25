@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
 """Command-line entry point for the sequence tools (stdlib only).
 
-    python sequence_tool.py discover ROOT [--format fasta] [--format fastq] [--pattern 'sample*'] [--exclude 'nested/*']
-    python sequence_tool.py compare FILE_A FILE_B --alphabet {dna,rna,protein} [--json]
-    python sequence_tool.py fasta validate FILE [--strip-gaps] [--allow-internal-stop] [--json]
-    python sequence_tool.py protein features FILE [--ambiguity POLICY] [--json | --jsonl]
-    python sequence_tool.py protein profile FILE [--window 9] [--entropy-window 12]
-                                            [--ambiguity POLICY] [--tsv | --json | --jsonl]
-    python sequence_tool.py protein roi FILE [--window 9] [--merge-gap 2] [--min-len 5]
-                                        [--threshold NAME=VALUE ...] [--json | --jsonl | --ascii]
-                                        [--width 60]
+    python ssis.py discover ROOT [--format fasta] [--format fastq] [--pattern 'sample*'] [--exclude 'nested/*']
+    python ssis.py compare FILE_A FILE_B --alphabet {dna,rna,protein} [--json]
+    python ssis.py fasta validate FILE [--strip-gaps] [--allow-internal-stop] [--json]
+    python ssis.py protein features FILE [--ambiguity POLICY] [--json | --jsonl]
+    python ssis.py protein profile FILE [--window 9] [--entropy-window 12]
+                                   [--ambiguity POLICY] [--tsv | --json | --jsonl]
+    python ssis.py protein roi FILE [--window 9] [--merge-gap 2] [--min-len 5]
+                               [--threshold NAME=VALUE ...] [--json | --jsonl | --ascii]
+                               [--width 60]
 
 FILE may be "-" for standard input. Each subcommand only parses arguments,
 calls one function of the protein package and writes the result; the
@@ -278,7 +278,7 @@ def _threshold(text: str) -> tuple[str, int | float]:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="sequence_tool.py",
+    parser = argparse.ArgumentParser(prog="ssis.py",
                                      description="Sequence tools (stdlib only).")
     groups = parser.add_subparsers(dest="group", required=True,
                                    metavar="COMMAND")

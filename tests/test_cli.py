@@ -1,13 +1,13 @@
-"""sequence_tool.py CLI: protein/compare golden outputs and errors, the sequence
+"""ssis.py CLI: protein/compare golden outputs and errors, the sequence
 subcommands (match, candidates, analysis, preprocess) and fetch with offline I/O."""
 import hashlib, io, json, pathlib, subprocess, sys, tempfile, unittest
 from contextlib import redirect_stderr, redirect_stdout; from pathlib import Path; from unittest.mock import Mock, patch
 
 from seqlib.acquisition import Client
-from sequence_tool import main
+from ssis import main
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-TOOL = ROOT / "sequence_tool.py"
+TOOL = ROOT / "ssis.py"
 FIXTURES = ROOT / "tests" / "fixtures"
 GOLDEN = ROOT / "tests" / "golden"
 PYTHON_VERSION = "{}.{}.{}".format(*sys.version_info[:3])
@@ -327,7 +327,7 @@ class SequenceCommandsCliTests(unittest.TestCase):
 
     def test_jev_review_reranks_shortlist_and_retains_uncertain_hits(self):
         from seqlib.jev_adapter import JevClassifier
-        from sequence_tool import _build_parser
+        from ssis import _build_parser
         payloads = []
         answers = iter([('no', .99), ('yes', .6), None, ('unknown', .95), ('yes', .85), ('yes', .98)])
         def transport(payload, **kwargs):
