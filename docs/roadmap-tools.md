@@ -85,7 +85,7 @@ Stockholm sequence rows, family names and accessions for the selected families. 
 it, download the linked release and run
 `python -S experiments/alignment/evaluate.py --extract Rfam.seed.gz --check`.
 The script checks the compressed source SHA-256 and records the SHA-256 of the uncompressed
-fixture. [Rfam data licence (CC0)](https://docs.rfam.org/en/latest/license.html).
+fixture. [Rfam data licence (CC0)](https://docs.rfam.org/en/latest/citing-rfam.html#license).
 
 ## Search annotated alignments
 
