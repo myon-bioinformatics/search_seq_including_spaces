@@ -85,7 +85,7 @@ Stockholm sequence rows, family names and accessions for the selected families. 
 it, download the linked release and run
 `python -S experiments/alignment/evaluate.py --extract Rfam.seed.gz --check`.
 The script checks the compressed source SHA-256 and records the SHA-256 of the uncompressed
-fixture. [Rfam data licence (CC0)](https://docs.rfam.org/en/latest/license.html).
+fixture. [Rfam data licence (CC0)](https://docs.rfam.org/#license).
 
 ## Search annotated alignments
 
@@ -502,7 +502,7 @@ The example uses injected local/Pro handlers. Live llama.cpp and commercial serv
 - [NLM E-utilities parameter guide](https://www.nlm.nih.gov/dataguide/eutilities/utilities.html)
 - [Nussinov RNA folding recurrence](https://rna.informatik.uni-freiburg.de/Teaching/index.jsp?toolName=Nussinov)
 - [PDBx/mmCIF atom-site dictionary](https://mmcif.wwpdb.org/dictionaries/mmcif_std.dic/Categories/atom_site.html)
-- [MEGA format manual](https://megasoftware.net/mega4/mega4.pdf)
+- [MEGA format documentation](https://www.megasoftware.net/web_help_12/Part_III_Input_Data_Types_and_File_Format/MEGA_Input_Data_File_Formats/MEGA_Format.htm)
 - [MCP lifecycle](https://modelcontextprotocol.io/specification/2025-11-25/basic/lifecycle)
 - [MCP tools](https://modelcontextprotocol.io/specification/2025-11-25/server/tools)
 - [Official TypeSafe API](https://docs.typesafe.ai/api)
