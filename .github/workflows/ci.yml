@@ -129,6 +129,8 @@ jobs:
           echo "No compiled Python files are tracked."
 
       - name: Run unit tests without site-packages (python -S)
+        env:
+          SEARCHSEQ_RFAM_IN_PYTEST: "1"
         run: |
           pyver="$(python -S -c 'import platform; print(platform.python_version())')"
           where="Python ${pyver}, head ${HEAD_SHA:0:12}, tested ${GITHUB_SHA:0:12}"

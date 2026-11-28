@@ -1,6 +1,7 @@
 from io import StringIO
 from itertools import product
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -54,6 +55,8 @@ class TestDeNovoAlignment(unittest.TestCase):
         self.assertEqual(subprocess.check_output(cmd + ['--format', 'fasta'], input=seqs, text=True),
                          '>a\nACGU\n>b\nA-GU\n')
 
+    @unittest.skipIf(os.environ.get("SEARCHSEQ_RFAM_IN_PYTEST") == "1",
+                     "the native pytest step runs this same python -S benchmark")
     def test_rfam_reference_benchmark(self):
         report = json.loads(subprocess.check_output(
             [sys.executable, '-S', str(ROOT / 'experiments/alignment/evaluate.py'), '--check']))
