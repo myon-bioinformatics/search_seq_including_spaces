@@ -2,6 +2,8 @@
 import ast, importlib.util, tempfile, unittest
 from pathlib import Path
 
+from vendor.cli_args import run_cli
+
 
 class TestLayerSnapshot(unittest.TestCase):
     def setUp(self):
@@ -161,8 +163,7 @@ class TestCacheCli(unittest.TestCase):
     def test_main_entry_uses_cli_mode(self):
         import subprocess, sys
         script = Path(__file__).with_name("test_layers.py")
-        bad = subprocess.run([sys.executable, str(script), "--cache", "forever"],
-                             capture_output=True, text=True)
+        bad = run_cli(script, "--cache", "forever")
         self.assertEqual(bad.returncode, 2)
         self.assertIn("--cache", bad.stderr)
         probe = ("import runpy, sys, unittest\n"

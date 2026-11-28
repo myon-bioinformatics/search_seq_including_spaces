@@ -6,6 +6,8 @@ from seqlib.sequence_readers import discover_sequences
 
 ROOT = Path(__file__).resolve().parents[1]
 
+from vendor.cli_args import run_cli
+
 
 class SequenceDiscoveryTests(unittest.TestCase):
     def setUp(self):
@@ -65,8 +67,8 @@ class SequenceDiscoveryTests(unittest.TestCase):
         report = discover_sequences(self.root, exclude=(last,), max_files=len(everything) - 1)
         self.assertFalse(report['truncated'])
         self.assertEqual(report['files'], everything[:-1])
-        args = [sys.executable, '-S', str(ROOT / 'ssis.py'), 'discover', str(self.root), '--exclude', 'nested/*']
-        result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', timeout=20)
+        result = run_cli(ROOT / 'ssis.py', 'discover', str(self.root), '--exclude', 'nested/*',
+                         python_options=('-S',), timeout=20)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(json.loads(result.stdout)['files'],
                          [row for row in everything if not row['path'].startswith('nested/')])
@@ -97,12 +99,12 @@ class SequenceDiscoveryTests(unittest.TestCase):
 
     def test_native_cli_without_site_packages_and_truncated_status(self):
         self.inputs()
-        args = [sys.executable, '-S', str(ROOT / 'ssis.py'), 'discover', str(self.root),
-                '--format', 'fasta', '--pattern', 'sample*', '--pattern', 'other*']
-        result = subprocess.run(args, capture_output=True, text=True, encoding='utf-8', timeout=20)
+        cli_args = ('discover', str(self.root),
+                    '--format', 'fasta', '--pattern', 'sample*', '--pattern', 'other*')
+        result = run_cli(ROOT / 'ssis.py', *cli_args, python_options=('-S',), timeout=20)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(len(json.loads(result.stdout)['files']), 2)
-        result = subprocess.run(args + ['--max-files', '1'], capture_output=True, text=True, encoding='utf-8', timeout=20)
+        result = run_cli(ROOT / 'ssis.py', *cli_args, '--max-files', '1', python_options=('-S',), timeout=20)
         self.assertEqual(result.returncode, 2)
         self.assertTrue(json.loads(result.stdout)['truncated'])
 
