@@ -1,8 +1,21 @@
 """Downstream integration of the pinned shared pytest adapter."""
+import importlib.util
+import sys
 import os, subprocess
 from pathlib import Path
 
-from vendor.xprobe import pytest_receipt
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+pytest_receipt = load_vendored("search_seq_including_spaces_xprobe", "vendor/xprobe.py").pytest_receipt
 
 ROOT = Path(__file__).resolve().parents[1]
 
