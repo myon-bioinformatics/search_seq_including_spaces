@@ -1,4 +1,5 @@
 """Score de novo alignments against pinned Rfam seed sequence rows."""
+import importlib.util
 import argparse
 from collections import Counter
 import gzip
@@ -13,7 +14,19 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE.parents[1]))
 from seqlib.alignment import align_records
 from seqlib.stockholm import read_stockholm
-from vendor.pythdragoras import classification_metrics
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[2] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+classification_metrics = load_vendored("search_seq_including_spaces_pythdragoras", "vendor/pythdragoras.py").classification_metrics
 
 FAMILIES = {'RF00001', 'RF00003', 'RF00004', 'RF00005', 'RF00015', 'RF00020', 'RF00026'}
 RELEASE_SHA256 = 'b06ac74d772609e863c5e1906eb491d699e9d325c5f22f4fc78126a808ad0bed'
