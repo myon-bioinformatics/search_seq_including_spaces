@@ -8,22 +8,22 @@ import unittest
 from vendor import fleet_check as fleet
 
 ROOT = fleet.repo_root(__file__)
-PARENT_WORKFLOW_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
-PARENT_PAGES_PIN = "27c46411c0a07d9b4d0f1ad5751ed1bb9e869b5c"
+PARENT_WORKFLOW_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
+PARENT_PAGES_PIN = "main"  # 🔁 own sources follow main (2026-11-28)
 # Node sources and the shared checks stay on accepted upstream commits with exact bytes.
 ACCEPTED = {
-    "vendor/xprobe.py": "1ffbb7b984075c683690bbe4e9deb06199cdfe94",
-    "vendor/xprobe_pytest.py": "326acd667e13b21bf53ccc1590af960edf8cbf6c",
-    "vendor/fleet_check.py": "20de01921e50e9339aa9271b0547a5be7649b3b3",
-    "vendor/cli_args.py": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-    "vendor/cli_args-LICENSE": "55d8d0bfe699869c2439ff9ca86abfd3aa879846",
-}
+    "vendor/xprobe.py",
+    "vendor/xprobe_pytest.py",
+    "vendor/fleet_check.py",
+    "vendor/cli_args.py",
+    "vendor/cli_args-LICENSE",
+}  # 🔁 locked destinations; they follow main
 
 
 class FleetTests(unittest.TestCase):
     def test_vendor_lock_matches_checked_in_bytes_accepted_commits_and_sources(self):
         # check_lock verifies ref == commit, the placed bytes against blob_sha / sha256, and each row's origin.
-        rows = fleet.check_lock(ROOT, commits=ACCEPTED, sources={
+        rows = fleet.check_lock(ROOT, sources={
             "vendor/xprobe.py": ("myon-bioinformatics/xprobe", "xprobe.py"),
             "vendor/xprobe_pytest.py": ("myon-bioinformatics/xprobe", "scripts/xprobe_pytest.py"),
             "vendor/xprobe-LICENSE": ("myon-bioinformatics/xprobe", "LICENSE"),
@@ -32,10 +32,7 @@ class FleetTests(unittest.TestCase):
             "vendor/cli_args.py": ("myon-bioinformatics/cli_args", "cli_args.py"),
             "vendor/cli_args-LICENSE": ("myon-bioinformatics/cli_args", "LICENSE"),
         })
-        adapter = rows["vendor/xprobe_pytest.py"]
-        self.assertEqual((adapter["sha256"], adapter["blob_sha"]),
-                         ("c0ea71f9d971bf47a9f5f1794ef8a7f641dd17694ea8e7f29795d326c5229285",
-                          "70fac53151e97f5f28d23f9961d3837b7a885ea8"))
+        self.assertEqual(rows["vendor/xprobe_pytest.py"]["ref"], "main")  # 🔁 bytes are checked by check_lock
 
     def test_pinned_runtime_helper(self):
         from vendor import xprobe

@@ -292,22 +292,22 @@ def main(argv=None):
     parser = argparse.ArgumentParser(description="Calculate classification metrics and expectations.")
     sub = parser.add_subparsers(dest="command", required=True)
     metrics = sub.add_parser("metrics", help="classification metrics from confusion counts")
-    metrics.add_argument("counts", nargs="*", type=int, metavar="COUNT")
-    for name in ("tp", "fp", "fn", "tn"):
-        metrics.add_argument("--" + name, type=int)
+    metrics.add_argument("counts", nargs="*", type=int, metavar="COUNT", help="🔢 TP FP FN TN, or use the four named counts")
+    for name, about in (("tp", "true positives"), ("fp", "false positives"), ("fn", "false negatives"), ("tn", "true negatives")):
+        metrics.add_argument("--" + name, type=int, help=f"🔢 {about}")
     bayes = sub.add_parser("bayes", help="posterior probability given a positive result")
-    for name in ("prior", "sensitivity", "specificity"):
-        bayes.add_argument("--" + name, type=float, required=True)
+    for name, about in (("prior", "P(condition)"), ("sensitivity", "P(positive | condition)"), ("specificity", "P(negative | no condition)")):
+        bayes.add_argument("--" + name, type=float, required=True, help=f"🎲 {about}, 0 to 1")
     expected = sub.add_parser("expected", help="expected value from value/probability pairs")
-    expected.add_argument("pairs", type=float, nargs="+", metavar="NUMBER")
+    expected.add_argument("pairs", type=float, nargs="+", metavar="NUMBER", help="🎲 value probability value probability …; probabilities sum to 1")
     pyth = sub.add_parser("pythagorean", help="Pythagorean expectation")
-    pyth.add_argument("--for", dest="scored", type=float, required=True)
-    pyth.add_argument("--against", type=float, required=True)
-    pyth.add_argument("--exponent", type=float, default=2.0)
+    pyth.add_argument("--for", dest="scored", type=float, required=True, help="⚾ runs scored")
+    pyth.add_argument("--against", type=float, required=True, help="🧤 runs allowed")
+    pyth.add_argument("--exponent", type=float, default=2.0, help="📐 positive exponent (default: %(default)s)")
     lb = sub.add_parser("littlebit", help="🧱 LittleBit factors of a JSON matrix (list of rows)")
     lb.add_argument("matrix", nargs="?", type=Path, help="JSON file; standard input when omitted")
-    lb.add_argument("--rank", type=int, default=2)
-    lb.add_argument("--stages", type=int, default=2)
+    lb.add_argument("--rank", type=int, default=2, help="📐 rank of each ±1 factor pair, 1 or more (default: %(default)s)")
+    lb.add_argument("--stages", type=int, default=2, help="🧱 residual stages, 1 or more (default: %(default)s)")
     args = parser.parse_args(argv)
     if args.command == "metrics":
         flags = [args.tp, args.fp, args.fn, args.tn]
