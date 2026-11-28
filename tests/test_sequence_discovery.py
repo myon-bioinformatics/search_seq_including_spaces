@@ -1,4 +1,5 @@
 """Native discovery contracts run in both pytest and stdlib-only environments."""
+import importlib.util
 import json, subprocess, sys, tempfile, unittest
 from pathlib import Path; from unittest.mock import patch
 
@@ -6,7 +7,19 @@ from seqlib.sequence_readers import discover_sequences
 
 ROOT = Path(__file__).resolve().parents[1]
 
-from vendor.cli_args import run_cli
+
+
+def load_vendored(name, relpath):
+    """Load a vendored file by path under a repo-unique name (cli_args README: Loading a vendored copy)."""
+    if name not in sys.modules:
+        spec = importlib.util.spec_from_file_location(name, Path(__file__).resolve().parents[1] / relpath)
+        module = importlib.util.module_from_spec(spec)
+        sys.modules[name] = module
+        spec.loader.exec_module(module)
+    return sys.modules[name]
+
+
+run_cli = load_vendored("search_seq_including_spaces_cli_args", "vendor/cli_args.py").run_cli
 
 
 class SequenceDiscoveryTests(unittest.TestCase):
